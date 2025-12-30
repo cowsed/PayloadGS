@@ -40,7 +40,7 @@ Item {
 
         PluginParameter {
             name: "osm.mapping.host"
-            value: "http://127.0.0.1:8000/"
+            value: "http://192.168.5.177:8000/"
         }
         PluginParameter {
             name: "osm.mapping.copyright"
@@ -49,6 +49,7 @@ Item {
     }
 
     MapView {
+        id: mapView
         property real payloadLatitude: 43.074835
         property real payloadLongitude: -77.669415
 

@@ -16,7 +16,6 @@ find_package(Qt6 REQUIRED COMPONENTS Location)
 
 
 
-
 qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appPayloadGS
@@ -31,14 +30,23 @@ qt_add_qml_module(appPayloadGS
         Main.qml
         Payload3D.qml
         Payload.qml
-        TelemetryPage.qml
+        MapPage.qml
         MapViewer.qml
+        ShellPage.qml
+        ImageControl.qml
+        ArmPage.qml
+        ImagePreview.qml
+        ShellCommandListItem.qml
     RESOURCES
         assets/maps/goegap_2k.hdr
         assets/maps/textureData.png
         assets/meshes/cube_001_mesh.mesh
-        maps.qrc
     NO_RESOURCE_TARGET_PATH
+    QML_FILES StatusIcons.qml
+    QML_FILES TelemetryPage.qml
+    QML_FILES TimeSinceThing.qml
+    QML_FILES RadioPage.qml
+    RESOURCES assets/images/launch_logo.jpg
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
