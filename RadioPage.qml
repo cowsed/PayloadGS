@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtCharts
+import QtSensors
 
 Item {
     anchors.fill: parent
@@ -10,6 +12,104 @@ Item {
 
     RowLayout {
         anchors.fill: parent
+
+        ChartView {
+            id: tempChart
+            legend.alignment: Qt.AlignTop
+            antialiasing: true
+
+            Layout.topMargin: 0
+
+            margins.top: 0
+            margins.bottom: 0
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            theme: ChartView.ChartThemeQt
+
+            ValueAxis {
+                id: axisX
+                min: 0 // Sets the minimum value for the X-axis
+                max: 6 // Sets the maximum value for the X-axis
+            }
+
+            ValueAxis {
+                id: rssiAxisY
+                min: 30 // Sets the minimum value for the Y-axis
+                max: 100 // Sets the maximum value for the Y-axis
+            }
+            ValueAxis {
+                id: snrAxisY
+                min: 30 // Sets the minimum value for the Y-axis
+                max: 100 // Sets the maximum value for the Y-axis
+            }
+            LineSeries {
+                name: "RSSI"
+                axisX: axisX
+                axisY: rssiAxisY
+                XYPoint {
+                    x: 0
+                    y: 35
+                }
+                XYPoint {
+                    x: 1.1
+                    y: 35.1
+                }
+                XYPoint {
+                    x: 1.9
+                    y: 37.3
+                }
+                XYPoint {
+                    x: 2.1
+                    y: 42.1
+                }
+                XYPoint {
+                    x: 2.9
+                    y: 44.9
+                }
+                XYPoint {
+                    x: 3.4
+                    y: 43.0
+                }
+                XYPoint {
+                    x: 4.1
+                    y: 44.3
+                }
+            }
+            LineSeries {
+                name: "SNR"
+                axisX: axisX
+                axisYRight: snrAxisY
+                XYPoint {
+                    x: 0
+                    y: 40
+                }
+                XYPoint {
+                    x: 1.1
+                    y: 41
+                }
+                XYPoint {
+                    x: 1.9
+                    y: 43
+                }
+                XYPoint {
+                    x: 2.1
+                    y: 48
+                }
+                XYPoint {
+                    x: 2.9
+                    y: 49
+                }
+                XYPoint {
+                    x: 3.4
+                    y: 50
+                }
+                XYPoint {
+                    x: 4.1
+                    y: 53
+                }
+            }
+        }
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -73,7 +173,7 @@ Item {
                     text: "Set"
                 }
                 Button {
-                    text: "Reset"
+                    text: "↺"
                 }
             }
             Button {
@@ -84,107 +184,21 @@ Item {
                 text: "Recover"
                 enabled: false
             }
-        }
-        ColumnLayout {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            ChartView {
-                id: tempChart
-                legend.alignment: Qt.AlignTop
-                antialiasing: true
-
-                Layout.topMargin: 0
-
-                margins.top: 0
-                margins.bottom: 0
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                theme: ChartView.ChartThemeQt
-
-                ValueAxis {
-                    id: axisX
-                    min: 0 // Sets the minimum value for the X-axis
-                    max: 6 // Sets the maximum value for the X-axis
-                }
-
-                ValueAxis {
-                    id: rssiAxisY
-                    min: 30 // Sets the minimum value for the Y-axis
-                    max: 100 // Sets the maximum value for the Y-axis
-                }
-                ValueAxis {
-                    id: snrAxisY
-                    min: 30 // Sets the minimum value for the Y-axis
-                    max: 100 // Sets the maximum value for the Y-axis
-                }
-                LineSeries {
-                    name: "RSSI"
-                    axisX: axisX
-                    axisY: rssiAxisY
-                    XYPoint {
-                        x: 0
-                        y: 35
-                    }
-                    XYPoint {
-                        x: 1.1
-                        y: 35.1
-                    }
-                    XYPoint {
-                        x: 1.9
-                        y: 37.3
-                    }
-                    XYPoint {
-                        x: 2.1
-                        y: 42.1
-                    }
-                    XYPoint {
-                        x: 2.9
-                        y: 44.9
-                    }
-                    XYPoint {
-                        x: 3.4
-                        y: 43.0
-                    }
-                    XYPoint {
-                        x: 4.1
-                        y: 44.3
-                    }
-                }
-                LineSeries {
-                    name: "SNR"
-                    axisX: axisX
-                    axisYRight: snrAxisY
-                    XYPoint {
-                        x: 0
-                        y: 40
-                    }
-                    XYPoint {
-                        x: 1.1
-                        y: 41
-                    }
-                    XYPoint {
-                        x: 1.9
-                        y: 43
-                    }
-                    XYPoint {
-                        x: 2.1
-                        y: 48
-                    }
-                    XYPoint {
-                        x: 2.9
-                        y: 49
-                    }
-                    XYPoint {
-                        x: 3.4
-                        y: 50
-                    }
-                    XYPoint {
-                        x: 4.1
-                        y: 53
-                    }
-                }
+            Button {
+                text: "Set Self"
+                Material.background: Material.Red
+                onClicked: confSelfConfirmation.visible = true
             }
         }
+    }
+    MessageDialog {
+        id: confSelfConfirmation
+        title: "Configure Own Radio"
+        text: " Proceed to configure radio without negotiation? May drop connection."
+        visible: false
+        buttons: Dialog.Yes | Dialog.No
+
+        onAccepted: console.log("changing")
+        onRejected: console.log("aborted")
     }
 }

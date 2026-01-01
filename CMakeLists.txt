@@ -37,16 +37,27 @@ qt_add_qml_module(appPayloadGS
         ArmPage.qml
         ImagePreview.qml
         ShellCommandListItem.qml
+        StatusIcons.qml
+        TelemetryPage.qml
+        TimeSinceThing.qml
+        RadioPage.qml
+        Pages/Telemetry/StorageGauges.qml
+        Pages/Telemetry/TempPlot.qml
+        MapIcon.qml
+        CompassUI.qml
     RESOURCES
         assets/maps/goegap_2k.hdr
         assets/maps/textureData.png
         assets/meshes/cube_001_mesh.mesh
+        assets/images/launch_logo.jpg
+        assets/images/groundstation_icon.png
+        assets/images/payload_icon.png
+        assets/images/rocket_icon.png
+
+        assets/images/compass_payload.png
+        assets/images/compass_rocket.png
+        assets/images/compass_northsouth.png
     NO_RESOURCE_TARGET_PATH
-    QML_FILES StatusIcons.qml
-    QML_FILES TelemetryPage.qml
-    QML_FILES TimeSinceThing.qml
-    QML_FILES RadioPage.qml
-    RESOURCES assets/images/launch_logo.jpg
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

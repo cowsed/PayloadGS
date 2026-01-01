@@ -1,29 +1,54 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 // preview of image in bottom slider to see and
-Item {
-    anchors.fill: parent
+RowLayout {
     id: preview
-    // Layout.fillWidth: true
-    // Layout.fillHeight: true
-    required property string imageName
+
+    required property int imageID
+    property int activeImageID
     required property real transmissionPercent
     required property string dir
+    required property Item activeHolder
+
+    Layout.preferredHeight: 135
+    Layout.margins: 5
+
+    Rectangle {
+        anchors.fill: parent
+        z: -1
+        color: (preview.activeImageID == preview.imageID) ? Qt.rgba(
+                                                                0, 0, 0,
+                                                                .1) : Material.background
+    }
+
+    MouseArea {
+        anchors.fill: parent
+
+        // z: 1
+        onClicked: {
+            console.log("Rectangle clicked!",
+                        preview.imageID) // Optional console output
+            preview.activeHolder.activeImageID = preview.imageID
+        }
+    }
+
+    Image {
+        source: preview.dir + "thumbnail.png"
+        Layout.preferredWidth: 128
+        Layout.preferredHeight: 128
+        fillMode: Image.PreserveAspectFit
+    }
 
     ColumnLayout {
-        Item {
-            Image {
-                source: preview.dir + "sofar.png"
-                Layout.preferredWidth: 512
-                Layout.preferredHeight: 512
-                fillMode: Image.PreserveAspectFit
-            }
-        }
 
+        // z: 2
         Text {
-            text: "Image 0"
+            text: "ID: " + preview.imageID
+        }
+        Text {
+            text: preview.transmissionPercent + "%"
         }
     }
 }

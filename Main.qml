@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import QtPositioning
 
 ApplicationWindow {
     id: mainwindow
@@ -21,43 +22,95 @@ ApplicationWindow {
     font.weight: Font.ExtraBold
     font.pointSize: 13
 
-    property real initTab: 3
+    property geoCoordinate payloadCoordinate: QtPositioning.coordinate(
+                                                  43.082737, -77.669240)
+
+    property geoCoordinate stationCoordinate: QtPositioning.coordinate(
+                                                  43.083938, -77.675772)
+    property geoCoordinate rocketCoordinate: QtPositioning.coordinate(
+                                                 43.085308, -77.679096)
+
+    property date payloadCoordinateUpdateTime: new Date()
+    property date stationCoordinateUpdateTime: new Date()
+    property date rocketCoordinateUpdateTime: new Date()
+
+    Timer {
+        interval: 10
+        running: false // set to true for fun
+        repeat: true
+        onTriggered: {
+            let t = new Date().getTime() / 400
+            mainwindow.rocketCoordinate.latitude = 43.085308 + 0.001 * Math.sin(
+                        t)
+
+            mainwindow.payloadCoordinate.longitude = -77.669240 + 0.001 * Math.sin(
+                        t)
+        }
+    }
+
+    property real initTab: 1
+
+    header: TabBar {
+        id: tabbar
+        Layout.fillWidth: true
+        currentIndex: mainwindow.initTab
+        TabButton {
+            id: armTabButton
+            text: "Arm"
+        }
+        TabButton {
+            id: imageTabButton
+            text: "Image"
+        }
+        TabButton {
+            id: mapTabButton
+            text: "Map"
+        }
+        TabButton {
+            id: telemTabButton
+            text: "Telemetry"
+        }
+        TabButton {
+            id: radioTabButton
+            text: "Radio"
+        }
+        TabButton {
+            id: shellTabButton
+            text: "Shell"
+        }
+
+        Shortcut {
+            sequences: ["Alt+a", "Alt+1"]
+            onActivated: armTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+i", "Alt+2"]
+            onActivated: imageTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+m", "Alt+3"]
+            onActivated: mapTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+t", "Alt+4"]
+            onActivated: telemTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+r", "Alt+5"]
+            onActivated: radioTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+s", "Alt+6"]
+            onActivated: shellTabButton.click()
+        }
+
+        onCurrentIndexChanged: {
+            mainview.currentIndex = currentIndex
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent
-        RowLayout {
-            Layout.fillWidth: true
-
-            // width: tabbar.width + 10
-            // height: tabbar.height + 10
-            TabBar {
-                id: tabbar
-                Layout.fillWidth: true
-                currentIndex: mainwindow.initTab
-                TabButton {
-                    text: "Arm"
-                }
-                ToolSeparator {}
-                TabButton {
-                    text: "Image"
-                }
-                TabButton {
-                    text: "Map"
-                }
-                TabButton {
-                    text: "Telemetry"
-                }
-                TabButton {
-                    text: "Radio"
-                }
-                TabButton {
-                    text: "Shell"
-                }
-                onCurrentIndexChanged: {
-                    mainview.currentIndex = currentIndex
-                }
-            }
-        }
 
         SwipeView {
             id: mainview
@@ -83,7 +136,16 @@ ApplicationWindow {
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                MapPage {}
+                MapPage {
+                    payloadCoordinate: mainwindow.payloadCoordinate
+                    payloadCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+
+                    stationCoordinate: mainwindow.stationCoordinate
+                    stationCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+
+                    rocketCoordinate: mainwindow.rocketCoordinate
+                    rocketCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+                }
             }
             Item {
                 Layout.fillWidth: true
@@ -93,6 +155,9 @@ ApplicationWindow {
                     ramAvail: 18727
                     fsUsed: 273322987520
                     fsAvail: 18075521024
+
+                    batteryVoltage: 12
+                    batteryCurrent: 0.4
                 }
             }
             Item {
@@ -127,6 +192,12 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
+                text: "Bat: 12.7V"
+                Layout.alignment: Qt.AlignTop
+            }
+            ToolSeparator {}
+
+            Label {
                 text: "SF7"
                 Layout.alignment: Qt.AlignTop
             }
@@ -147,13 +218,13 @@ ApplicationWindow {
             }
             ToolSeparator {}
             TimeSinceThing {
-                desc: "RX"
+                desc: "RX: "
                 event_time: new Date()
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             TimeSinceThing {
-                desc: "TX"
+                desc: "TX: "
                 event_time: new Date()
                 Layout.alignment: Qt.AlignTop
             }

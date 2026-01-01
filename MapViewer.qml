@@ -1,8 +1,17 @@
 import QtQuick
-import QtLocation
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Controls.Material
 import QtPositioning
+import QtLocation
 
 Item {
+    id: mapComp
+    required property geoCoordinate payloadCoordinate
+    required property geoCoordinate stationCoordinate
+    required property geoCoordinate rocketCoordinate
+
+    Material.theme: Material.Light
     Plugin {
         id: onlineOSMPlugin
         name: 'osm'
@@ -48,19 +57,67 @@ Item {
         }
     }
 
-    MapView {
-        id: mapView
-        property real payloadLatitude: 43.074835
-        property real payloadLongitude: -77.669415
-
-        property real stationLatitude: 43.083872
-        property real stationLongitude: -77.675680
-
+    RowLayout {
         anchors.fill: parent
 
-        map.plugin: localhostSatPlugin
-        map.center: QtPositioning.coordinate(payloadLatitude, payloadLongitude)
-        map.zoomLevel: 12
-        map.activeMapType: map.supportedMapTypes[7]
+        MapView {
+            id: mapView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            property int iconSize: 50
+
+            map.plugin: localhostSatPlugin
+            map.zoomLevel: 12
+            map.activeMapType: map.supportedMapTypes[7]
+
+            Component.onCompleted: {
+                mapView.map.addMapItemGroup(mapItems)
+                mapView.map.fitViewportToVisibleMapItems()
+            }
+            MapItemGroup {
+                id: mapItems
+                MapIcon {
+                    id: groundStation
+                    coordinates: mapComp.stationCoordinate
+                    path: "qrc:/assets/images/groundstation_icon.png"
+                }
+                MapIcon {
+                    id: payload
+                    coordinates: mapComp.payloadCoordinate
+                    path: "qrc:/assets/images/payload_icon.png"
+                }
+                MapIcon {
+                    id: rocket
+                    coordinates: mapComp.rocketCoordinate
+                    path: "qrc:/assets/images/rocket_icon.png"
+                }
+            }
+        }
+        ColumnLayout {
+            Layout.alignment: Qt.AlignTop
+            Button {
+
+                text: "+"
+                onClicked: mapView.map.zoomLevel += 1
+            }
+            Button {
+                text: "-"
+                onClicked: mapView.map.zoomLevel -= 1
+            }
+            Button {
+                text: "⌂"
+                onClicked: mapView.map.fitViewportToVisibleMapItems()
+            }
+            Slider {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillHeight: true
+                from: 1
+                value: mapView.map.zoomLevel
+                to: mapView.map.maximumZoomLevel
+                orientation: Qt.Vertical
+                onValueChanged: mapView.map.zoomLevel = value
+            }
+        }
     }
 }

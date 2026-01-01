@@ -2,28 +2,36 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import QtPositioning
 
 Item {
     Material.theme: Material.Light
 
     id: telemetry
     anchors.fill: parent
-    property real payloadLatitude: 31.0443
-    property real payloadLongitude: -103.53507
+    required property geoCoordinate payloadCoordinate
+    required property date payloadCoordinateUpdateTime
 
-    property real stationLatitude: 31.043
-    property real stationLongitude: -103.5350
+    required property geoCoordinate stationCoordinate
+    required property date stationCoordinateUpdateTime
+
+    required property geoCoordinate rocketCoordinate
+    required property date rocketCoordinateUpdateTime
 
     RowLayout {
         anchors.fill: parent
         ColumnLayout {
-            Layout.horizontalStretchFactor: 2
+            Layout.horizontalStretchFactor: 5
             Layout.fillHeight: true
-            Layout.fillWidth: true
 
+            // Layout.fillWidth: true
             MapViewer {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+
+                payloadCoordinate: telemetry.payloadCoordinate
+                stationCoordinate: telemetry.stationCoordinate
+                rocketCoordinate: telemetry.rocketCoordinate
             }
 
             ColumnLayout {
@@ -31,24 +39,55 @@ Item {
                 Layout.fillWidth: true
 
                 RowLayout {
-                    Label {
-                        text: "Latitude"
-                    }
-                    TextArea {
-                        text: telemetry.payloadLatitude
+
+                    TextEdit {
+                        id: copierHack
+                        Layout.maximumWidth: 0
                         readOnly: true
+                        visible: false
                     }
-                    Label {
-                        text: "Longitude"
+
+                    RoundButton {
+                        id: payloadPosition
+                        text: "P: " + telemetry.payloadCoordinate.latitude.toFixed(
+                                  5) + ", " + telemetry.payloadCoordinate.longitude.toFixed(
+                                  5)
+                        radius: 1
+                        // readOnly: true
+                        onClicked: {
+                            copierHack.text = telemetry.payloadCoordinate.latitude.toFixed(
+                                        7) + ", " + telemetry.payloadCoordinate.longitude.toFixed(
+                                        7)
+                            copierHack.selectAll()
+                            copierHack.copy()
+                        }
                     }
-                    TextArea {
-                        text: telemetry.payloadLongitude
-                        readOnly: true
+                    RoundButton {
+                        id: stationPosition
+                        text: "G: " + telemetry.stationCoordinate.latitude.toFixed(
+                                  5) + ", " + telemetry.stationCoordinate.longitude.toFixed(
+                                  5)
+                        radius: 1
+                        onClicked: {
+                            copierHack.text = "" + telemetry.stationCoordinate.latitude.toFixed(
+                                        7) + ", " + telemetry.stationCoordinate.longitude.toFixed(
+                                        7)
+                            copierHack.selectAll()
+                            copierHack.copy()
+                        }
                     }
-                    Button {
-                        text: "Copy"
-                        onClicked: function () {
-                            print("copy paste")
+                    RoundButton {
+                        id: rocketPosition
+                        text: "R: " + telemetry.rocketCoordinate.latitude.toFixed(
+                                  5) + ", " + telemetry.rocketCoordinate.longitude.toFixed(
+                                  5)
+                        radius: 1
+                        onClicked: {
+                            copierHack.text = "" + telemetry.rocketCoordinate.latitude.toFixed(
+                                        7) + ", " + telemetry.rocketCoordinate.longitude.toFixed(
+                                        7)
+                            copierHack.selectAll()
+                            copierHack.copy()
                         }
                     }
                 }
@@ -56,14 +95,20 @@ Item {
         }
 
         ColumnLayout {
-            Layout.horizontalStretchFactor: 1
+            Layout.horizontalStretchFactor: 14
+            // Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.fillWidth: true
-            Label {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
 
-                text: "70cm Radio"
+            CompassUI {
+                Layout.fillWidth: true
+                payloadCoordinate: telemetry.payloadCoordinate
+                stationCoordinate: telemetry.stationCoordinate
+                rocketCoordinate: telemetry.rocketCoordinate
+            }
+            TimeSinceThing {
+                desc: "Last Updated: "
+                event_time: new Date()
             }
         }
     }
