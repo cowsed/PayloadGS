@@ -8,7 +8,6 @@ Item {
     Material.theme: Material.Light
 
     id: telemetry
-    anchors.fill: parent
     required property geoCoordinate payloadCoordinate
     required property date payloadCoordinateUpdateTime
 

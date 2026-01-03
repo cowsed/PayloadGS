@@ -7,7 +7,6 @@ import QtCharts
 import QtSensors
 
 Item {
-    anchors.fill: parent
     Material.theme: Material.Light
 
     RowLayout {

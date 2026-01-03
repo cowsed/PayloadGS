@@ -5,7 +5,7 @@ Node {
     id: node
 
     // Resources
-    property url textureData: "assets/maps/textureData.png"
+    property url textureData: "maps/armCameraTextureData.png"
     Texture {
         id: _0_texture
         generateMipmaps: true
@@ -13,8 +13,8 @@ Node {
         source: node.textureData
     }
     PrincipledMaterial {
-        id: material_001_material
-        objectName: "Material.001"
+        id: material_002_material
+        objectName: "Material.002"
         baseColorMap: _0_texture
         roughness: 0.5
         cullMode: PrincipledMaterial.NoCulling
@@ -23,12 +23,11 @@ Node {
 
     // Nodes:
     Model {
-        id: cube
-        objectName: "Cube"
-        source: "assets/meshes/cube_001_mesh.mesh"
-        materials: [material_001_material]
-        castsShadows: true
-        receivesShadows: true
+        id: cube_003
+        objectName: "Cube.003"
+        position: Qt.vector3d(-0.107605, 0.216787, 0)
+        source: "meshes/cube_003_mesh.mesh"
+        materials: [material_002_material]
     }
 
     // Animations:

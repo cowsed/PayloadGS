@@ -5,7 +5,6 @@ import QtQuick.Controls.Material
 
 Item {
     Material.theme: Material.Light
-    anchors.fill: parent
 
     RowLayout {
         anchors.fill: parent

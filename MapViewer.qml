@@ -69,8 +69,8 @@ Item {
 
             map.plugin: localhostSatPlugin
             map.zoomLevel: 12
-            map.activeMapType: map.supportedMapTypes[7]
 
+            map.activeMapType: map.supportedMapTypes[6]
             Component.onCompleted: {
                 mapView.map.addMapItemGroup(mapItems)
                 mapView.map.fitViewportToVisibleMapItems()

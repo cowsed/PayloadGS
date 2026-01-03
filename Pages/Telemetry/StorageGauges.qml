@@ -28,6 +28,7 @@ RowLayout {
     Layout.fillHeight: true
 
     Dial {
+        id: batteryGauge
         Layout.horizontalStretchFactor: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
@@ -58,57 +59,95 @@ RowLayout {
             anchors.top: battVoltageLabel.bottom
             text: telem.batteryCurrent + "mA"
         }
-        TimeSinceThing {
-            id: timeSincebattLabel
-            event_time: new Date()
-            suffix: " ago"
+        Label {
+            id: battDialLabel
+            font.pointSize: 20
+            color: telem.batteryColor
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: battCurrentLabel.bottom
-            font.pointSize: 16
+            text: "Batt"
+        }
+    }
+    Dial {
+        id: ramDial
+        Layout.horizontalStretchFactor: 1
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
+        from: 0
+        to: telem.ramUsed / (1024 * 1024) + telem.ramAvail / (1024 * 1024)
+        value: telem.ramUsed / (1024 * 1024)
+
+        enabled: false
+        Label {
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: ramDialUsed.top
+            text: (telem.ramUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
+        }
+        Label {
+            id: ramDialUsed
+            font.pointSize: 28
+            anchors.centerIn: parent
+            text: (100 * (telem.ramUsed) / (telem.ramUsed + telem.ramAvail)).toFixed(
+                      1) + "%"
+        }
+        Label {
+            id: ramDialTotal
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: ramDialUsed.bottom
+            text: ((telem.ramUsed + telem.ramAvail) / (1024 * 1024 * 1024)).toFixed(
+                      2) + "GB"
+        }
+        Label {
+            id: ramDialLabel
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: ramDialTotal.bottom
+            text: "RAM"
         }
     }
 
-    ChartView {
+    Dial {
+        id: fsDial
         Layout.horizontalStretchFactor: 1
-        title: "RAM"
         Layout.fillWidth: true
         Layout.fillHeight: true
-        id: ramUsage
-        legend.alignment: Qt.AlignLeft
-        antialiasing: true
 
-        PieSeries {
-            id: ramPieSeries
-            PieSlice {
-                label: "Used"
-                value: telem.ramUsed
-            }
-            PieSlice {
-                label: "Available"
-                value: telem.ramAvail
-            }
+        from: 0
+        to: telem.fsUsed / (1024 * 1024) + telem.fsAvail / (1024 * 1024)
+        value: telem.fsUsed / (1024 * 1024)
+
+        enabled: false
+        Label {
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: fsDialUsed.top
+            text: (telem.fsUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
         }
-    }
-    ChartView {
-        id: fsUsage
-        title: "Storage"
-        Layout.horizontalStretchFactor: 1
+        Label {
+            id: fsDialUsed
+            font.pointSize: 28
+            anchors.centerIn: parent
+            text: (100 * (telem.fsUsed) / (telem.fsUsed + telem.fsAvail)).toFixed(
+                      1) + "%"
+        }
 
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        legend.alignment: Qt.AlignLeft
-        antialiasing: true
-
-        PieSeries {
-            id: fsPieSeries
-            PieSlice {
-                label: "Used"
-                value: telem.fsUsed
-            }
-            PieSlice {
-                label: "Available"
-                value: telem.fsAvail
-            }
+        Label {
+            id: fsDialTotal
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fsDialUsed.bottom
+            text: ((telem.fsUsed + telem.fsAvail) / (1024 * 1024 * 1024)).toFixed(
+                      2) + "GB"
+        }
+        Label {
+            id: fsDialLabel
+            font.pointSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fsDialTotal.bottom
+            text: "FS"
         }
     }
 }

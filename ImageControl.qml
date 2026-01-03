@@ -10,14 +10,13 @@ Item {
     property int activeImageID: 1
 
     Material.theme: Material.Light
-    anchors.fill: parent
     RowLayout {
         anchors.fill: parent
         Image {
             Layout.preferredWidth: 512
             Layout.preferredHeight: 512
             fillMode: Image.PreserveAspectFit
-            source: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/build/WorkingDir/Images/"
+            source: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/"
                     + page.activeImageID + "/sofar.png"
         }
 
@@ -52,28 +51,28 @@ Item {
                             activeImageID: page.activeImageID
                             imageID: 0
                             transmissionPercent: 12
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/build/WorkingDir/Images/0/"
+                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/0/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 1
                             transmissionPercent: 5
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/build/WorkingDir/Images/1/"
+                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/1/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 2
                             transmissionPercent: 1
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/build/WorkingDir/Images/2/"
+                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/2/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 3
                             transmissionPercent: 2
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/build/WorkingDir/Images/3/"
+                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/3/"
                         }
                     }
                 }

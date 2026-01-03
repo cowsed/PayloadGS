@@ -34,9 +34,16 @@ ApplicationWindow {
     property date stationCoordinateUpdateTime: new Date()
     property date rocketCoordinateUpdateTime: new Date()
 
+    property real ramUsed: 11986268160
+    property real ramAvail: 20981673984
+    property real fsUsed: 273862541312
+    property real fsAvail: 17535967232
+    property real batteryVoltage: 12.3
+    property real batteryCurrent: 1234
+
     Timer {
         interval: 10
-        running: false // set to true for fun
+        running: true // set to true for fun
         repeat: true
         onTriggered: {
             let t = new Date().getTime() / 400
@@ -123,53 +130,49 @@ ApplicationWindow {
                 tabbar.currentIndex = currentIndex
             }
 
-            Item {
+            ArmPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                ArmPage {}
             }
-            Item {
+            ImageControl {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                ImageControl {}
-            }
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                MapPage {
-                    payloadCoordinate: mainwindow.payloadCoordinate
-                    payloadCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
-
-                    stationCoordinate: mainwindow.stationCoordinate
-                    stationCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
-
-                    rocketCoordinate: mainwindow.rocketCoordinate
-                    rocketCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
-                }
-            }
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                TelemetryPage {
-                    ramUsed: 12713
-                    ramAvail: 18727
-                    fsUsed: 273322987520
-                    fsAvail: 18075521024
-
-                    batteryVoltage: 12
-                    batteryCurrent: 0.4
-                }
-            }
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                RadioPage {}
             }
 
-            Item {
+            MapPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                ShellPage {}
+
+                payloadCoordinate: mainwindow.payloadCoordinate
+                payloadCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+
+                stationCoordinate: mainwindow.stationCoordinate
+                stationCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+
+                rocketCoordinate: mainwindow.rocketCoordinate
+                rocketCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
+            }
+
+            TelemetryPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ramUsed: mainwindow.ramUsed
+                ramAvail: mainwindow.ramAvail
+                fsUsed: mainwindow.fsUsed
+                fsAvail: mainwindow.fsAvail
+
+                batteryVoltage: mainwindow.batteryVoltage
+                batteryCurrent: mainwindow.batteryCurrent
+            }
+            RadioPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            ShellPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
         }
     }
@@ -185,14 +188,14 @@ ApplicationWindow {
             Layout.fillHeight: true
 
             Label {
-                text: "Status"
+                text: "Pad"
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
             }
             ToolSeparator {}
 
             Label {
-                text: "Bat: 12.7V"
+                text: "Bat: " + mainwindow.batteryVoltage.toFixed(2) + "V"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}

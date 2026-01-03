@@ -45,6 +45,13 @@ qt_add_qml_module(appPayloadGS
         Pages/Telemetry/TempPlot.qml
         MapIcon.qml
         CompassUI.qml
+
+
+        assets/BaseJoint.qml
+        assets/UpperArm.qml
+        assets/ForeArm.qml
+        assets/Wrist.qml
+
     RESOURCES
         assets/maps/goegap_2k.hdr
         assets/maps/textureData.png
@@ -58,6 +65,11 @@ qt_add_qml_module(appPayloadGS
         assets/images/compass_rocket.png
         assets/images/compass_northsouth.png
     NO_RESOURCE_TARGET_PATH
+    SOURCES
+    SOURCES telemetrylogparser.h telemetrylogparser.cpp
+    RESOURCES assets/maps/armCameraTextureData.png
+    RESOURCES assets/meshes/cube_001_mesh.mesh assets/meshes/cube_002_mesh.mesh assets/meshes/cube_003_mesh.mesh assets/meshes/cylinder_mesh.mesh
+    RESOURCES assets/meshes/cube_mesh.mesh
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

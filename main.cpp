@@ -2,27 +2,29 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
 
+#include <QFileSystemWatcher>
 #include <QPalette>
-
-constexpr QColor white = QColor(255, 255, 255);
-constexpr QColor gray1 = QColor(208, 211, 212);
-constexpr QColor gray2 = QColor(162, 170, 173);
-constexpr QColor gray3 = QColor(124, 135, 142);
-constexpr QColor black = QColor(0, 0, 0);
-
-constexpr QColor rit_orange = QColor(247, 105, 2);
-constexpr QColor rit_green = QColor(132, 189, 0);
-constexpr QColor rit_red = QColor(218, 41, 28);
-
-// blue 0 156 189
-// purple 125 85 199
-// yellow 246 190 0
-
+#include "telemetrylogparser.h"
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+
+    QString working_dir = "/home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir";
+    size_t flight_id = 0;
+
+    QString flight_dir = QString("%1/%2").arg(working_dir, flight_id);
+    QFileSystemWatcher watcher{&app};
+    watcher.addPath(flight_dir + "/telemetry.log");
+
+    TelemetryLogParser parser;
+
+    QObject::connect(&watcher,
+                     &QFileSystemWatcher::fileChanged,
+                     &parser,
+                     &TelemetryLogParser::logUpdated,
+                     Qt::QueuedConnection);
 
     engine.addImportPath(":/");
 
