@@ -49,7 +49,7 @@ Item {
 
         PluginParameter {
             name: "osm.mapping.host"
-            value: "http://192.168.5.177:8000/"
+            value: "http://localhost:8000/"
         }
         PluginParameter {
             name: "osm.mapping.copyright"
@@ -71,6 +71,10 @@ Item {
             map.zoomLevel: 12
 
             map.activeMapType: map.supportedMapTypes[6]
+
+            map.bearing: 0
+            map.tilt: 0
+
             Component.onCompleted: {
                 mapView.map.addMapItemGroup(mapItems)
                 mapView.map.fitViewportToVisibleMapItems()

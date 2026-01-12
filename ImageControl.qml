@@ -7,7 +7,11 @@ import QtQuick.Controls.Material
 Item {
     id: page
 
+    required property int flightNumber
     property int activeImageID: 1
+
+    property string imageDir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/"
+                              + page.flightNumber + "/Images/"
 
     Material.theme: Material.Light
     RowLayout {
@@ -16,8 +20,7 @@ Item {
             Layout.preferredWidth: 512
             Layout.preferredHeight: 512
             fillMode: Image.PreserveAspectFit
-            source: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/"
-                    + page.activeImageID + "/sofar.png"
+            source: page.imageDir + page.activeImageID + "/sofar.png"
         }
 
         RowLayout {
@@ -51,28 +54,28 @@ Item {
                             activeImageID: page.activeImageID
                             imageID: 0
                             transmissionPercent: 12
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/0/"
+                            dir: page.imageDir + "/0/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 1
                             transmissionPercent: 5
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/1/"
+                            dir: page.imageDir + "/1/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 2
                             transmissionPercent: 1
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/2/"
+                            dir: page.imageDir + "/2/"
                         }
                         ImagePreview {
                             activeHolder: page
                             activeImageID: page.activeImageID
                             imageID: 3
                             transmissionPercent: 2
-                            dir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/Images/3/"
+                            dir: page.imageDir + "/3/"
                         }
                     }
                 }

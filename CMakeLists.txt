@@ -29,7 +29,7 @@ qt_add_qml_module(appPayloadGS
     QML_FILES
         Main.qml
         Payload3D.qml
-        Payload.qml
+
         MapPage.qml
         MapViewer.qml
         ShellPage.qml
@@ -47,15 +47,12 @@ qt_add_qml_module(appPayloadGS
         CompassUI.qml
 
 
-        assets/BaseJoint.qml
-        assets/UpperArm.qml
-        assets/ForeArm.qml
-        assets/Wrist.qml
+        assets/payload-models/Payload.qml
+
+        assets/GhostMaterial.qml
+        AngleSliderWithBox.qml
 
     RESOURCES
-        assets/maps/goegap_2k.hdr
-        assets/maps/textureData.png
-        assets/meshes/cube_001_mesh.mesh
         assets/images/launch_logo.jpg
         assets/images/groundstation_icon.png
         assets/images/payload_icon.png
@@ -65,11 +62,20 @@ qt_add_qml_module(appPayloadGS
         assets/images/compass_rocket.png
         assets/images/compass_northsouth.png
     NO_RESOURCE_TARGET_PATH
-    SOURCES
     SOURCES telemetrylogparser.h telemetrylogparser.cpp
-    RESOURCES assets/maps/armCameraTextureData.png
-    RESOURCES assets/meshes/cube_001_mesh.mesh assets/meshes/cube_002_mesh.mesh assets/meshes/cube_003_mesh.mesh assets/meshes/cylinder_mesh.mesh
-    RESOURCES assets/meshes/cube_mesh.mesh
+
+    RESOURCES
+        assets/goegap_2k.hdr
+
+        QML_FILES Arrow3d.qml
+        RESOURCES assets/images/picture.png assets/images/no_picture.png
+        RESOURCES assets/images/axes_hidden_icon.png assets/images/axes_shown_icon.png
+        QML_FILES ControlPage.qml
+RESOURCES assets/payload-models/maps/textureData.png assets/payload-models/maps/textureData13.png assets/payload-models/maps/textureData18.png assets/payload-models/meshes/baseJointMesh_mesh.mesh assets/payload-models/meshes/frameMesh_mesh.mesh assets/payload-models/meshes/lowrLinkMesh_mesh.mesh assets/payload-models/meshes/upperLinkMesh_mesh.mesh assets/payload-models/meshes/wristMesh_mesh.mesh
+QML_FILES assets/payload-models/Payload.qml
+RESOURCES assets/payload-models/maps/textureData.png assets/payload-models/maps/textureData13.png assets/payload-models/maps/textureData18.png assets/payload-models/meshes/baseJointMesh_mesh.mesh assets/payload-models/meshes/frameMesh_mesh.mesh assets/payload-models/meshes/leftWall_mesh.mesh assets/payload-models/meshes/lowrLinkMesh_mesh.mesh assets/payload-models/meshes/rightWall_mesh.mesh assets/payload-models/meshes/upperLinkMesh_mesh.mesh assets/payload-models/meshes/wristMesh_mesh.mesh
+QML_FILES assets/payload-models/Payload.qml
+RESOURCES assets/images/wall_shown_icon.png assets/images/wall_hidden_icon.png
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -13,7 +13,7 @@ Label {
     property real stale_seconds: 15
     property real bad_seconds: 30
 
-    property color good_color: undefined // default value of theme
+    property color good_color: Material.foreground
     property color stale_color: "#F6BE00"
     property color bad_color: "#DA291C"
 

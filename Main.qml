@@ -41,6 +41,11 @@ ApplicationWindow {
     property real batteryVoltage: 12.3
     property real batteryCurrent: 1234
 
+    property int flightNumber: 0
+    property date lastFlightNumberUpdate: new Date()
+
+    property string stateString: "Pad"
+
     Timer {
         interval: 10
         running: true // set to true for fun
@@ -61,6 +66,19 @@ ApplicationWindow {
         id: tabbar
         Layout.fillWidth: true
         currentIndex: mainwindow.initTab
+
+        TabButton {
+            id: mapTabButton
+            text: "Map"
+        }
+        TabButton {
+            id: controlTabButton
+            text: "Control"
+        }
+        TabButton {
+            id: telemTabButton
+            text: "Telemetry"
+        }
         TabButton {
             id: armTabButton
             text: "Arm"
@@ -68,14 +86,6 @@ ApplicationWindow {
         TabButton {
             id: imageTabButton
             text: "Image"
-        }
-        TabButton {
-            id: mapTabButton
-            text: "Map"
-        }
-        TabButton {
-            id: telemTabButton
-            text: "Telemetry"
         }
         TabButton {
             id: radioTabButton
@@ -87,27 +97,31 @@ ApplicationWindow {
         }
 
         Shortcut {
-            sequences: ["Alt+a", "Alt+1"]
-            onActivated: armTabButton.click()
-        }
-        Shortcut {
-            sequences: ["Alt+i", "Alt+2"]
-            onActivated: imageTabButton.click()
-        }
-        Shortcut {
-            sequences: ["Alt+m", "Alt+3"]
+            sequences: ["Alt+m", "Alt+1"]
             onActivated: mapTabButton.click()
         }
         Shortcut {
-            sequences: ["Alt+t", "Alt+4"]
+            sequences: ["Alt+c", "Alt+2"]
+            onActivated: controlTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+t", "Alt+3"]
             onActivated: telemTabButton.click()
         }
         Shortcut {
-            sequences: ["Alt+r", "Alt+5"]
+            sequences: ["Alt+a", "Alt+4"]
+            onActivated: armTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+i", "Alt+5"]
+            onActivated: imageTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+r", "Alt+6"]
             onActivated: radioTabButton.click()
         }
         Shortcut {
-            sequences: ["Alt+s", "Alt+6"]
+            sequences: ["Alt+s", "Alt+7"]
             onActivated: shellTabButton.click()
         }
 
@@ -130,15 +144,6 @@ ApplicationWindow {
                 tabbar.currentIndex = currentIndex
             }
 
-            ArmPage {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-            ImageControl {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-
             MapPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -153,6 +158,15 @@ ApplicationWindow {
                 rocketCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
             }
 
+            ControlPage {
+                id: controlPage
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                flightNumber: mainwindow.flightNumber
+                lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
+                stateString: mainwindow.stateString
+            }
+
             TelemetryPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -165,6 +179,17 @@ ApplicationWindow {
                 batteryVoltage: mainwindow.batteryVoltage
                 batteryCurrent: mainwindow.batteryCurrent
             }
+            ArmPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            ImageControl {
+                flightNumber: mainwindow.flightNumber
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
             RadioPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -188,7 +213,7 @@ ApplicationWindow {
             Layout.fillHeight: true
 
             Label {
-                text: "Pad"
+                text: mainwindow.stateString
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
             }
