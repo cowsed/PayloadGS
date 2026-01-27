@@ -4,7 +4,10 @@
 
 #include <QFileSystemWatcher>
 #include <QPalette>
+#include <QtConcurrentRun>
+#include "radioparser.h"
 #include "telemetrylogparser.h"
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -29,11 +32,22 @@ int main(int argc, char *argv[])
 
     TelemetryLogParser parser;
 
-    QObject::connect(&watcher,
-                     &QFileSystemWatcher::fileChanged,
+    RadioParser radio{
+        "/home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/radio_handlers/responses"};
+
+    QFuture<void> ret = QtConcurrent::run([&radio]() { radio.run_watcher(); });
+
+    QObject::connect(&radio,
+                     &RadioParser::radio_packet_received,
                      &parser,
-                     &TelemetryLogParser::logUpdated,
+                     &TelemetryLogParser::packet_received,
                      Qt::QueuedConnection);
+
+    // QObject::connect(&watcher,
+    //                  &QFileSystemWatcher::fileChanged,
+    //                  &parser,
+    //                  &TelemetryLogParser::logUpdated,
+    //                  Qt::QueuedConnection);
 
     engine.addImportPath(":/");
 

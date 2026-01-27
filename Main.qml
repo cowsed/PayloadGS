@@ -60,7 +60,7 @@ ApplicationWindow {
         }
     }
 
-    property real initTab: 1
+    property real initTab: 3
 
     header: TabBar {
         id: tabbar

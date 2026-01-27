@@ -18,18 +18,55 @@ View3D {
     property real ghostWristPitch: 0
 
     property bool showWalls: false
-    property bool wallsOpen: false
+    property bool showAxes: false
 
-    property vector3d baseOrientation: Qt.vector3d(0, -1, 0)
+    property real rightWallOpenness: 0
+    property real leftWallOpenness: 0
+
+    property vector3d baseOrientation: Qt.vector3d(.1, -1, 0).normalized()
     property vector3d upperArmOrientation: Qt.vector3d(0, -1, 0)
     property vector3d foreArmOrientation: Qt.vector3d(0, -1, 0)
 
+    property vector3d referenceBaseOrientation: Qt.vector3d(0, -1, 0)
+
+    Timer {
+        interval: 10
+        running: true // set to true for fun
+        repeat: true
+        onTriggered: {
+            let t = new Date().getTime() / 400
+            v3d.baseOrientation = Qt.vector3d(Math.sin(t), -1,
+                                              Math.sin(3 * t / 2)).normalized()
+        }
+    }
+
+    function quatFromImuAndReference() {
+        // https://github.com/toji/gl-matrix/blob/f0583ef53e94bc7e78b78c8a24f09ed5e2f7a20c/src/gl-matrix/quat.js#L54
+        // https://stackoverflow.com/questions/18558910/direction-vector-to-rotation-matrix
+        let ref = v3d.referenceBaseOrientation.normalized()
+        let me = v3d.baseOrientation.normalized()
+        let a = ref.crossProduct(me)
+        let d = ref.dotProduct(me)
+
+        let s = ref.length() * me.length() + d
+
+        let q = Qt.quaternion(s, a.x, a.y, a.z).normalized()
+
+        return q
+    }
+    property quaternion payloadOrientation: quatFromImuAndReference()
+    property real minY: payload.calcBounds(payloadOrientation)
+
     Node {
         id: originNode
+        position.y: 1000 * (v3d.minY + .015)
         PerspectiveCamera {
             id: cameraNode
             y: 110
             z: 450
+        }
+        Node {
+            id: targetNode
         }
     }
     OrbitCameraController {
@@ -58,12 +95,24 @@ View3D {
     }
 
     Model {
-        geometry: CylinderGeometry {
-            length: 10
-            radius: 250
-            rings: 0
-            segments: 50
+        id: basePlane
+
+        // geometry: CylinderGeometry {
+        //     id: basePlaneGeom
+        //     length: 10
+        //     radius: 250
+        //     rings: 0
+        //     segments: 50
+        // }
+        geometry: GridGeometry {
+            id: basePlaneGeom
+            horizontalLines: 20
+            verticalLines: 20
         }
+
+        scale: Qt.vector3d(1000, 1000, 1000)
+        eulerRotation.x: 90
+        position.y: v3d.minY * 1000 //- basePlaneGeom.length / 2
 
         materials: PrincipledMaterial {
             baseColor: "#20a040"
@@ -77,7 +126,9 @@ View3D {
     Payload {
         id: payload
         scale: Qt.vector3d(1000, 1000, 1000)
-        position.y: 10
+
+        orientation: v3d.payloadOrientation
+        base_imu: v3d.baseOrientation
 
         shoulderYaw: v3d.shoulderYaw
         shoulderPitch: v3d.shoulderPitch
@@ -85,14 +136,17 @@ View3D {
         wristPitch: v3d.wristPitch
 
         showGhost: v3d.showGhost
+        showAxes: v3d.showAxes
         ghostShoulderYaw: v3d.ghostShoulderYaw
         ghostShoulderPitch: v3d.ghostShoulderPitch
         ghostElbowPitch: v3d.ghostElbowPitch
         ghostWristPitch: v3d.ghostWristPitch
 
         wallOpacity: v3d.showWalls ? 0.3 : 0
-        leftWallOpenness: v3d.wallsOpen ? 1 : 0
-        rightWallOpenness: v3d.wallsOpen ? 1 : 0
+        leftWallOpenness: v3d.rightWallOpenness
+        rightWallOpenness: v3d.leftWallOpenness
+
+        rotation: v3d.payloadOrientation
 
         // BaseJoint {
         //     id: baseJoint

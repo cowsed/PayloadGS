@@ -1,8 +1,12 @@
 import QtQuick
 import QtQuick3D
+import QtQuick3D.Helpers
 
 Node {
     id: node
+
+    required property quaternion orientation
+    required property vector3d base_imu
 
     property real shoulderYaw: 0
     property real shoulderPitch: 0
@@ -14,15 +18,18 @@ Node {
     property real wallOpacity: .2
     property bool showReal: true
     property bool showGhost: false
+    property bool showAxes: false
 
     property real ghostShoulderYaw: 0
     property real ghostShoulderPitch: 0
     property real ghostElbowPitch: 0
     property real ghostWristPitch: 0
+
     // Resources
     property url textureData: "maps/textureData.png"
     property url textureData13: "maps/textureData13.png"
     property url textureData18: "maps/textureData18.png"
+
     Texture {
         id: _2_texture
         generateMipmaps: true
@@ -96,6 +103,32 @@ Node {
         id: ghostMat
     }
 
+    function calcBounds(q) {
+        let mx = frame.bounds.maximum
+        let mn = frame.bounds.minimum
+
+        let points = [mn, Qt.vector3d(
+                          mn.x, mn.y,
+                          mx.z), Qt.vector3d(mn.x, mx.y, mn.z), Qt.vector3d(
+                          mn.x, mx.y,
+                          mx.z), Qt.vector3d(mx.x, mn.y, mn.z), Qt.vector3d(
+                          mx.x, mn.y, mx.z), Qt.vector3d(mn.x, mx.y, mn.z), mx]
+        let transformedPoints = points.map(p => q.times(p))
+
+        let minY = transformedPoints[0].y
+        let maxY = transformedPoints[0].y
+        for (const p of transformedPoints) {
+            if (p.y < minY) {
+                minY = p.y
+            }
+            if (p.y > maxY) {
+                maxY = p.y
+            }
+        }
+
+        return minY
+    }
+
     // Nodes:
     Model {
         id: frame
@@ -103,6 +136,14 @@ Node {
         source: "meshes/frameMesh_mesh.mesh"
         materials: [material_001_material]
         visible: node.showReal
+
+        OrientationArrow {
+            id: baseIMUArrow
+            imu_reading: node.base_imu
+
+            isVisible: node.showAxes
+        }
+
         Model {
             id: baseJoint
             objectName: "BaseJoint"
@@ -119,6 +160,14 @@ Node {
                 materials: [material_material]
 
                 eulerRotation.z: node.shoulderPitch + 90
+
+                // OrientationArrow {
+                // id: link1IMU
+                // orientation: Qt.quaternion(1, 0, 0, 0)
+                // isVisible: node.showAxes
+                // col: Qt.rgba(0, 0, 1, 1)
+                // position.x: 0.07
+                // }
                 Model {
                     id: upper_link
                     objectName: "upper link"
@@ -181,6 +230,7 @@ Node {
             id: leftWall
             objectName: "LeftWall"
             position: Qt.vector3d(-0.026887, 0.00369129, -0.0449786)
+            eulerRotation.x: -90 * node.leftWallOpenness
             source: "meshes/leftWall_mesh.mesh"
             materials: [wallMaterial_material]
         }
@@ -189,6 +239,8 @@ Node {
             objectName: "RightWall"
             position: Qt.vector3d(-0.026887, 0.00369129, 0.0467295)
             rotation: Qt.quaternion(-1.62921e-07, 0, 1, 0)
+            eulerRotation.x: -90 * node.rightWallOpenness
+
             source: "meshes/rightWall_mesh.mesh"
             materials: [wallMaterial_material]
         }

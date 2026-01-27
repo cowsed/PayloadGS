@@ -4,8 +4,8 @@ import QtQuick.Dialogs
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtCharts
-import QtSensors
 
+// import QtSensors
 Item {
     Material.theme: Material.Light
 

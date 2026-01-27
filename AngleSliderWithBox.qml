@@ -5,8 +5,6 @@ import QtQuick.Controls.Material
 ColumnLayout {
     id: root
 
-    required property real current
-
     required property real from
     required property real to
     required property string label
@@ -48,7 +46,7 @@ ColumnLayout {
         implicitWidth: slider.width
         from: root.from
         to: root.to
-        value: root.current
+        value: root.value
         editable: false
         Layout.preferredHeight: 40
         enabled: false

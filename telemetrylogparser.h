@@ -22,7 +22,7 @@ signals:
     void armAnglesUpdated(QDateTime time, float yaw, float shoulder, float elbow, float wrist);
 
 public slots:
-    void logUpdated(const QString &path);
+    void packet_received(QDateTime time, int snr, int rssi, const QByteArray &packet);
 
 private:
     void handleTemps(QDateTime time, const QStringList &list);

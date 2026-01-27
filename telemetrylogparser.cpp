@@ -46,24 +46,8 @@ void TelemetryLogParser::handleLine(const QString &str)
         handleTemps(date, parts);
     }
 }
-void TelemetryLogParser::logUpdated(const QString &path)
+
+void TelemetryLogParser::packet_received(QDateTime time, int snr, int rssi, const QByteArray &packet)
 {
-    printf("Telem log updated: %s", qPrintable(path.toUtf8()));
-    printf("Updated\n");
-    QFile file{path};
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        printf("Failed to open file");
-        return;
-    }
-
-    file.seek(last_read);
-    printf("seekd to %lld \n", last_read);
-
-    while (file.canReadLine()) {
-        QString line = file.readLine();
-        last_read = file.pos();
-        printf("Line: %s\n", qPrintable(line));
-        handleLine(line);
-    }
-    printf("Done\n");
+    qDebug("Got SNR: %d", snr);
 }
