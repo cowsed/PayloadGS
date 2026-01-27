@@ -1,0 +1,3 @@
+1769116021947 FLUSH # Flushes outstanding TX packets (does not interrupt if there is a packet actively being sent 
+
+1769116021947 RX 433123456 SF7 BW125 CR48 LR_OFF IH_OFF
