@@ -190,6 +190,7 @@ Node {
             }
         }
         Model {
+            visible: node.showGhost
             id: baseJointGhost
             objectName: "BaseJointGhost"
             position: Qt.vector3d(-0.109704, 0.0224863, 0.0214806)

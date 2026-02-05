@@ -48,7 +48,7 @@ Item {
             elbowPitch: page.elbowPitch
             wristPitch: page.wristPitch
 
-            showGhost: true
+            showGhost: showGhostButton.checked
             showAxes: showAxesButton.checked
             ghostShoulderYaw: shoulderYawSlider.value
             ghostShoulderPitch: shoulderPitchSlider.value
@@ -59,104 +59,112 @@ Item {
             leftWallOpenness: wallOpenness.value
             rightWallOpenness: wallOpenness.value
 
-            Button {
-                id: showAxesButton
+            ColumnLayout {
                 anchors.left: visualization.left
                 anchors.top: visualization.top
-                anchors.topMargin: 4
+                anchors.bottom: visualization.bottom
                 anchors.leftMargin: 4
-                checkable: true
-                checked: true
-
-                Material.roundedScale: Material.ExtraSmallScale
-                height: 60
-                width: 60
-                Material.background: "white"
-                padding: 0
-                topInset: 0
-                leftInset: 0
-                rightInset: 0
-                bottomInset: 0
-
-                icon.height: 70
-                icon.width: 70
-                icon.source: checked ? "qrc:/assets/images/axes_shown_icon.png" : "qrc:/assets/images/axes_hidden_icon.png"
-            }
-
-            Button {
-                id: resetButton
-                anchors.left: visualization.left
-                anchors.top: showAxesButton.bottom
                 anchors.topMargin: 4
-                anchors.leftMargin: 4
+                anchors.bottomMargin: 4
+                spacing: 4
+                width: 64
 
-                Material.roundedScale: Material.ExtraSmallScale
-                height: 60
-                width: 60
-                Material.background: "white"
-                padding: 0
-                topInset: 0
-                leftInset: 0
-                rightInset: 0
-                bottomInset: 0
+                Button {
+                    id: showAxesButton
+                    checkable: true
+                    checked: true
 
-                text: "⟲"
+                    topInset: 0
+                    bottomInset: 0
 
-                onClicked: {
-                    shoulderYawSlider.value = page.shoulderYaw
-                    shoulderPitchSlider.value = page.shoulderPitch
-                    elbowPitchSlider.value = page.elbowPitch
-                    wristPitchSlider.value = page.wristPitch
+                    Material.roundedScale: Material.ExtraSmallScale
+                    Material.background: "white"
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: width
+
+                    icon.height: 70
+                    icon.width: 70
+                    icon.source: checked ? "qrc:/assets/images/axes_shown_icon.png" : "qrc:/assets/images/axes_hidden_icon.png"
                 }
-            }
 
-            Button {
-                id: wallTransparency
+                Button {
+                    id: showGhostButton
+                    checkable: true
+                    checked: true
 
-                anchors.left: visualization.left
-                anchors.top: resetButton.bottom
-                Material.roundedScale: Material.ExtraSmallScale
-                height: 60
-                width: 60
+                    topInset: 0
+                    bottomInset: 0
 
-                checkable: true
-                checked: true
+                    Material.roundedScale: Material.ExtraSmallScale
+                    Material.background: "white"
 
-                icon.height: 64
-                icon.width: 64
-                icon.source: checked ? "qrc:/assets/images/wall_shown_icon.png" : "qrc:/assets/images/wall_hidden_icon.png"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: width
 
-                Material.background: "white"
-                padding: 0
+                    icon.height: 70
+                    icon.width: 70
+                    icon.source: checked ? "qrc:/assets/images/ghost_hidden_icon.png" : "qrc:/assets/images/ghost_hidden_icon.png"
+                }
 
-                anchors.topMargin: 4
-                anchors.leftMargin: 4
-                topInset: 0
-                leftInset: 0
-                rightInset: 0
-                bottomInset: 0
-            }
+                Button {
+                    id: wallTransparency
+                    topInset: 0
+                    bottomInset: 0
+                    Material.roundedScale: Material.ExtraSmallScale
 
-            Rectangle {
-                anchors.left: visualization.left
-                anchors.top: wallTransparency.bottom
-                anchors.topMargin: 4
-                anchors.leftMargin: 4
+                    checkable: true
+                    checked: true
 
-                height: 120
-                width: 60
-                radius: 10
-                Slider {
-                    enabled: wallTransparency.checked
-                    anchors.topMargin: 12
-                    anchors.bottomMargin: 12
-                    id: wallOpenness
-                    orientation: Qt.Vertical
-                    from: 1
-                    to: 0
-                    value: 0
-                    anchors.fill: parent
-                    anchors.centerIn: parent
+                    icon.height: 64
+                    icon.width: 64
+                    icon.source: checked ? "qrc:/assets/images/wall_shown_icon.png" : "qrc:/assets/images/wall_hidden_icon.png"
+
+                    Material.background: "white"
+                    padding: 0
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: width
+                }
+
+                Rectangle {
+
+                    Layout.minimumHeight: 120
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    radius: 10
+                    Slider {
+                        enabled: wallTransparency.checked
+                        anchors.topMargin: 12
+                        anchors.bottomMargin: 12
+                        id: wallOpenness
+                        orientation: Qt.Vertical
+                        from: 1
+                        to: 0
+                        value: 0
+                        anchors.fill: parent
+                        anchors.centerIn: parent
+                    }
+                }
+                Button {
+                    id: resetButton
+
+                    Material.roundedScale: Material.ExtraSmallScale
+                    Material.background: "white"
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: width
+                    topInset: 0
+                    bottomInset: 0
+                    text: "⟲"
+
+                    onClicked: {
+                        shoulderYawSlider.value = page.shoulderYaw
+                        shoulderPitchSlider.value = page.shoulderPitch
+                        elbowPitchSlider.value = page.elbowPitch
+                        wristPitchSlider.value = page.wristPitch
+                    }
                 }
             }
 
@@ -198,28 +206,28 @@ Item {
                     from: -110
                     to: 110
                     label: "Y"
-                    value: page.shoulderYaw
+                    actual: page.shoulderYaw
                 }
                 AngleSliderWithBox {
                     id: shoulderPitchSlider
                     from: -90
                     to: 90
                     label: "S"
-                    value: page.shoulderPitch
+                    actual: page.shoulderPitch
                 }
                 AngleSliderWithBox {
                     id: elbowPitchSlider
                     from: -180
                     to: 180
                     label: "E"
-                    value: page.elbowPitch
+                    actual: page.elbowPitch
                 }
                 AngleSliderWithBox {
                     id: wristPitchSlider
                     from: -90
                     to: 90
                     label: "W"
-                    value: page.wristPitch
+                    actual: page.wristPitch
                 }
             }
             RowLayout {

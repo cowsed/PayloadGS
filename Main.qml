@@ -6,8 +6,9 @@ import QtPositioning
 
 ApplicationWindow {
     id: mainwindow
-    width: 1024
-    height: 600
+    width: 1920 / 2
+    height: 1080 / 2
+
     visible: true
     title: qsTr("Payload Groundstation")
 
@@ -21,6 +22,15 @@ ApplicationWindow {
     font.family: "Roboto"
     font.weight: Font.ExtraBold
     font.pointSize: 13
+
+    LoraSettings {
+        id: defaultRadioSettings
+        spreadingFactor: LoraSettings.SF7
+        bandwidth: LoraSettings.BW125
+        codingRate: LoraSettings.CR4_8
+        frequency: 433000000
+    }
+    property LoraSettings currentRadioSettings: defaultRadioSettings
 
     property geoCoordinate payloadCoordinate: QtPositioning.coordinate(
                                                   43.082737, -77.669240)
@@ -193,6 +203,8 @@ ApplicationWindow {
             RadioPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
+                currentSettings: defaultRadioSettings
             }
 
             ShellPage {
@@ -226,22 +238,26 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
-                text: "SF7"
+                text: mainwindow.currentRadioSettings.spreadingFactorString(
+                          mainwindow.currentRadioSettings.spreadingFactor)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: "BW 125"
+                text: mainwindow.currentRadioSettings.bandwidthString(
+                          mainwindow.currentRadioSettings.bandwidth)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: "CR  4/8"
+                text: mainwindow.currentRadioSettings.codingRateString(
+                          mainwindow.currentRadioSettings.codingRate)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: "F 433.125 MHz"
+                text: "F " + (mainwindow.currentRadioSettings.frequency / 1000000).toFixed(
+                          3) + " MHz"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}

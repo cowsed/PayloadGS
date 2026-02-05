@@ -32,10 +32,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignTop
                 spacing: 1
-                // Rectangle {
-                // anchors.fill: parent
-                // color: "purple"
-                // }
+
                 Label {
                     text: "Images"
                 }
@@ -82,6 +79,17 @@ Item {
             }
 
             ColumnLayout {
+                Label {
+                    text: "Image #" + page.activeImageID
+                }
+
+                Label {
+                    text: "Packets: 45"
+                }
+                Label {
+                    text: "Remaining: 13"
+                }
+
                 Layout.horizontalStretchFactor: 4
                 Layout.fillHeight: true
                 Layout.fillWidth: true

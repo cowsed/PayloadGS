@@ -9,6 +9,13 @@ import QtCharts
 Item {
     Material.theme: Material.Light
 
+    id: page
+
+    property real freqMin: 410000000
+    property real freqMax: 440000000
+
+    required property LoraSettings currentSettings
+
     RowLayout {
         anchors.fill: parent
 
@@ -114,54 +121,122 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             ComboBox {
-                displayText: "SF" + currentValue
-                model: [7, 8, 9, 10, 11, 12]
-                onActivated: displayText = "SF" + currentValue
+                id: sfBox
+                currentIndex: 0
+                textRole: "text"
+                valueRole: "value"
+                model: ListModel {
+                    ListElement {
+                        text: "SF6"
+                        value: LoraSettings.SpreadingFactor.SF6
+                    }
+                    ListElement {
+                        text: "SF7"
+                        value: LoraSettings.SpreadingFactor.SF7
+                    }
+                    ListElement {
+                        text: "SF8"
+                        value: LoraSettings.SpreadingFactor.SF8
+                    }
+                    ListElement {
+                        text: "SF9"
+                        value: LoraSettings.SpreadingFactor.SF9
+                    }
+                    ListElement {
+                        text: "SF10"
+                        value: LoraSettings.SpreadingFactor.SF10
+                    }
+                    ListElement {
+                        text: "SF11"
+                        value: LoraSettings.SpreadingFactor.SF11
+                    }
+                    ListElement {
+                        text: "SF12"
+                        value: LoraSettings.SpreadingFactor.SF12
+                    }
+                }
             }
             ComboBox {
                 id: bwBox
-                displayText: "BW" + currentValue
-                model: [62.5, 125, 250, 500]
-                onActivated: displayText = "BW" + currentValue
+                currentIndex: 0
+                textRole: "text"
+                valueRole: "value"
+
+                model: ListModel {
+                    ListElement {
+                        text: "BW8"
+                        value: LoraSettings.Bandwidth.BW8
+                    }
+                    ListElement {
+                        text: "BW10"
+                        value: LoraSettings.Bandwidth.BW10
+                    }
+                    ListElement {
+                        text: "BW15"
+                        value: LoraSettings.Bandwidth.BW15
+                    }
+                    ListElement {
+                        text: "BW20"
+                        value: LoraSettings.Bandwidth.BW20
+                    }
+                    ListElement {
+                        text: "BW31"
+                        value: LoraSettings.Bandwidth.BW31
+                    }
+                    ListElement {
+                        text: "BW41"
+                        value: LoraSettings.Bandwidth.BW41
+                    }
+                    ListElement {
+                        text: "BW62"
+                        value: LoraSettings.Bandwidth.BW62
+                    }
+                    ListElement {
+                        text: "BW125"
+                        value: LoraSettings.Bandwidth.BW125
+                    }
+                    ListElement {
+                        text: "BW250"
+                        value: LoraSettings.Bandwidth.BW250
+                    }
+                    ListElement {
+                        text: "BW500"
+                        value: LoraSettings.Bandwidth.BW500
+                    }
+                }
             }
             ComboBox {
-                displayText: "CR" + currentValue
-                model: ["4/5", "4/6", "4/7", "4/8"]
-                onActivated: displayText = "CR" + currentValue
+                id: crBox
+                currentIndex: 0
+                textRole: "text"
+                valueRole: "value"
+                model: ListModel {
+                    ListElement {
+                        text: "CR4/5"
+                        value: LoraSettings.CodingRate.CR4_5
+                    }
+                    ListElement {
+                        text: "CR4/6"
+                        value: LoraSettings.CodingRate.CR4_6
+                    }
+                    ListElement {
+                        text: "CR4/7"
+                        value: LoraSettings.CodingRate.CR4_7
+                    }
+                    ListElement {
+                        text: "CR4/8"
+                        value: LoraSettings.CodingRate.CR4_8
+                    }
+                }
             }
 
             SpinBox {
                 id: spinBox
-                from: 0
-                value: decimalToInt(420)
-                to: decimalToInt(450)
-                stepSize: decimalFactor
+                from: page.freqMin
+                value: page.currentSettings.frequency
+                to: page.freqMax
+                stepSize: 1000
                 editable: true
-
-                property int decimals: 3
-                property real realValue: value / decimalFactor
-                readonly property int decimalFactor: Math.pow(10, decimals)
-
-                function decimalToInt(decimal) {
-                    return decimal * decimalFactor
-                }
-
-                validator: DoubleValidator {
-                    bottom: Math.min(spinBox.from, spinBox.to)
-                    top: Math.max(spinBox.from, spinBox.to)
-                    decimals: spinBox.decimals
-                    notation: DoubleValidator.StandardNotation
-                }
-
-                textFromValue: function (value, locale) {
-                    return Number(value / decimalFactor).toLocaleString(
-                                locale, 'f', spinBox.decimals)
-                }
-
-                valueFromText: function (text, locale) {
-                    return Math.round(Number.fromLocaleString(
-                                          locale, text) * decimalFactor)
-                }
             }
             Label {
                 text: "EDR: 12 bps"
@@ -172,7 +247,14 @@ Item {
                     text: "Set"
                 }
                 Button {
+                    id: resetButton
                     text: "↺"
+                    onClicked: {
+                        spinBox.value = page.currentSettings.frequency
+                        sfBox.currentValue = page.currentSettings.spreadingFactor
+                        bwBox.currentValue = page.currentSettings.bandwidth
+                        crBox.currentValue = page.currentSettings.codingRate
+                    }
                 }
             }
             Button {

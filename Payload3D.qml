@@ -89,7 +89,6 @@ View3D {
         eulerRotation.y: 235
         eulerRotation.z: 5
         castsShadow: true
-        lockShadowmapTexels: true
         shadowMapQuality: Light.ShadowMapQualityVeryHigh
         shadowMapFar: 1000
     }

@@ -23,7 +23,7 @@ Item {
             Layout.horizontalStretchFactor: 5
             Layout.fillHeight: true
 
-            // Layout.fillWidth: true
+            Layout.fillWidth: true
             MapViewer {
                 Layout.fillHeight: true
                 Layout.fillWidth: true

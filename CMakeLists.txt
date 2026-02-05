@@ -23,6 +23,9 @@ qt_add_executable(appPayloadGS
 )
 
 
+
+
+
 qt_add_qml_module(appPayloadGS
     URI PayloadGS
     VERSION 1.0
@@ -75,6 +78,8 @@ RESOURCES assets/arrowshader.vert
 RESOURCES assets/arrowshader.frag
 QML_FILES OrientationArrow.qml
 SOURCES radioparser.h radioparser.cpp
+SOURCES lorasettings.h lorasettings.cpp
+RESOURCES assets/images/ghost_shown_icon.png assets/images/ghost_hidden_icon.png
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

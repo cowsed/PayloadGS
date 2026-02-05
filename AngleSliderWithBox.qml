@@ -5,6 +5,8 @@ import QtQuick.Controls.Material
 ColumnLayout {
     id: root
 
+    required property real actual
+
     required property real from
     required property real to
     required property string label
@@ -46,7 +48,7 @@ ColumnLayout {
         implicitWidth: slider.width
         from: root.from
         to: root.to
-        value: root.value
+        value: root.actual
         editable: false
         Layout.preferredHeight: 40
         enabled: false
@@ -58,16 +60,6 @@ ColumnLayout {
 
         down.indicator: Item {
             implicitWidth: 0
-        }
-        MouseArea {
-            anchors.fill: parent
-
-            // z: 1
-            onClicked: {
-                console.log("Rectangle clicked!",
-                            preview.imageID) // Optional console output
-                preview.activeHolder.activeImageID = preview.imageID
-            }
         }
     }
 }
