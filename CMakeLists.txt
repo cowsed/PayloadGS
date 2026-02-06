@@ -81,6 +81,10 @@ SOURCES radioparser.h radioparser.cpp
 SOURCES lorasettings.h lorasettings.cpp
 RESOURCES assets/images/ghost_shown_icon.png assets/images/ghost_hidden_icon.png
 QML_FILES Pages/Telemetry/Gauge.qml
+SOURCES telemetrylogholder.h telemetrylogholder.cpp
+SOURCES datasource.h datasource.cpp
+SOURCES packetinfo.h packetinfo.cpp
+RESOURCES assets/images/window_icon.png
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

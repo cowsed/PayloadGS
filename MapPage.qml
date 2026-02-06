@@ -8,19 +8,20 @@ Item {
     Material.theme: Material.Light
 
     id: telemetry
-    required property geoCoordinate payloadCoordinate
-    required property date payloadCoordinateUpdateTime
 
-    required property geoCoordinate stationCoordinate
-    required property date stationCoordinateUpdateTime
+    property geoCoordinate payloadCoordinate: TelemetryLogHolder.latestPayloadPosition
+    property date payloadCoordinateUpdateTime: TelemetryLogHolder.latestPayloadPositionUpdateTime
 
-    required property geoCoordinate rocketCoordinate
-    required property date rocketCoordinateUpdateTime
+    property geoCoordinate stationCoordinate: TelemetryLogHolder.latestStationPosition
+    property date stationCoordinateUpdateTime: TelemetryLogHolder.latestStationPositionUpdateTime
+
+    property geoCoordinate rocketCoordinate: TelemetryLogHolder.latestRocketPosition
+    property date rocketCoordinateUpdateTime: TelemetryLogHolder.latestRocketPositionUpdateTime
 
     RowLayout {
         anchors.fill: parent
         ColumnLayout {
-            Layout.horizontalStretchFactor: 5
+            Layout.horizontalStretchFactor: 20
             Layout.fillHeight: true
 
             Layout.fillWidth: true
@@ -107,7 +108,7 @@ Item {
                 name: "nmea"
                 PluginParameter {
                     name: "nmea.source"
-                    value: "serial:/dev/ttyACM0"
+                    value: "serial:/dev/ttyAMA0"
                 }
                 PluginParameter {
                     name: "nmea.baudrate"
@@ -119,17 +120,6 @@ Item {
                 }
             }
 
-            // PositionSource {
-            //     name: "nmea"
-            //     PluginParameter {
-            //         name: "nmea.source"
-            //         value: "serial:/dev/ttyACM0"
-            //     }
-            //     PluginParameter {
-            //         name: "nmea.baudrate"
-            //         value: 9600
-            //     }
-            // }
             CompassUI {
                 Layout.fillWidth: true
                 payloadCoordinate: telemetry.payloadCoordinate
@@ -142,27 +132,27 @@ Item {
 
                 TimeSinceThing {
                     desc: "Payload: "
-                    event_time: new Date()
+                    event_time: telemetry.payloadCoordinateUpdateTime
                 }
                 Rectangle {
                     Layout.fillWidth: true
                 }
                 Label {
-                    text: "120 m ASL"
+                    text: telemetry.payloadCoordinate.altitude + " m ASL"
                 }
             }
             RowLayout {
                 Layout.fillWidth: true
                 TimeSinceThing {
                     desc: "Rocket: "
-                    event_time: new Date()
+                    event_time: telemetry.rocketCoordinateUpdateTime
                 }
                 Rectangle {
                     Layout.fillWidth: true
                 }
 
                 Label {
-                    text: "120 m ASL"
+                    text: telemetry.rocketCoordinate.altitude + "m ASL"
                 }
             }
             RowLayout {
@@ -170,14 +160,14 @@ Item {
 
                 TimeSinceThing {
                     desc: "Station: "
-                    event_time: new Date()
+                    event_time: telemetry.stationCoordinateUpdateTime
                 }
                 Rectangle {
                     Layout.fillWidth: true
                 }
 
                 Label {
-                    text: "12 m ASL"
+                    text: telemetry.stationCoordinate.altitude + "m ASL"
                 }
             }
         }

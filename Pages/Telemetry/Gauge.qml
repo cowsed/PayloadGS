@@ -33,7 +33,9 @@ Rectangle {
     required property real to
     property real value: (from + to) / 2
 
-    property real sweepAngle: ((value - from) / (to - from)) * fullArcAngle
+    property real sweepAngle: (Math.max(
+                                   from,
+                                   value) - from) / (to - from) * fullArcAngle
 
     Label {
         id: topTextLabel

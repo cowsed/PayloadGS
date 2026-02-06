@@ -125,6 +125,7 @@ Item {
                 currentIndex: 0
                 textRole: "text"
                 valueRole: "value"
+
                 model: ListModel {
                     ListElement {
                         text: "SF6"

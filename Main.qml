@@ -30,26 +30,14 @@ ApplicationWindow {
         codingRate: LoraSettings.CR4_8
         frequency: 433000000
     }
+
+    Component.onCompleted: {
+        console.log("Loaded")
+        console.log("Latest geopos", TelemetryLogHolder.latestPayloadPosition
+                    + " " + TelemetryLogHolder.latestPayloadPositionUpdateTime)
+    }
+
     property LoraSettings currentRadioSettings: defaultRadioSettings
-
-    property geoCoordinate payloadCoordinate: QtPositioning.coordinate(
-                                                  43.082737, -77.669240)
-
-    property geoCoordinate stationCoordinate: QtPositioning.coordinate(
-                                                  43.083938, -77.675772)
-    property geoCoordinate rocketCoordinate: QtPositioning.coordinate(
-                                                 43.085308, -77.679096)
-
-    property date payloadCoordinateUpdateTime: new Date()
-    property date stationCoordinateUpdateTime: new Date()
-    property date rocketCoordinateUpdateTime: new Date()
-
-    property real ramUsed: 11986268160
-    property real ramAvail: 20981673984
-    property real fsUsed: 273862541312
-    property real fsAvail: 17535967232
-    property real batteryVoltage: 10.3
-    property real batteryCurrent: 1234
 
     property int flightNumber: 0
     property date lastFlightNumberUpdate: new Date()
@@ -61,20 +49,6 @@ ApplicationWindow {
             mainwindow.visibility = Window.Windowed
         } else {
             mainwindow.visibility = Window.FullScreen
-        }
-    }
-
-    Timer {
-        interval: 10
-        running: true // set to true for fun
-        repeat: true
-        onTriggered: {
-            let t = new Date().getTime() / 400
-            mainwindow.rocketCoordinate.latitude = 43.085308 + 0.001 * Math.sin(
-                        t)
-
-            mainwindow.payloadCoordinate.longitude = -77.669240 + 0.001 * Math.sin(
-                        t)
         }
     }
 
@@ -165,21 +139,13 @@ ApplicationWindow {
             MapPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                payloadCoordinate: mainwindow.payloadCoordinate
-                payloadCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
-
-                stationCoordinate: mainwindow.stationCoordinate
-                stationCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
-
-                rocketCoordinate: mainwindow.rocketCoordinate
-                rocketCoordinateUpdateTime: mainwindow.payloadCoordinateUpdateTime
             }
 
             ControlPage {
                 id: controlPage
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 window: mainwindow
                 flightNumber: mainwindow.flightNumber
                 lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
@@ -191,14 +157,6 @@ ApplicationWindow {
             TelemetryPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                ramUsed: mainwindow.ramUsed
-                ramAvail: mainwindow.ramAvail
-                fsUsed: mainwindow.fsUsed
-                fsAvail: mainwindow.fsAvail
-
-                batteryVoltage: mainwindow.batteryVoltage
-                batteryCurrent: mainwindow.batteryCurrent
             }
             ArmPage {
                 Layout.fillWidth: true

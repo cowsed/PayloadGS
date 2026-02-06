@@ -62,6 +62,12 @@ Item {
                 visible: control.forceBoostMenu
             }
         }
+
+        RowLayout{
+        Label {
+        text: ""}
+        }
+
         RowLayout {
             Label {
                 text: "State: "

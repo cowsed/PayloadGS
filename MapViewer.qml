@@ -12,19 +12,7 @@ Item {
     required property geoCoordinate rocketCoordinate
 
     Material.theme: Material.Light
-    Plugin {
-        id: onlineOSMPlugin
-        name: 'osm'
 
-        PluginParameter {
-            name: "osm.mapping.providersrepository.disabled"
-            value: "true"
-        }
-        PluginParameter {
-            name: "osm.mapping.providersrepository.address"
-            value: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer"
-        }
-    }
     Plugin {
         id: offlineSatPlugin
         name: 'osm'
@@ -37,10 +25,6 @@ Item {
             name: "osm.mapping.offline.directory"
             value: ':/maptiles/assets/offline-tiles/'
         }
-        // PluginParameter {
-        // name: "osm.mapping.host"
-        // value: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/assets/map-tiles/"
-        //   }
     }
 
     Plugin {
@@ -49,7 +33,7 @@ Item {
 
         PluginParameter {
             name: "osm.mapping.host"
-            value: "http://localhost:8000/"
+            value: "http://localhost:8080/"
         }
         PluginParameter {
             name: "osm.mapping.copyright"
