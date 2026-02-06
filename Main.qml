@@ -56,6 +56,14 @@ ApplicationWindow {
 
     property string stateString: "Pad"
 
+    function toggleFullscreen() {
+        if (mainwindow.visibility === Window.FullScreen) {
+            mainwindow.visibility = Window.Windowed
+        } else {
+            mainwindow.visibility = Window.FullScreen
+        }
+    }
+
     Timer {
         interval: 10
         running: true // set to true for fun
@@ -176,6 +184,8 @@ ApplicationWindow {
                 flightNumber: mainwindow.flightNumber
                 lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
                 stateString: mainwindow.stateString
+
+                fullscreenToggle: mainwindow.toggleFullscreen
             }
 
             TelemetryPage {

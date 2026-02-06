@@ -13,6 +13,8 @@ Item {
     required property date lastFlightNumberUpdate
     required property string stateString
 
+    required property variant fullscreenToggle
+
     property bool forceBoostMenu: false
     ColumnLayout {
         anchors.fill: parent
@@ -83,7 +85,7 @@ Item {
 
             Button {
                 text: "Fullscreen"
-                onClicked: control.window.showFullscreen()
+                onClicked: fullscreenToggle()
             }
         }
         MessageDialog {

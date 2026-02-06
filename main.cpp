@@ -5,12 +5,11 @@
 #include <QFileSystemWatcher>
 #include <QPalette>
 #include <QtConcurrentRun>
-#include "radioparser.h"
-#include "telemetrylogparser.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QApplication::setDesktopFileName("PayloadGS");
 
     QQmlApplicationEngine engine;
 

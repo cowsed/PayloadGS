@@ -48,6 +48,7 @@ Item {
 
                     RoundButton {
                         id: payloadPosition
+                        font.pointSize: 10
                         text: "P: " + telemetry.payloadCoordinate.latitude.toFixed(
                                   5) + ", " + telemetry.payloadCoordinate.longitude.toFixed(
                                   5)
@@ -63,6 +64,7 @@ Item {
                     }
                     RoundButton {
                         id: stationPosition
+                        font.pointSize: 10
                         text: "G: " + telemetry.stationCoordinate.latitude.toFixed(
                                   5) + ", " + telemetry.stationCoordinate.longitude.toFixed(
                                   5)
@@ -77,6 +79,7 @@ Item {
                     }
                     RoundButton {
                         id: rocketPosition
+                        font.pointSize: 10
                         text: "R: " + telemetry.rocketCoordinate.latitude.toFixed(
                                   5) + ", " + telemetry.rocketCoordinate.longitude.toFixed(
                                   5)
