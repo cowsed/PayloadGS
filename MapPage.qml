@@ -95,19 +95,87 @@ Item {
 
         ColumnLayout {
             Layout.horizontalStretchFactor: 14
-            // Layout.fillWidth: true
+            Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
 
+            PositionSource {
+                id: src
+                name: "nmea"
+                PluginParameter {
+                    name: "nmea.source"
+                    value: "serial:/dev/ttyACM0"
+                }
+                PluginParameter {
+                    name: "nmea.baudrate"
+                    value: 9600
+                }
+                onPositionChanged: {
+                    var coord = src.position.coordinate
+                    console.log("Coordinate:", coord.longitude, coord.latitude)
+                }
+            }
+
+            // PositionSource {
+            //     name: "nmea"
+            //     PluginParameter {
+            //         name: "nmea.source"
+            //         value: "serial:/dev/ttyACM0"
+            //     }
+            //     PluginParameter {
+            //         name: "nmea.baudrate"
+            //         value: 9600
+            //     }
+            // }
             CompassUI {
                 Layout.fillWidth: true
                 payloadCoordinate: telemetry.payloadCoordinate
                 stationCoordinate: telemetry.stationCoordinate
                 rocketCoordinate: telemetry.rocketCoordinate
             }
-            TimeSinceThing {
-                desc: "Last Updated: "
-                event_time: new Date()
+
+            RowLayout {
+                Layout.fillWidth: true
+
+                TimeSinceThing {
+                    desc: "Payload: "
+                    event_time: new Date()
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "120 m ASL"
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                TimeSinceThing {
+                    desc: "Rocket: "
+                    event_time: new Date()
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                }
+
+                Label {
+                    text: "120 m ASL"
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+
+                TimeSinceThing {
+                    desc: "Station: "
+                    event_time: new Date()
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                }
+
+                Label {
+                    text: "12 m ASL"
+                }
             }
         }
     }

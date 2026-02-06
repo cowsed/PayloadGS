@@ -67,7 +67,7 @@ Item {
                 anchors.topMargin: 4
                 anchors.bottomMargin: 4
                 spacing: 4
-                width: 64
+                width: 60
 
                 Button {
                     id: showAxesButton

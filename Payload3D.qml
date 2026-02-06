@@ -31,7 +31,7 @@ View3D {
 
     Timer {
         interval: 10
-        running: true // set to true for fun
+        running: false // set to true for fun
         repeat: true
         onTriggered: {
             let t = new Date().getTime() / 400

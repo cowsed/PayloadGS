@@ -48,7 +48,7 @@ ApplicationWindow {
     property real ramAvail: 20981673984
     property real fsUsed: 273862541312
     property real fsAvail: 17535967232
-    property real batteryVoltage: 12.3
+    property real batteryVoltage: 10.3
     property real batteryCurrent: 1234
 
     property int flightNumber: 0
@@ -172,6 +172,7 @@ ApplicationWindow {
                 id: controlPage
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                window: mainwindow
                 flightNumber: mainwindow.flightNumber
                 lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
                 stateString: mainwindow.stateString

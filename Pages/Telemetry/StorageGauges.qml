@@ -27,90 +27,44 @@ RowLayout {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
-    Dial {
-        id: batteryGauge
+    Gauge {
+        Layout.minimumHeight: 100
         Layout.horizontalStretchFactor: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
-
-        value: telem.batteryVoltage
-        enabled: false
         from: 10.2
         to: 12.6
-        Label {
-            color: telem.batteryColor
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: battVoltageLabel.top
-            text: telem.batteryHealth
-        }
-        Label {
-            color: telem.batteryColor
-            id: battVoltageLabel
-            font.pointSize: 28
-            anchors.centerIn: parent
-            text: telem.batteryVoltage + "V"
-        }
-        Label {
-            id: battCurrentLabel
-            font.pointSize: 20
-            color: telem.batteryColor
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: battVoltageLabel.bottom
-            text: telem.batteryCurrent + "mA"
-        }
-        Label {
-            id: battDialLabel
-            font.pointSize: 20
-            color: telem.batteryColor
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: battCurrentLabel.bottom
-            text: "Batt"
-        }
+        value: telem.batteryVoltage
+
+        frontColor: telem.batteryColor
+        textColor: telem.batteryColor
+
+        gaugeTitle: "Batt"
+        topText: telem.batteryHealth
+        mainText: telem.batteryVoltage + "V"
+        subText: telem.batteryCurrent + "mA"
     }
-    Dial {
-        id: ramDial
+    Gauge {
+        id: ramGauge
         Layout.horizontalStretchFactor: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
-
         from: 0
         to: telem.ramUsed / (1024 * 1024) + telem.ramAvail / (1024 * 1024)
         value: telem.ramUsed / (1024 * 1024)
 
-        enabled: false
-        Label {
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: ramDialUsed.top
-            text: (telem.ramUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
-        }
-        Label {
-            id: ramDialUsed
-            font.pointSize: 28
-            anchors.centerIn: parent
-            text: (100 * (telem.ramUsed) / (telem.ramUsed + telem.ramAvail)).toFixed(
+        topText: (telem.ramUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
+        subText: (100 * (telem.ramUsed) / (telem.ramUsed + telem.ramAvail)).toFixed(
+                     1) + "%"
+
+        mainText: (100 * (telem.ramUsed) / (telem.ramUsed + telem.ramAvail)).toFixed(
                       1) + "%"
-        }
-        Label {
-            id: ramDialTotal
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ramDialUsed.bottom
-            text: ((telem.ramUsed + telem.ramAvail) / (1024 * 1024 * 1024)).toFixed(
-                      2) + "GB"
-        }
-        Label {
-            id: ramDialLabel
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ramDialTotal.bottom
-            text: "RAM"
-        }
+
+        gaugeTitle: "RAM"
     }
 
-    Dial {
-        id: fsDial
+    Gauge {
+        id: fsGauge
         Layout.horizontalStretchFactor: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
@@ -119,35 +73,14 @@ RowLayout {
         to: telem.fsUsed / (1024 * 1024) + telem.fsAvail / (1024 * 1024)
         value: telem.fsUsed / (1024 * 1024)
 
-        enabled: false
-        Label {
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: fsDialUsed.top
-            text: (telem.fsUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
-        }
-        Label {
-            id: fsDialUsed
-            font.pointSize: 28
-            anchors.centerIn: parent
-            text: (100 * (telem.fsUsed) / (telem.fsUsed + telem.fsAvail)).toFixed(
-                      1) + "%"
-        }
+        topText: (telem.fsUsed / (1024 * 1024 * 1024)).toFixed(2) + "GB"
 
-        Label {
-            id: fsDialTotal
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: fsDialUsed.bottom
-            text: ((telem.fsUsed + telem.fsAvail) / (1024 * 1024 * 1024)).toFixed(
-                      2) + "GB"
-        }
-        Label {
-            id: fsDialLabel
-            font.pointSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: fsDialTotal.bottom
-            text: "FS"
-        }
+        subText: ((telem.fsUsed + telem.fsAvail) / (1024 * 1024 * 1024)).toFixed(
+                     2) + "GB"
+
+        mainText: (100 * (telem.fsUsed) / (telem.fsUsed + telem.fsAvail)).toFixed(
+                      1) + "%"
+
+        gaugeTitle: "FS"
     }
 }

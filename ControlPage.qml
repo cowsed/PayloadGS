@@ -2,11 +2,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 Item {
     id: control
     Material.theme: Material.Light
 
+    required property variant window
     required property int flightNumber
     required property date lastFlightNumberUpdate
     required property string stateString
@@ -71,19 +73,28 @@ Item {
 
         RowLayout {
             Button {
-                text: "Next Flight"
+                text: "New Directory"
             }
-            Label {
-                text: "Flight #" + control.flightNumber
-            }
+
             Button {
-                text: "⟳"
+                text: "Exit"
+                onClicked: exitConf.visible = true
             }
-            TimeSinceThing {
-                desc: "Last Updated: "
-                event_time: control.lastFlightNumberUpdate
-                suffix: " ago"
+
+            Button {
+                text: "Fullscreen"
+                onClicked: control.window.showFullscreen()
             }
+        }
+        MessageDialog {
+            id: exitConf
+            title: "Exit Application"
+            text: " Are you sure you want to exit"
+            visible: false
+            buttons: Dialog.Yes | Dialog.No
+
+            onAccepted: Qt.callLater(Qt.quit)
+            onRejected: console.log("aborted")
         }
     }
 }
