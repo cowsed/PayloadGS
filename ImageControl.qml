@@ -29,6 +29,7 @@ Item {
             Layout.alignment: Qt.AlignLeft
             ColumnLayout {
                 Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignTop
                 spacing: 1
