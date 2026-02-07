@@ -122,6 +122,10 @@ ApplicationWindow {
             sequences: ["Alt+s", "Alt+7"]
             onActivated: shellTabButton.click()
         }
+        Shortcut {
+            sequences: ["Alt+g"]
+            onActivated: metaview.currentIndex = 1
+        }
 
         onCurrentIndexChanged: {
             mainview.currentIndex = currentIndex
@@ -160,8 +164,6 @@ ApplicationWindow {
                 flightNumber: mainwindow.flightNumber
                 lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
                 stateString: mainwindow.stateString
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
 
             TelemetryPage {
@@ -195,6 +197,8 @@ ApplicationWindow {
         GSPage {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            fullscreenToggle: mainwindow.toggleFullscreen
         }
     }
 

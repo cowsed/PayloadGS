@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
 Item {
     id: control
@@ -13,11 +12,46 @@ Item {
     required property date lastFlightNumberUpdate
     required property string stateString
 
-    required property variant fullscreenToggle
-
     property bool forceBoostMenu: false
     ColumnLayout {
         anchors.fill: parent
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Rectangle {
+                color: "red"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Label {
+                    text: "State: "
+                }
+                Label {
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    color: "purple"
+                    font.bold: true
+                    text: control.stateString
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Label {
+                    text: "State: "
+                }
+                Label {
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    color: "purple"
+                    font.bold: true
+                    text: control.stateString
+                }
+            }
+        }
+
         RowLayout {
             Layout.fillWidth: true
             // Layout.verticalStretchFactor: 1
@@ -61,48 +95,6 @@ Item {
                 Material.background: Material.Red
                 visible: control.forceBoostMenu
             }
-        }
-
-        RowLayout{
-        Label {
-        text: ""}
-        }
-
-        RowLayout {
-            Label {
-                text: "State: "
-            }
-            Label {
-                color: "purple"
-                font.bold: true
-                text: control.stateString
-            }
-        }
-
-        RowLayout {
-            Button {
-                text: "New Directory"
-            }
-
-            Button {
-                text: "Exit"
-                onClicked: exitConf.visible = true
-            }
-
-            Button {
-                text: "Fullscreen"
-                onClicked: fullscreenToggle()
-            }
-        }
-        MessageDialog {
-            id: exitConf
-            title: "Exit Application"
-            text: " Are you sure you want to exit"
-            visible: false
-            buttons: Dialog.Yes | Dialog.No
-
-            onAccepted: Qt.callLater(Qt.quit)
-            onRejected: console.log("aborted")
         }
     }
 }

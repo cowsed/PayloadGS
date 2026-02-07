@@ -3,8 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 import QtCore
+import QtQuick.Dialogs
 
 ColumnLayout {
+    required property variant fullscreenToggle
+
     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
     Label {
         text: "GS View"
@@ -13,12 +16,6 @@ ColumnLayout {
         text: "IDK What to put here bc i can't get the FPS view easily"
     }
     ColumnLayout {
-        Label {
-            text: "word size: " + SystemInformation.wordSize + " bytes"
-        }
-        Label {
-            text: "byte order: " + SystemInformation.byteOrder
-        }
 
         Label {
             text: "Host: " + SystemInformation.machineHostName
@@ -38,5 +35,28 @@ ColumnLayout {
         Label {
             text: "arch: " + SystemInformation.currentCpuArchitecture
         }
+    }
+    RowLayout {
+        Layout.fillWidth: true
+
+        Button {
+            text: "Exit"
+            onClicked: exitConf.visible = true
+        }
+
+        Button {
+            text: "Fullscreen"
+            onClicked: fullscreenToggle()
+        }
+    }
+    MessageDialog {
+        id: exitConf
+        title: "Exit Application"
+        text: " Are you sure you want to exit"
+        visible: false
+        buttons: Dialog.Yes | Dialog.No
+
+        onAccepted: Qt.callLater(Qt.quit)
+        onRejected: console.log("aborted")
     }
 }
