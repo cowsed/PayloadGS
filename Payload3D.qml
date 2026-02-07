@@ -96,22 +96,16 @@ View3D {
     Model {
         id: basePlane
 
-        // geometry: CylinderGeometry {
-        //     id: basePlaneGeom
-        //     length: 10
-        //     radius: 250
-        //     rings: 0
-        //     segments: 50
-        // }
-        geometry: GridGeometry {
+        geometry: CylinderGeometry {
             id: basePlaneGeom
-            horizontalLines: 20
-            verticalLines: 20
+            length: 10
+            radius: 250
+            rings: 0
+            segments: 50
         }
 
-        scale: Qt.vector3d(1000, 1000, 1000)
-        eulerRotation.x: 90
-        position.y: v3d.minY * 1000 //- basePlaneGeom.length / 2
+        eulerRotation.x: 0
+        position.y: v3d.minY * 1000 - basePlaneGeom.length / 2
 
         materials: PrincipledMaterial {
             baseColor: "#20a040"
