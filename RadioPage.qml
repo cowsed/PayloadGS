@@ -266,11 +266,11 @@ Item {
                 text: "Recover"
                 enabled: false
             }
-            Button {
-                text: "Set Self"
-                Material.background: Material.Red
-                onClicked: confSelfConfirmation.visible = true
-            }
+            // Button {
+            //     text: "Set Self"
+            //     Material.background: Material.Red
+            //     onClicked: confSelfConfirmation.visible = true
+            // }
         }
     }
     MessageDialog {

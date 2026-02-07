@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
-import QtPositioning
 
 ApplicationWindow {
     id: mainwindow
@@ -62,30 +61,37 @@ ApplicationWindow {
         TabButton {
             id: mapTabButton
             text: "Map"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: controlTabButton
             text: "Control"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: telemTabButton
             text: "Telemetry"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: armTabButton
             text: "Arm"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: imageTabButton
             text: "Image"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: radioTabButton
             text: "Radio"
+            onClicked: metaview.currentIndex = 0
         }
         TabButton {
             id: shellTabButton
             text: "Shell"
+            onClicked: metaview.currentIndex = 0
         }
 
         Shortcut {
@@ -122,16 +128,20 @@ ApplicationWindow {
         }
     }
 
-    ColumnLayout {
+    SwipeView {
+        id: metaview
         anchors.fill: parent
+        orientation: Qt.Vertical
 
         SwipeView {
             id: mainview
-
-            currentIndex: mainwindow.initTab
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            currentIndex: mainwindow.initTab
+
+            // Layout.fillWidth: true
+            // Layout.fillHeight: true
             onCurrentIndexChanged: {
                 tabbar.currentIndex = currentIndex
             }
@@ -181,7 +191,13 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
         }
+
+        GSPage {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
     }
+
     footer: ToolBar {
         font.weight: Font.Normal
         font.pointSize: 12

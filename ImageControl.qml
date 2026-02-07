@@ -17,8 +17,8 @@ Item {
     RowLayout {
         anchors.fill: parent
         Image {
-            Layout.preferredWidth: 512
-            Layout.preferredHeight: 512
+            Layout.preferredWidth: 512 - 60
+            Layout.preferredHeight: 512 - 60
             fillMode: Image.PreserveAspectFit
             source: page.imageDir + page.activeImageID + "/sofar.png"
         }
