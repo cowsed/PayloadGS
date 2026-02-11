@@ -1,12 +1,12 @@
-#include "telemetrylogparser.h"
+#include "radiopacketparser.h"
 #include <QFile>
 #include <QtLogging>
 
-TelemetryLogParser::TelemetryLogParser(QObject *parent)
+RadioPacketParser::RadioPacketParser(QObject *parent)
     : QObject{parent}
 {}
 
-void TelemetryLogParser::handleTemps(QDateTime time, const QStringList &list)
+void RadioPacketParser::handleTemps(QDateTime time, const QStringList &list)
 {
     printf("Parsing temps");
     if (list.length() < 4) {
@@ -27,7 +27,7 @@ void TelemetryLogParser::handleTemps(QDateTime time, const QStringList &list)
     emit tempsUpdated(time, t1, t2);
 }
 
-void TelemetryLogParser::handleLine(const QString &str)
+void RadioPacketParser::handleLine(const QString &str)
 {
     QStringList parts = str.split("\t");
     if (parts.length() < 2) {
@@ -47,7 +47,7 @@ void TelemetryLogParser::handleLine(const QString &str)
     }
 }
 
-void TelemetryLogParser::packet_received(QDateTime time, int snr, int rssi, const QByteArray &packet)
+void RadioPacketParser::packet_received(QDateTime time, int snr, int rssi, const QByteArray &packet)
 {
     qDebug("Got SNR: %d", snr);
 }

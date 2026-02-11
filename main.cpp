@@ -11,6 +11,7 @@
 #include <QQmlContext>
 #include <QSurfaceFormat>
 #include "datasource.h"
+#include "telemetrylogholder.h"
 #include <qquickview.h>
 
 int main(int argc, char *argv[])
@@ -44,12 +45,27 @@ int main(int argc, char *argv[])
     //                  &parser,
     //                  &TelemetryLogParser::logUpdated,
     //                  Qt::QueuedConnection);
-    QQuickView viewer;
     engine.addImportPath(":/");
 
-    DataSource dataSource(&viewer);
+    QQuickView viewer;
 
-    viewer.rootContext()->setContextProperty("dataSource", &dataSource);
+    DataSource dataSource(&viewer);
+    TelemetryLogHolder holder{};
+
+    holder.newBatteryVoltage(QDateTime::currentDateTime().addSecs(-1), 1.2);
+    holder.newBatteryVoltage(QDateTime::currentDateTime().addSecs(-2), 1.5);
+    holder.newBatteryVoltage(QDateTime::currentDateTime().addSecs(-3), 1.2);
+    holder.newBatteryVoltage(QDateTime::currentDateTime().addSecs(-4), 1.1);
+
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-1), 121);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-2), 156);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-3), 156);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-4), 119);
+
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-1), 121);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-2), 156);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-3), 156);
+    holder.newBatteryCurrent(QDateTime::currentDateTime().addSecs(-4), 119);
 
     QObject::connect(
         &engine,

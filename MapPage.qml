@@ -21,7 +21,7 @@ Item {
     RowLayout {
         anchors.fill: parent
         ColumnLayout {
-            Layout.horizontalStretchFactor: 20
+            Layout.horizontalStretchFactor: 25
             Layout.fillHeight: true
 
             Layout.fillWidth: true
@@ -98,7 +98,7 @@ Item {
         }
 
         ColumnLayout {
-            Layout.horizontalStretchFactor: 14
+            Layout.horizontalStretchFactor: 10
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
@@ -106,9 +106,10 @@ Item {
             PositionSource {
                 id: src
                 name: "nmea"
+                active: true
                 PluginParameter {
                     name: "nmea.source"
-                    value: "serial:/dev/ttyAMA0"
+                    value: "serial:/dev/pts/8"
                 }
                 PluginParameter {
                     name: "nmea.baudrate"
@@ -117,6 +118,7 @@ Item {
                 onPositionChanged: {
                     var coord = src.position.coordinate
                     console.log("Coordinate:", coord.longitude, coord.latitude)
+                    TelemetryLogHolder.newRocketPosition(new Date(), coord)
                 }
             }
 

@@ -1,13 +1,13 @@
-#ifndef TELEMETRYLOGPARSER_H
-#define TELEMETRYLOGPARSER_H
+#ifndef RADIOPACKETPARSER_H
+#define RADIOPACKETPARSER_H
 #include "QObject"
 #include <qdatetime.h>
 
-class TelemetryLogParser : public QObject
+class RadioPacketParser : public QObject
 {
     Q_OBJECT
 public:
-    explicit TelemetryLogParser(QObject *parent = nullptr);
+    explicit RadioPacketParser(QObject *parent = nullptr);
 
     void handleLine(const QString &str);
 
@@ -29,4 +29,4 @@ private:
     qint64 last_read = 0;
 };
 
-#endif // TELEMETRYLOGPARSER_H
+#endif // RADIOPACKETPARSER_H

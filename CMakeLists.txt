@@ -62,7 +62,7 @@ qt_add_qml_module(appPayloadGS
         assets/images/compass_rocket.png
         assets/images/compass_northsouth.png
     NO_RESOURCE_TARGET_PATH
-    SOURCES telemetrylogparser.h telemetrylogparser.cpp
+    SOURCES radiopacketparser.h radiopacketparser.cpp
 
     RESOURCES
         assets/goegap_2k.hdr

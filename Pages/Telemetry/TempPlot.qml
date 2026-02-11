@@ -14,83 +14,98 @@ ChartView {
 
     Layout.fillWidth: true
     Layout.fillHeight: true
+
     theme: ChartView.ChartThemeQt
 
-    ValueAxis {
+    property date startDate: new Date()
+
+    Timer {
+        interval: 1000
+        running: true // set to true for fun
+        repeat: true
+        onTriggered: {
+            let t = (new Date().getTime(
+                         ) - tempChart.startDate.getTime()) / 1000
+            TelemetryLogHolder.newCpuTemp(new Date(), 30 + 5 * Math.sin(t))
+            TelemetryLogHolder.newRadioTemp(new Date(), 30 + 5 * Math.cos(t))
+
+            TelemetryLogHolder.newBatteryVoltage(new Date(),
+                                                 Math.max(12.5 - t / 10, 10.2))
+
+            const starts = [TelemetryLogHolder.earliestCpuTempTime(
+                                ), TelemetryLogHolder.earliestRadioTempTime(
+                                ), TelemetryLogHolder.earliestBatteryVoltageTime(
+                                )]
+
+            const ends = [TelemetryLogHolder.cpuTempUpdateTime, TelemetryLogHolder.radioTempUpdateTime, TelemetryLogHolder.batteryVoltageUpdateTime]
+
+            axisX.min = new Date(Math.min(...starts))
+            axisX.max = new Date(Math.max(...ends))
+        }
+    }
+
+    Connections {
+        target: TelemetryLogHolder
+
+        function onCpuTempChanged() {
+            TelemetryLogHolder.updateCpuTempSeries(tempChart.series(
+                                                       cpuTempSeries.name))
+        }
+        function onRadioTempChanged() {
+            TelemetryLogHolder.updateRadioTempSeries(tempChart.series(
+                                                         radioTempSeries.name))
+        }
+        function onBatteryVoltageChanged() {
+            TelemetryLogHolder.updateBatteryVoltageSeries(
+                        tempChart.series(batteryVoltageSeries.name))
+        }
+    }
+
+    DateTimeAxis {
         id: axisX
-        min: 0 // Sets the minimum value for the X-axis
-        max: 6 // Sets the maximum value for the X-axis
+        tickCount: 6
+        format: "hh:mm:ss"
     }
 
     ValueAxis {
-        id: axisY
-        min: 30 // Sets the minimum value for the Y-axis
-        max: 100 // Sets the maximum value for the Y-axis
+        id: axisYTemp
+        min: 25
+        max: 100
+        titleText: "Temperature"
+    }
+
+    ValueAxis {
+        id: axisYVoltage
+        min: 7
+        max: 12.6
+        titleText: "Voltage"
+    }
+
+    LineSeries {
+        id: batteryVoltageSeries
+        name: "Bat Voltage V"
+        axisX: axisX
+        axisYRight: axisYVoltage
+        color: "red"
+        width: 2
+        pointsVisible: true
     }
     LineSeries {
+        id: cpuTempSeries
         name: "PI CPU °C"
         axisX: axisX
-        axisY: axisY
-        XYPoint {
-            x: 0
-            y: 35
-        }
-        XYPoint {
-            x: 1.1
-            y: 35.1
-        }
-        XYPoint {
-            x: 1.9
-            y: 37.3
-        }
-        XYPoint {
-            x: 2.1
-            y: 42.1
-        }
-        XYPoint {
-            x: 2.9
-            y: 44.9
-        }
-        XYPoint {
-            x: 3.4
-            y: 43.0
-        }
-        XYPoint {
-            x: 4.1
-            y: 44.3
-        }
+        axisY: axisYTemp
+        color: "blue"
+        width: 2
+        pointsVisible: true
     }
     LineSeries {
+        id: radioTempSeries
         name: "Radio °C"
         axisX: axisX
-        axisY: axisY
-        XYPoint {
-            x: 0
-            y: 40
-        }
-        XYPoint {
-            x: 1.1
-            y: 41
-        }
-        XYPoint {
-            x: 1.9
-            y: 43
-        }
-        XYPoint {
-            x: 2.1
-            y: 48
-        }
-        XYPoint {
-            x: 2.9
-            y: 49
-        }
-        XYPoint {
-            x: 3.4
-            y: 50
-        }
-        XYPoint {
-            x: 4.1
-            y: 53
-        }
+        axisY: axisYTemp
+        color: "green"
+        width: 2
+        pointsVisible: true
     }
 }

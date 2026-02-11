@@ -53,6 +53,7 @@ Item {
 
             map.plugin: localhostSatPlugin
             map.zoomLevel: 12
+            map.maximumZoomLevel: 38
 
             map.activeMapType: map.supportedMapTypes[6]
 

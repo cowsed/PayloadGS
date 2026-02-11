@@ -1,26 +1,25 @@
 import QtQuick
-import QtQuick.Controls
 import QtCharts
 import QtQuick.Layouts
 
 RowLayout {
 
-    // Material.theme: Material.Light
     id: telem
     Layout.topMargin: 5
     Layout.bottomMargin: 5
 
-    property real ramUsed: 4120341234
-    property real fsUsed: 11231221234
-
+    // configs
     property real ramTotal: 32967942144
     property real fsTotal: 291398508544
 
     property real batteryGoodLevel: 11
     property real batteryDangerLevel: 10.5
 
-    property real batteryVoltage: 10.4
-    property real batteryCurrent: 123
+    property real ramUsed: TelemetryLogHolder.latestRamUsage
+    property real fsUsed: TelemetryLogHolder.latestFsUsage
+
+    property real batteryVoltage: TelemetryLogHolder.latestBatteryVoltage
+    property real batteryCurrent: TelemetryLogHolder.latestBatteryCurrent
 
     property string batteryHealth: (batteryVoltage > batteryGoodLevel) ? "Good" : ((batteryVoltage > batteryDangerLevel) ? "Low" : "DANGER")
 
@@ -33,7 +32,7 @@ RowLayout {
         Layout.horizontalStretchFactor: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
-        from: 10.2
+        from: 9.6
         to: 12.6
         value: telem.batteryVoltage
 
@@ -42,7 +41,7 @@ RowLayout {
 
         gaugeTitle: "Batt"
         topText: telem.batteryHealth
-        mainText: telem.batteryVoltage + "V"
+        mainText: telem.batteryVoltage.toFixed(2) + "V"
         subText: telem.batteryCurrent + "mA"
     }
     Gauge {

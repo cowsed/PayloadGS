@@ -31,9 +31,8 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        console.log("Loaded")
-        console.log("Latest geopos", TelemetryLogHolder.latestPayloadPosition
-                    + " " + TelemetryLogHolder.latestPayloadPositionUpdateTime)
+
+        // toggleFullscreen()
     }
 
     property LoraSettings currentRadioSettings: defaultRadioSettings
@@ -51,7 +50,7 @@ ApplicationWindow {
         }
     }
 
-    property real initTab: 3
+    property real initTab: 1
 
     header: TabBar {
         id: tabbar
@@ -213,6 +212,11 @@ ApplicationWindow {
             Layout.topMargin: 0
             Layout.fillHeight: true
 
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.minimumWidth: 10
+            }
+
             Label {
                 text: mainwindow.stateString
                 Layout.alignment: Qt.AlignTop
@@ -221,7 +225,8 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
-                text: "Bat: " + mainwindow.batteryVoltage.toFixed(2) + "V"
+                text: "Bat: " + TelemetryLogHolder.latestBatteryVoltage.toFixed(
+                          1) + "V"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
@@ -266,12 +271,9 @@ ApplicationWindow {
                 text: "Rem: 4"
                 Layout.alignment: Qt.AlignTop
             }
-            ToolSeparator {}
-
-            ToolButton {
-                Layout.maximumHeight: 20
-                text: qsTr("⏸")
-                Layout.alignment: Qt.AlignTop
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.minimumWidth: 10
             }
         }
     }

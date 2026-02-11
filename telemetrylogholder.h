@@ -28,6 +28,9 @@ class TelemetryLogHolder : public QObject
     Q_PROPERTY(
         double latestBatteryCurrent READ latestBatteryCurrent NOTIFY batteryCurrentChanged FINAL)
 
+    Q_PROPERTY(double latestCpuTemp READ latestCpuTemp NOTIFY cpuTempChanged FINAL)
+    Q_PROPERTY(double latestRadioTemp READ latestRadioTemp NOTIFY radioTempChanged FINAL)
+
     Q_PROPERTY(QDateTime latestPayloadPositionUpdateTime READ latestPayloadPositionUpdateTime NOTIFY
                    payloadPositionUpdateTimeChanged FINAL)
     Q_PROPERTY(QDateTime latestStationPositionUpdateTime READ latestStationPositionUpdateTime NOTIFY
@@ -37,17 +40,26 @@ class TelemetryLogHolder : public QObject
 
     Q_PROPERTY(QDateTime batteryVoltageUpdateTime READ batteryVoltageUpdateTime NOTIFY
                    batteryVoltageUpdateTimeChanged FINAL)
+    Q_PROPERTY(QDateTime batteryCurrentUpdateTime READ batteryCurrentUpdateTime NOTIFY
+                   batteryCurrentUpdateTimeChanged FINAL)
+
+    Q_PROPERTY(uint64_t latestRamUsage READ latestRamUsage NOTIFY ramUsageChanged FINAL)
+    Q_PROPERTY(uint64_t latestFsUsage READ latestFsUsage NOTIFY fsUsageChanged FINAL)
+
+    Q_PROPERTY(
+        QDateTime cpuTempUpdateTime READ cpuTempUpdateTime NOTIFY cpuTempUpdateTimeChanged FINAL)
+    Q_PROPERTY(QDateTime radioTempUpdateTime READ radioTempUpdateTime NOTIFY
+                   radioTempUpdateTimeChanged FINAL)
 
     QML_ELEMENT
     QML_SINGLETON
 
 public:
+    static constexpr size_t MAX_IN_MEM_CPU_TEMP_ENTRIES = 20;
+    static constexpr size_t MAX_IN_MEM_RADIO_TEMP_ENTRIES = 20;
+    static constexpr size_t MAX_IN_MEM_BATT_VOLTAGE_ENTRIES = 20;
+
     TelemetryLogHolder(QObject *parent = nullptr);
-
-    static constexpr size_t num_line_channels = 6;
-
-    Q_INVOKABLE uint64_t latest_ram_usage();
-    Q_INVOKABLE uint64_t latest_fs_usage();
 
     Q_INVOKABLE QGeoCoordinate latestPayloadPosition();
     Q_INVOKABLE QGeoCoordinate latestStationPosition();
@@ -63,19 +75,37 @@ public:
     Q_INVOKABLE QDateTime batteryVoltageUpdateTime();
     Q_INVOKABLE QDateTime batteryCurrentUpdateTime();
 
+    Q_INVOKABLE QDateTime earliestBatteryVoltageTime();
+
+    Q_INVOKABLE double latestCpuTemp();
+    Q_INVOKABLE double latestRadioTemp();
+
+    Q_INVOKABLE QDateTime cpuTempUpdateTime();
+    Q_INVOKABLE QDateTime radioTempUpdateTime();
+
+    Q_INVOKABLE QDateTime earliestCpuTempTime();
+    Q_INVOKABLE QDateTime earliestRadioTempTime();
+
+    Q_INVOKABLE uint64_t latestRamUsage();
+    Q_INVOKABLE uint64_t latestFsUsage();
+
+    Q_INVOKABLE void updateCpuTempSeries(QAbstractSeries *series);
+    Q_INVOKABLE void updateRadioTempSeries(QAbstractSeries *series);
+    Q_INVOKABLE void updateBatteryVoltageSeries(QAbstractSeries *series);
+
 public slots:
     void newBatteryVoltage(QDateTime ts, double voltage);
     void newBatteryCurrent(QDateTime ts, double current);
 
-    void new_cpu_temp_reading(QDateTime ts, double temp);
-    void new_radio_temp_reading(QDateTime ts, double temp);
+    void newCpuTemp(QDateTime ts, double temp);
+    void newRadioTemp(QDateTime ts, double temp);
 
-    void new_ram_usage(QDateTime ts);
-    void new_fs_usage(QDateTime ts);
+    void newRamUsage(QDateTime ts, uint64_t);
+    void newFsUsage(QDateTime ts, uint64_t);
 
     void newPayloadPosition(QDateTime ts, QGeoCoordinate coord);
     void newStationPosition(QDateTime ts, QGeoCoordinate coord);
-    void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
+    Q_INVOKABLE void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
 
 signals:
     void payloadPositionChanged();
@@ -92,7 +122,22 @@ signals:
     void batteryVoltageUpdateTimeChanged();
     void batteryCurrentUpdateTimeChanged();
 
+    void cpuTempChanged();
+    void radioTempChanged();
+
+    void cpuTempUpdateTimeChanged();
+    void radioTempUpdateTimeChanged();
+
+    void ramUsageChanged();
+    void fsUsageChanged();
+
 private:
+    QGeoCoordinate last_rocket_pos{0, 0, 120};
+
+    QList<QPointF> cpu_temps{};
+    QList<QPointF> radio_temps{};
+    QList<QPointF> battery_voltages{};
+
     DataSource line_data;
 };
 
