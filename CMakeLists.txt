@@ -86,6 +86,7 @@ SOURCES datasource.h datasource.cpp
 SOURCES packetinfo.h packetinfo.cpp
 RESOURCES assets/images/window_icon.png
 QML_FILES GSPage.qml
+SOURCES frontbackdataholder.h frontbackdataholder.cpp
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

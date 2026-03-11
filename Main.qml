@@ -225,7 +225,7 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
-                text: "Bat: " + TelemetryLogHolder.latestBatteryVoltage.toFixed(
+                text: "Bat: " + TelemetryLogHolder.batteryVoltage.latestValue.toFixed(
                           1) + "V"
                 Layout.alignment: Qt.AlignTop
             }

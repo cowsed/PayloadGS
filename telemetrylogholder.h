@@ -4,7 +4,7 @@
 #include <QDateTime>
 #include <QXYSeries>
 #include "QObject"
-#include "datasource.h"
+#include "frontbackdataholder.h"
 
 #include <QtPositioning/QGeoCoordinate>
 #include <qqmlintegration.h>
@@ -23,13 +23,6 @@ class TelemetryLogHolder : public QObject
     Q_PROPERTY(QGeoCoordinate latestRocketPosition READ latestRocketPosition NOTIFY
                    rocketPositionChanged FINAL)
 
-    Q_PROPERTY(
-        double latestBatteryVoltage READ latestBatteryVoltage NOTIFY batteryVoltageChanged FINAL)
-    Q_PROPERTY(
-        double latestBatteryCurrent READ latestBatteryCurrent NOTIFY batteryCurrentChanged FINAL)
-
-    Q_PROPERTY(double latestCpuTemp READ latestCpuTemp NOTIFY cpuTempChanged FINAL)
-    Q_PROPERTY(double latestRadioTemp READ latestRadioTemp NOTIFY radioTempChanged FINAL)
 
     Q_PROPERTY(QDateTime latestPayloadPositionUpdateTime READ latestPayloadPositionUpdateTime NOTIFY
                    payloadPositionUpdateTimeChanged FINAL)
@@ -38,18 +31,15 @@ class TelemetryLogHolder : public QObject
     Q_PROPERTY(QDateTime latestRocketPositionUpdateTime READ latestRocketPositionUpdateTime NOTIFY
                    rocketPositionUpdateTimeChanged FINAL)
 
-    Q_PROPERTY(QDateTime batteryVoltageUpdateTime READ batteryVoltageUpdateTime NOTIFY
-                   batteryVoltageUpdateTimeChanged FINAL)
-    Q_PROPERTY(QDateTime batteryCurrentUpdateTime READ batteryCurrentUpdateTime NOTIFY
-                   batteryCurrentUpdateTimeChanged FINAL)
-
     Q_PROPERTY(uint64_t latestRamUsage READ latestRamUsage NOTIFY ramUsageChanged FINAL)
     Q_PROPERTY(uint64_t latestFsUsage READ latestFsUsage NOTIFY fsUsageChanged FINAL)
 
+    Q_PROPERTY(FrontBackDataHolder *cpuTemp READ getCpuTemp NOTIFY cpuTempChanged)
+    Q_PROPERTY(FrontBackDataHolder *radioTemp READ getRadioTemp NOTIFY radioTempChanged)
     Q_PROPERTY(
-        QDateTime cpuTempUpdateTime READ cpuTempUpdateTime NOTIFY cpuTempUpdateTimeChanged FINAL)
-    Q_PROPERTY(QDateTime radioTempUpdateTime READ radioTempUpdateTime NOTIFY
-                   radioTempUpdateTimeChanged FINAL)
+        FrontBackDataHolder *batteryCurrent READ getBatteryCurrent NOTIFY batteryCurrentChanged)
+    Q_PROPERTY(
+        FrontBackDataHolder *batteryVoltage READ getBatteryVoltage NOTIFY batteryVoltageChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -57,7 +47,7 @@ class TelemetryLogHolder : public QObject
 public:
     static constexpr size_t MAX_IN_MEM_CPU_TEMP_ENTRIES = 20;
     static constexpr size_t MAX_IN_MEM_RADIO_TEMP_ENTRIES = 20;
-    static constexpr size_t MAX_IN_MEM_BATT_VOLTAGE_ENTRIES = 20;
+    static constexpr size_t MAX_IN_MEM_BATT_VOLTAGE_ENTRIES = 40;
 
     TelemetryLogHolder(QObject *parent = nullptr);
 
@@ -69,36 +59,15 @@ public:
     Q_INVOKABLE QDateTime latestStationPositionUpdateTime();
     Q_INVOKABLE QDateTime latestRocketPositionUpdateTime();
 
-    Q_INVOKABLE double latestBatteryVoltage();
-    Q_INVOKABLE double latestBatteryCurrent();
-
-    Q_INVOKABLE QDateTime batteryVoltageUpdateTime();
-    Q_INVOKABLE QDateTime batteryCurrentUpdateTime();
-
-    Q_INVOKABLE QDateTime earliestBatteryVoltageTime();
-
-    Q_INVOKABLE double latestCpuTemp();
-    Q_INVOKABLE double latestRadioTemp();
-
-    Q_INVOKABLE QDateTime cpuTempUpdateTime();
-    Q_INVOKABLE QDateTime radioTempUpdateTime();
-
-    Q_INVOKABLE QDateTime earliestCpuTempTime();
-    Q_INVOKABLE QDateTime earliestRadioTempTime();
 
     Q_INVOKABLE uint64_t latestRamUsage();
     Q_INVOKABLE uint64_t latestFsUsage();
 
-    Q_INVOKABLE void updateCpuTempSeries(QAbstractSeries *series);
-    Q_INVOKABLE void updateRadioTempSeries(QAbstractSeries *series);
-    Q_INVOKABLE void updateBatteryVoltageSeries(QAbstractSeries *series);
-
+    FrontBackDataHolder *getCpuTemp();
+    FrontBackDataHolder *getRadioTemp();
+    FrontBackDataHolder *getBatteryCurrent();
+    FrontBackDataHolder *getBatteryVoltage();
 public slots:
-    void newBatteryVoltage(QDateTime ts, double voltage);
-    void newBatteryCurrent(QDateTime ts, double current);
-
-    void newCpuTemp(QDateTime ts, double temp);
-    void newRadioTemp(QDateTime ts, double temp);
 
     void newRamUsage(QDateTime ts, uint64_t);
     void newFsUsage(QDateTime ts, uint64_t);
@@ -116,29 +85,21 @@ signals:
     void stationPositionUpdateTimeChanged();
     void rocketPositionUpdateTimeChanged();
 
-    void batteryVoltageChanged();
-    void batteryCurrentChanged();
-
-    void batteryVoltageUpdateTimeChanged();
-    void batteryCurrentUpdateTimeChanged();
+    void ramUsageChanged();
+    void fsUsageChanged();
 
     void cpuTempChanged();
     void radioTempChanged();
-
-    void cpuTempUpdateTimeChanged();
-    void radioTempUpdateTimeChanged();
-
-    void ramUsageChanged();
-    void fsUsageChanged();
+    void batteryCurrentChanged();
+    void batteryVoltageChanged();
 
 private:
     QGeoCoordinate last_rocket_pos{0, 0, 120};
 
-    QList<QPointF> cpu_temps{};
-    QList<QPointF> radio_temps{};
-    QList<QPointF> battery_voltages{};
-
-    DataSource line_data;
+    FrontBackDataHolder battery_voltage;
+    FrontBackDataHolder battery_current;
+    FrontBackDataHolder cpu_temp;
+    FrontBackDataHolder radio_temp;
 };
 
 #endif // TELEMETRYLOGHOLDER_H
