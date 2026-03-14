@@ -16,28 +16,49 @@ ChartView {
     Layout.fillHeight: true
 
     theme: ChartView.ChartThemeQt
+    animationOptions: ChartView.SeriesAnimations
 
     property date startDate: new Date()
 
     Timer {
-        interval: 1000
-        running: true // set to true for fun
+        interval: 460
+        running: false // set to true for fun
         repeat: true
         onTriggered: {
             let t = (new Date().getTime(
                          ) - tempChart.startDate.getTime()) / 1000
-            TelemetryLogHolder.newCpuTemp(new Date(), 30 + 5 * Math.sin(t))
-            TelemetryLogHolder.newRadioTemp(new Date(), 30 + 5 * Math.cos(t))
 
-            TelemetryLogHolder.newBatteryVoltage(new Date(),
-                                                 Math.max(12.5 - t / 10, 10.2))
+            TelemetryLogHolder.batteryVoltage.newValue(new Date(),
+                                                       Math.max(12.5 - t / 10,
+                                                                10.2))
 
-            const starts = [TelemetryLogHolder.earliestCpuTempTime(
-                                ), TelemetryLogHolder.earliestRadioTempTime(
-                                ), TelemetryLogHolder.earliestBatteryVoltageTime(
-                                )]
+            TelemetryLogHolder.batteryCurrent.newValue(
+                        new Date(), 120 + 200 + 10 * Math.sin(t))
 
-            const ends = [TelemetryLogHolder.cpuTempUpdateTime, TelemetryLogHolder.radioTempUpdateTime, TelemetryLogHolder.batteryVoltageUpdateTime]
+            const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime]
+
+            const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime]
+
+            axisX.min = new Date(Math.min(...starts))
+            axisX.max = new Date(Math.max(...ends))
+        }
+    }
+
+    Timer {
+        interval: 1000
+        running: false // set to true for fun
+        repeat: true
+        onTriggered: {
+            let t = (new Date().getTime(
+                         ) - tempChart.startDate.getTime()) / 1000
+
+            TelemetryLogHolder.cpuTemp.newValue(new Date(),
+                                                30 + 5 * Math.sin(t))
+            TelemetryLogHolder.radioTemp.newValue(new Date(),
+                                                  30 + 5 * Math.cos(t))
+
+            const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime]
+            const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime]
 
             axisX.min = new Date(Math.min(...starts))
             axisX.max = new Date(Math.max(...ends))
@@ -45,20 +66,42 @@ ChartView {
     }
 
     Connections {
-        target: TelemetryLogHolder
+        target: TelemetryLogHolder.cpuTemp
 
-        function onCpuTempChanged() {
-            TelemetryLogHolder.updateCpuTempSeries(tempChart.series(
-                                                       cpuTempSeries.name))
+        function onValueChanged() {
+            TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(
+                                                        cpuTempSeries.name))
         }
-        function onRadioTempChanged() {
-            TelemetryLogHolder.updateRadioTempSeries(tempChart.series(
-                                                         radioTempSeries.name))
+    }
+    Connections {
+        target: TelemetryLogHolder.radioTemp
+
+        function onValueChanged() {
+            TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(
+                                                          radioTempSeries.name))
         }
-        function onBatteryVoltageChanged() {
-            TelemetryLogHolder.updateBatteryVoltageSeries(
+    }
+    Connections {
+        target: TelemetryLogHolder.batteryVoltage
+
+        function onValueChanged() {
+            TelemetryLogHolder.batteryVoltage.fillXYSeries(
                         tempChart.series(batteryVoltageSeries.name))
         }
+    }
+    Component.onCompleted: {
+        TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(
+                                                    cpuTempSeries.name))
+        TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(
+                                                      radioTempSeries.name))
+        TelemetryLogHolder.batteryVoltage.fillXYSeries(
+                    tempChart.series(batteryVoltageSeries.name))
+
+        const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime]
+        const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime]
+
+        axisX.min = new Date(Math.min(...starts))
+        axisX.max = new Date(Math.max(...ends))
     }
 
     DateTimeAxis {

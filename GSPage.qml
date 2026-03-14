@@ -5,58 +5,65 @@ import QtQuick.Controls.Material
 import QtCore
 import QtQuick.Dialogs
 
-ColumnLayout {
+RowLayout {
+    id: root
     required property variant fullscreenToggle
 
-    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-    Label {
-        text: "GS View"
-    }
-    Label {
-        text: "IDK What to put here bc i can't get the FPS view easily"
-    }
     ColumnLayout {
+        Layout.fillHeight: true
+        Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+        Label {
+            text: "GS View"
+        }
+        Label {
+            text: "IDK What to put here bc i can't get the FPS view easily"
+        }
+        ColumnLayout {
 
-        Label {
-            text: "Host: " + SystemInformation.machineHostName
+            Label {
+                text: "Host: " + SystemInformation.machineHostName
+            }
+            Label {
+                text: "platform: " + SystemInformation.prettyProductName
+            }
+            Label {
+                text: "version: " + SystemInformation.productVersion
+            }
+            Label {
+                text: "kernel type: " + SystemInformation.kernelType
+            }
+            Label {
+                text: "kernel version: " + SystemInformation.kernelVersion
+            }
+            Label {
+                text: "arch: " + SystemInformation.currentCpuArchitecture
+            }
         }
-        Label {
-            text: "platform: " + SystemInformation.prettyProductName
-        }
-        Label {
-            text: "version: " + SystemInformation.productVersion
-        }
-        Label {
-            text: "kernel type: " + SystemInformation.kernelType
-        }
-        Label {
-            text: "kernel version: " + SystemInformation.kernelVersion
-        }
-        Label {
-            text: "arch: " + SystemInformation.currentCpuArchitecture
-        }
-    }
-    RowLayout {
-        Layout.fillWidth: true
+        RowLayout {
+            Layout.fillWidth: true
 
-        Button {
-            text: "Exit"
-            onClicked: exitConf.visible = true
-        }
+            Button {
+                text: "Exit"
+                onClicked: exitConf.visible = true
+            }
 
-        Button {
-            text: "Fullscreen"
-            onClicked: fullscreenToggle()
+            Button {
+                text: "Fullscreen"
+                onClicked: root.fullscreenToggle()
+            }
         }
-    }
-    MessageDialog {
-        id: exitConf
-        title: "Exit Application"
-        text: " Are you sure you want to exit"
-        visible: false
-        buttons: Dialog.Yes | Dialog.No
+        MessageDialog {
+            id: exitConf
+            title: "Exit Application"
+            text: " Are you sure you want to exit"
+            visible: false
+            buttons: Dialog.Yes | Dialog.No
 
-        onAccepted: Qt.callLater(Qt.quit)
-        onRejected: console.log("aborted")
+            onAccepted: Qt.callLater(Qt.quit)
+            onRejected: console.log("aborted")
+        }
+        Label {
+            text: "Dir: " + flight_dir
+        }
     }
 }

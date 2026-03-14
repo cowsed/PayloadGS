@@ -15,7 +15,6 @@ void RadioParser::handleLine(const QString &line)
         qWarning("Empty line from radio");
         return;
     }
-    qInfo("Parts: %s\n", qPrintable(parts[0]));
 }
 
 int RadioParser::run_watcher()
@@ -29,7 +28,6 @@ int RadioParser::run_watcher()
         }
         emit radio_connected_changed(true);
 
-        qInfo("Opened Fifo");
         while (fifo.isOpen()) {
             QString line = fifo.readLine();
             handleLine(line);

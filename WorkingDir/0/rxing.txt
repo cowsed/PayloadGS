@@ -1,2 +1,0 @@
-#time, snr, rssi, sf, bw, cr, data_hex
-

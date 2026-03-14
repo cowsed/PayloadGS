@@ -2,19 +2,21 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
-// preview of image in bottom slider to see and
 Rectangle {
     id: preview
 
     required property int imageID
     property int activeImageID
-    required property real transmissionPercent
-    required property string dir
     required property Item activeHolder
 
     Layout.preferredWidth: 180
     Layout.preferredHeight: 135
     Layout.margins: 5
+
+    function updatePercent() {
+        transmissionPercent.text = (100 * ImageDataHolder.transmissionPercent(
+                                        preview.imageID)).toFixed(0) + "%"
+    }
 
     color: (preview.activeImageID == preview.imageID) ? Qt.rgba(
                                                             0, 0, 0,
@@ -23,15 +25,14 @@ Rectangle {
         anchors.fill: parent
 
         onClicked: {
-            console.log("Rectangle clicked!",
-                        preview.imageID) // Optional console output
             preview.activeHolder.activeImageID = preview.imageID
         }
         RowLayout {
             anchors.fill: parent
 
             Image {
-                source: preview.dir + "thumbnail.png"
+                source: "file:" + ImageDataHolder.pathForImageThumbnail(
+                            preview.imageID)
                 Layout.preferredWidth: 128
                 Layout.preferredHeight: 128
                 fillMode: Image.PreserveAspectFit
@@ -44,7 +45,9 @@ Rectangle {
                     text: "ID: " + preview.imageID
                 }
                 Text {
-                    text: preview.transmissionPercent + "%"
+                    id: transmissionPercent
+                    text: (100 * ImageDataHolder.transmissionPercent(
+                               preview.imageID)).toFixed(0) + "%"
                 }
             }
         }

@@ -51,6 +51,7 @@ ApplicationWindow {
     }
 
     property real initTab: 1
+    property real initV: 1
 
     header: TabBar {
         id: tabbar
@@ -60,37 +61,37 @@ ApplicationWindow {
         TabButton {
             id: mapTabButton
             text: "Map"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: controlTabButton
             text: "Control"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: telemTabButton
             text: "Telemetry"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: armTabButton
             text: "Arm"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: imageTabButton
             text: "Image"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: radioTabButton
             text: "Radio"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: shellTabButton
             text: "Shell"
-            onClicked: metaview.currentIndex = 0
+            onClicked: metaview.currentIndex = 1
         }
 
         Shortcut {
@@ -128,6 +129,7 @@ ApplicationWindow {
 
         onCurrentIndexChanged: {
             mainview.currentIndex = currentIndex
+            detailView.currentIndex = currentIndex
         }
     }
 
@@ -135,6 +137,66 @@ ApplicationWindow {
         id: metaview
         anchors.fill: parent
         orientation: Qt.Vertical
+        currentIndex: mainwindow.initV
+
+        SwipeView {
+            id: detailView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            currentIndex: mainwindow.initTab
+            onCurrentIndexChanged: {
+                tabbar.currentIndex = currentIndex
+            }
+
+            GSPage {
+                // over map
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+            GSPage {
+                // over controls
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+            GSPage {
+                // over telem
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+            GSPage {
+                // over arm
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+            GSPage {
+                // over image
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+            LibrarianPage {
+                // over radio
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            GSPage {
+                // over shell
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                fullscreenToggle: mainwindow.toggleFullscreen
+            }
+        }
 
         SwipeView {
             id: mainview
@@ -225,7 +287,7 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
-                text: "Bat: " + TelemetryLogHolder.latestBatteryVoltage.toFixed(
+                text: "Bat: " + TelemetryLogHolder.batteryVoltage.latestValue.toFixed(
                           1) + "V"
                 Layout.alignment: Qt.AlignTop
             }
@@ -269,6 +331,11 @@ ApplicationWindow {
             ToolSeparator {}
             Label {
                 text: "Rem: 4"
+                Layout.alignment: Qt.AlignTop
+            }
+            ToolSeparator {}
+            Label {
+                text: "Rq: " + Librarian.numRequests
                 Layout.alignment: Qt.AlignTop
             }
             Rectangle {

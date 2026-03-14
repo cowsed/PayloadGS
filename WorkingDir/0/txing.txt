@@ -1,2 +1,0 @@
-# if no data, treat it as a setting of rx parameters
-#time, power, sf, bw, cr, data_hex

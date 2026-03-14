@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 import QtQuick.Controls
@@ -8,10 +10,13 @@ Item {
     id: page
 
     required property int flightNumber
-    property int activeImageID: 1
+    property int activeImageID: 0
 
-    property string imageDir: "file:///home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/"
-                              + page.flightNumber + "/Images/"
+    property ImageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(
+                                                          activeImageID)
+
+    property real numPackets: ImageDataHolder.numDownloadedPackets(
+                                  activeImageID)
 
     Material.theme: Material.Light
     RowLayout {
@@ -20,22 +25,22 @@ Item {
             Layout.preferredWidth: 512 - 60
             Layout.preferredHeight: 512 - 60
             fillMode: Image.PreserveAspectFit
-            source: page.imageDir + page.activeImageID + "/sofar.png"
+            source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
         }
 
         RowLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft
+            // Layout.alignment: Qt.AlignLeft
             ColumnLayout {
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.alignment: Qt.AlignTop
+                // Layout.alignment: Qt.AlignTop
                 spacing: 1
 
                 Label {
-                    text: "Images"
+                    text: "Images: " + ImageDataHolder.numImages
                 }
 
                 ScrollView {
@@ -47,33 +52,14 @@ Item {
 
                     ColumnLayout {
                         spacing: 0
-                        ImagePreview {
-                            activeHolder: page
-                            activeImageID: page.activeImageID
-                            imageID: 0
-                            transmissionPercent: 12
-                            dir: page.imageDir + "/0/"
-                        }
-                        ImagePreview {
-                            activeHolder: page
-                            activeImageID: page.activeImageID
-                            imageID: 1
-                            transmissionPercent: 5
-                            dir: page.imageDir + "/1/"
-                        }
-                        ImagePreview {
-                            activeHolder: page
-                            activeImageID: page.activeImageID
-                            imageID: 2
-                            transmissionPercent: 1
-                            dir: page.imageDir + "/2/"
-                        }
-                        ImagePreview {
-                            activeHolder: page
-                            activeImageID: page.activeImageID
-                            imageID: 3
-                            transmissionPercent: 2
-                            dir: page.imageDir + "/3/"
+                        Repeater {
+                            model: ImageDataHolder.numImages
+                            ImagePreview {
+                                required property int index
+                                activeHolder: page
+                                activeImageID: page.activeImageID
+                                imageID: index
+                            }
                         }
                     }
                 }
@@ -85,18 +71,53 @@ Item {
                 }
 
                 Label {
-                    text: "Packets: 45"
+                    text: "Blocks total: " + page.activeImageMetadata.numBlocks
                 }
                 Label {
-                    text: "Remaining: 13"
+                    text: "Blocks downloaded: " + page.numPackets
+                }
+                Label {
+                    text: `Remaining: ${page.activeImageMetadata.numBlocks - page.numPackets}`
                 }
 
                 Layout.horizontalStretchFactor: 4
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Button {
+
+                CropVisualizer {
+                    crop: page.activeImageMetadata
                     Layout.fillWidth: true
-                    text: "Download More"
+                    Layout.preferredHeight: 120
+                }
+
+                Label {
+                    text: `H: ` + page.activeImageMetadata.left
+                          + ` - ${page.activeImageMetadata.right}`
+                }
+                Label {
+                    text: `V: ${page.activeImageMetadata.bottom} - ${page.activeImageMetadata.top}`
+                }
+                Label {
+                    text: `E: ${page.activeImageMetadata.encodedWidth}x${page.activeImageMetadata.encodedHeight} Q: ${page.activeImageMetadata.encodedQuality}`
+                }
+
+                // check if librarian is asking
+                RowLayout {
+                    property bool looking: Librarian.activelyAskingForImage(
+                                               page.activeImageID)
+                    Label {
+                        // should be 3 state: pause, start, finished
+                        text: parent.looking ? "Downloading" : "Stopped"
+                    }
+
+                    Button {
+                        // really this should be 3 state: pause, start, finished
+                        text: parent.looking ? "Pause" : "Start"
+                    }
+                }
+                Button {
+                    text: "force reload"
+                    onClicked: ImageDataHolder.rescanCount()
                 }
             }
         }

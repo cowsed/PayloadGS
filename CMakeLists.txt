@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PayloadGS VERSION 0.1 LANGUAGES CXX)
+project(PayloadGS VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Quick3D)
@@ -13,16 +14,17 @@ find_package(Qt6 REQUIRED COMPONENTS Gui)
 find_package(Qt6 REQUIRED COMPONENTS Location)
 
 
-
-
-
 qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appPayloadGS
     main.cpp
+    radio_packet_structure/lora.c radio_packet_structure/packets_p2g.c radio_packet_structure/packets_g2p.c
+
 )
 
 
+
+target_include_directories(appPayloadGS PRIVATE radio_packet_structure)
 
 
 
@@ -86,6 +88,12 @@ SOURCES datasource.h datasource.cpp
 SOURCES packetinfo.h packetinfo.cpp
 RESOURCES assets/images/window_icon.png
 QML_FILES GSPage.qml
+SOURCES frontbackdataholder.h frontbackdataholder.cpp
+SOURCES librarian.h librarian.cpp
+SOURCES imagedataholder.h imagedataholder.cpp
+SOURCES imagemetadataholder.h imagemetadataholder.cpp
+QML_FILES CropVisualizer.qml
+QML_FILES LibrarianPage.qml
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
