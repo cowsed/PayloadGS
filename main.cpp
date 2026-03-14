@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     QString flight_dir = QString("%1/%2").arg(working_dir).arg(flight_id);
     engine.rootContext()->setContextProperty("flight_dir", flight_dir);
 
+
     QQuickView viewer;
 
     // TelemetryLogHolder *holder
