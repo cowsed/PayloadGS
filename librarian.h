@@ -26,7 +26,7 @@ public:
         ShellStdout,
         ShellStderr,
 
-        ImageData,
+        ImageBlockData,
         ImageMetadata,
 
         ShellExecInfo,
@@ -106,7 +106,7 @@ public:
     void GatherRequestsFromDisk(ImageDataHolder *image);
 
 public slots:
-    void ImageDataReceived(uint8_t image_id, uint16_t block_index, const QByteArray &buf);
+    void ImageDataReceived(QDateTime time, const ImageData &data);
 
     void ShellStdoutReceived(const ShellReadOutputData &data);
     void ShellStderrReceived(const ShellReadOutputData &data);

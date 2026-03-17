@@ -1,5 +1,7 @@
 #include "imagedataholder.h"
 #include <QDir>
+#include "QThreadPool"
+#include "ssdvdecoder.h"
 
 ImageDataHolder::ImageDataHolder(QObject *parent)
     : QObject{parent}
@@ -106,7 +108,7 @@ void ImageDataHolder::rescanCount()
 
     uint8_t maximum_entry = 0;
     bool foundAny = false;
-    QStringList entries = dir.entryList(QDir::Dirs | QDir::NoSymLinks);
+    QStringList entries = dir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
 
     for (const QString &entry : std::as_const(entries)) {
         if (!entry.startsWith(IMAGE_PREFIX)) {
@@ -157,5 +159,30 @@ void ImageDataHolder::setNumImages(size_t num)
     }
 }
 
-void ImageDataHolder::ImageDataReceived(uint8_t image_id, uint16_t block_id, const QByteArray &buf)
-{}
+void ImageDataHolder::ImageDataReceived(QDateTime time, const ImageData &buf)
+{
+    QString fname = imagePacketDirectory(buf.image_id) + "/" + packetName(buf.block_index);
+    QFile file{fname};
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open packet for writing going to have a bad time:"
+                 << file.errorString();
+        return;
+    }
+    file.write((char *) &buf.buf[0], IMAGE_DATA_SIZE);
+    file.close();
+
+    SSDVDecoder *dec = new SSDVDecoder{m_flight_dir + "/..",
+                                       m_flight_dir,
+                                       IMAGE_DATA_SIZE,
+                                       buf.image_id};
+    dec->setAutoDelete(true);
+    connect(dec, &::SSDVDecoder::conversionFinsihed, this, &ImageDataHolder::SSDVDecodeFinished);
+    qDebug("Starting ssdv decoder");
+    QThreadPool::globalInstance()->start(dec);
+}
+
+void ImageDataHolder::SSDVDecodeFinished(uint8_t image_id, int exit_code)
+{
+    qDebug("Finished decoding image %d with exit code %d", image_id, exit_code);
+    emit imageUpdated(image_id);
+}

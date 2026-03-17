@@ -40,7 +40,13 @@ ApplicationWindow {
     property int flightNumber: 0
     property date lastFlightNumberUpdate: new Date()
 
-    property string stateString: "Pad"
+    property string stateString: "Unknown"
+    Connections {
+        target: RadioPacketParser
+        function onFlightStateUpdated(time, phase, flags) {
+            mainwindow.stateString = RadioPacketParser.phaseToShortString(phase)
+        }
+    }
 
     function toggleFullscreen() {
         if (mainwindow.visibility === Window.FullScreen) {
@@ -189,12 +195,10 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            GSPage {
+            FakePacketEmitter {
                 // over shell
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
         }
 

@@ -20,7 +20,9 @@ struct P2GLinkHeader {
   uint8_t expected_packets_before_response; // 6 bit [0,63] counts down
 };
 
-enum UnpackResult unpack_p2g_link_header(uint8_t *buf, uint32_t len, struct P2GLinkHeader *header);
+enum UnpackResult unpack_p2g_link_header(const uint8_t *buf,
+                                         uint32_t len,
+                                         struct P2GLinkHeader *header);
 int pack_p2g_link_header(uint8_t *buf);
 
 struct ImageData
@@ -31,7 +33,7 @@ struct ImageData
     uint16_t block_index;
 };
 #define SIZEOF_PACKED_IMAGE_DATA IMAGE_DATA_SIZE
-enum UnpackResult unpack_image_data(uint8_t *buf, uint32_t len, struct ImageData *header);
+enum UnpackResult unpack_image_data(const uint8_t *buf, uint32_t len, struct ImageData *header);
 // ignores image_id and block_index since those come from the buf
 int pack_imagedata(const struct ImageData *data, uint8_t *buf);
 
@@ -55,7 +57,7 @@ struct ShellReadOutputData {
 
 enum FlightPhase {
     FlightState_Starting = 0,
-    FlightState_WaitingForLaunch = 1,
+    FlightState_Pad = 1,
     FlightState_ExpectingLaunch = 2,
     FlightState_Flight = 3,
     FlightState_LandedFlipping = 4,
@@ -64,15 +66,16 @@ enum FlightPhase {
 };
 
 enum StatusBit {
-    Active = 0,
-    LastArmMoveStalled = 1,
-    LastServoMoveStalled = 2,
-    ArmMoving = 3,
-    ServoMoving = 4,
-    InIdlePosition = 5,
-    PiOverTemp = 6,
-    RadioOverTemp = 7,
 
+    Active = 0,
+    Autonomous = 1,
+    LastArmMoveStalled = 2,
+    LastServoMoveStalled = 3,
+    ArmMoving = 4,
+    ServoMoving = 5,
+    InIdlePosition = 6,
+    MotorsOverTemp = 7,
+    RadioOverTemp = 8,
     GPSHasFix = 9,
 
 };
@@ -169,6 +172,9 @@ struct PacketP2G
     };
 };
 
+enum UnpackResult unpack_command_response(const uint8_t *buf,
+                                          uint32_t len,
+                                          struct CommandResponse *resp);
 
 int pack_telemetry(const struct Telemetry *telem, uint8_t *buf);
 enum UnpackResult unpack_telemetry(uint8_t *buf, uint32_t len, struct Telemetry *telem);

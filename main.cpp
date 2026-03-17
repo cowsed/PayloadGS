@@ -17,6 +17,7 @@
 
 #include "imagedataholder.h"
 #include "librarian.h"
+#include "radiopacketparser.h"
 
 int main(int argc, char *argv[])
 {
@@ -44,14 +45,17 @@ int main(int argc, char *argv[])
     // TelemetryLogHolder *holder
     //     = engine.singletonInstance<TelemetryLogHolder *>("PayloadGS", "TelemetryLogHolder");
 
-    ImageDataHolder *holder = engine.singletonInstance<ImageDataHolder *>("PayloadGS",
-                                                                          "ImageDataHolder");
-    holder->setFlightDir(flight_dir);
-    holder->rescanCount();
+    RadioPacketParser *radio_parser
+        = engine.singletonInstance<RadioPacketParser *>("PayloadGS", "RadioPacketParser");
+
+    ImageDataHolder *img_holder = engine.singletonInstance<ImageDataHolder *>("PayloadGS",
+                                                                              "ImageDataHolder");
+    img_holder->setFlightDir(flight_dir);
+    img_holder->rescanCount();
 
     Librarian *lib = engine.singletonInstance<Librarian *>("PayloadGS", "Librarian");
-    lib->GatherRequestsFromDisk(holder);
-    lib->DumpInfo();
+    lib->GatherRequestsFromDisk(img_holder);
+    // lib->DumpInfo();
 
     qDebug("Have %zu requests", lib->NumRequests());
 
@@ -61,6 +65,12 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
+
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::imageDataReceived,
+                     img_holder,
+                     &ImageDataHolder::ImageDataReceived,
+                     Qt::QueuedConnection);
 
     engine.loadFromModule("PayloadGS", "Main");
 

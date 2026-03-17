@@ -47,11 +47,16 @@ signals:
     void imageUpdated(uint8_t image_id);
     void gotNewMetadata(uint8_t image_id);
 
-public slots:
-    void ImageDataReceived(uint8_t image_id, uint16_t block_id, const QByteArray &buf);
+    // emit when you need the SSDV runner to do something
+    void readyForSSDVDecode(uint8_t image_id);
 
-    // got metadata oacket
-    // got image packet
+public slots:
+    void ImageDataReceived(QDateTime time, const ImageData &buf);
+
+    // received when decode(packets->big binary->image->thumbnail pipeline is finished
+    void SSDVDecodeFinished(uint8_t image_id, int exit_code);
+
+    // got metadata packet
 private:
     void setNumImages(size_t num);
     size_t m_count = 0;

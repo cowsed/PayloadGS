@@ -94,6 +94,8 @@ SOURCES imagedataholder.h imagedataholder.cpp
 SOURCES imagemetadataholder.h imagemetadataholder.cpp
 QML_FILES CropVisualizer.qml
 QML_FILES LibrarianPage.qml
+QML_FILES FakePacketEmitter.qml
+SOURCES ssdvdecoder.h ssdvdecoder.cpp
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

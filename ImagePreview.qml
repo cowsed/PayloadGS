@@ -13,6 +13,12 @@ Rectangle {
     Layout.preferredHeight: 135
     Layout.margins: 5
 
+    function reload() {
+        const oldSource = image.source
+        image.source = ""
+        image.source = oldSource
+    }
+
     function updatePercent() {
         transmissionPercent.text = (100 * ImageDataHolder.transmissionPercent(
                                         preview.imageID)).toFixed(0) + "%"
@@ -31,6 +37,8 @@ Rectangle {
             anchors.fill: parent
 
             Image {
+                id: image
+
                 source: "file:" + ImageDataHolder.pathForImageThumbnail(
                             preview.imageID)
                 Layout.preferredWidth: 128

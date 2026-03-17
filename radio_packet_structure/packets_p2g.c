@@ -1,14 +1,14 @@
 #include "packets_p2g.h"
 #include <string.h>
 
-enum UnpackResult unpack_p2g_link_header(uint8_t *buf, uint32_t len, struct P2GLinkHeader *header){
+enum UnpackResult unpack_p2g_link_header(const uint8_t *buf, uint32_t len, struct P2GLinkHeader *header){
   if(len < 1){
     return UnpackResult_TooShort;
   }
   
-enum P2GPacketType typ = 0b11 & (buf[0] >> 6);
+  enum P2GPacketType typ = 0b11 & (buf[0] >> 6);
   uint8_t left = buf[0] & 0b111111; 
- header->packet_type = typ;
+  header->packet_type = typ;
   header->expected_packets_before_response = left;
 
   return UnpackResult_AllGood;
@@ -17,7 +17,7 @@ enum P2GPacketType typ = 0b11 & (buf[0] >> 6);
 int pack_p2g_link_header(uint8_t *buf);
 
 
-enum UnpackResult unpack_image_data(uint8_t *buf, uint32_t len, struct ImageData *header){
+enum UnpackResult unpack_image_data(const uint8_t *buf, uint32_t len, struct ImageData *header){
   if (len < IMAGE_DATA_SIZE){
     return UnpackResult_TooShort;
   }
@@ -66,4 +66,21 @@ enum UnpackResult unpack_flight_heartbeat(uint8_t *buf,
                                                 struct FlightHeartbeatStats *stats){
 
   return UnpackResult_AllGood;
+}
+
+
+enum UnpackResult unpack_command_response(const uint8_t *buf, uint32_t len, struct CommandResponse *resp){
+  if (len < 1){
+    return UnpackResult_TooShort;
+  }
+
+  resp->cmd = buf[0];
+  switch (resp->cmd){
+    
+  default:
+    return UnpackResult_UnknownCommand;
+
+}
+
+
 }

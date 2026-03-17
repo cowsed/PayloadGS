@@ -1,4 +1,5 @@
 #include "librarian.h"
+#include "packets_p2g.h"
 
 Librarian::Librarian() {}
 
@@ -17,7 +18,6 @@ void Librarian::GatherRequestsFromDisk(ImageDataHolder *image)
             continue;
         }
         ImageDataHolder::DownloadProgress prog = image->downloadedPackets(i);
-        qDebug("%lld downloaded of %hu", prog.downloaded_packets.size(), meta.numBlocks());
         AddImageRequests(i, meta.numBlocks(), prog);
     }
 }
@@ -62,7 +62,7 @@ bool Librarian::Request::operator==(const Request &other) const
         return stdout == other.stdout;
     case RequestType::ShellStderr:
         return stderr == other.stderr;
-    case RequestType::ImageData:
+    case RequestType::ImageBlockData:
         return image_data == other.image_data;
     case RequestType::ImageMetadata:
         return image_metadata_id == other.image_metadata_id;
@@ -84,7 +84,7 @@ bool Librarian::Request::operator<(const Request &other) const
         return stdout < other.stdout;
     case RequestType::ShellStderr:
         return stderr < other.stderr;
-    case RequestType::ImageData:
+    case RequestType::ImageBlockData:
         return image_data < other.image_data;
     case RequestType::ImageMetadata:
         return image_metadata_id < other.image_metadata_id;
@@ -110,7 +110,7 @@ void Librarian::DumpInfo() const
 {
     for (const auto &req : queue) {
         switch (req.type) {
-        case RequestType::ImageData:
+        case RequestType::ImageBlockData:
             qDebug("Req: ImageData image: %d block: %d",
                    req.image_data.image_id,
                    req.image_data.block_index);
@@ -134,7 +134,7 @@ std::optional<Librarian::Request> Librarian::Pop()
 void Librarian::StopImageDownload(uint8_t image_id)
 {
     std::erase_if(queue, [image_id](const Request &r) {
-        if (r.type != RequestType::ImageData) {
+        if (r.type != RequestType::ImageBlockData) {
             return false;
         }
         if (r.image_data.image_id == image_id) {
@@ -150,7 +150,7 @@ void Librarian::AddImageRequests(uint8_t image_id,
 {
     for (uint16_t block_i = 0; block_i < num_blocks; block_i++) {
         if (!progress_sofar.downloaded_packets.contains(block_i)) {
-            AddRequest({.type = RequestType::ImageData,
+            AddRequest({.type = RequestType::ImageBlockData,
                         .image_data = {.image_id = image_id, .block_index = block_i}});
         }
     }
@@ -159,7 +159,7 @@ void Librarian::AddImageRequests(uint8_t image_id,
 bool Librarian::activelyAskingForImage(uint8_t image_id) const
 {
     return std::any_of(queue.cbegin(), queue.cend(), [image_id](const Request &r) {
-        if (r.type == RequestType::ImageData) {
+        if (r.type == RequestType::ImageBlockData) {
             return r.image_data.image_id == image_id;
         }
         if (r.type == RequestType::ImageMetadata) {
@@ -169,11 +169,11 @@ bool Librarian::activelyAskingForImage(uint8_t image_id) const
     });
 }
 
-void Librarian::ImageDataReceived(uint8_t image_id, uint16_t block_index, const QByteArray &buf)
+void Librarian::ImageDataReceived(QDateTime time, const ImageData &data)
 {
     const Request r = {
-        .type = RequestType::ImageData,
-        .image_data = {.image_id = image_id, .block_index = block_index},
+        .type = RequestType::ImageBlockData,
+        .image_data = {.image_id = data.image_id, .block_index = data.block_index},
     };
     queue.erase(r);
 }

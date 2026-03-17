@@ -18,14 +18,37 @@ Item {
     property real numPackets: ImageDataHolder.numDownloadedPackets(
                                   activeImageID)
 
+    Connections {
+        target: ImageDataHolder
+        function onImageUpdated(image_id) {
+            if (image_id == page.activeImageID) {
+                activeImage.reload()
+            }
+            if (previews.itemAt(image_id)) {
+                previews.itemAt(image_id).reload()
+            }
+            page.activeImageMetadata = ImageDataHolder.metadataForImageId(
+                        page.activeImageID)
+        }
+    }
+
     Material.theme: Material.Light
     RowLayout {
         anchors.fill: parent
         Image {
+            id: activeImage
+            cache: false
             Layout.preferredWidth: 512 - 60
             Layout.preferredHeight: 512 - 60
             fillMode: Image.PreserveAspectFit
+
             source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
+
+            function reload() {
+                const oldSource = activeImage.source
+                activeImage.source = ""
+                activeImage.source = oldSource
+            }
         }
 
         RowLayout {
@@ -53,6 +76,7 @@ Item {
                     ColumnLayout {
                         spacing: 0
                         Repeater {
+                            id: previews
                             model: ImageDataHolder.numImages
                             ImagePreview {
                                 required property int index
@@ -117,7 +141,10 @@ Item {
                 }
                 Button {
                     text: "force reload"
-                    onClicked: ImageDataHolder.rescanCount()
+                    onClicked: {
+                        ImageDataHolder.rescanCount()
+                        activeImage.reload()
+                    }
                 }
             }
         }
