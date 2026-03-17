@@ -8,17 +8,7 @@ void Librarian::GatherRequestsFromDisk(ImageDataHolder *image)
     // Images
     qDebug("Gathering info for %hhu images", image->numImages());
     for (uint8_t i = 0; i < image->numImages(); i++) {
-        ImageMetadataHolder meta = image->metadataForImageId(i);
-        if (!meta.isValid()) {
-            // request metadata
-            AddRequest({
-                .type = RequestType::ImageMetadata,
-                .image_metadata_id = i,
-            });
-            continue;
-        }
-        ImageDataHolder::DownloadProgress prog = image->downloadedPackets(i);
-        AddImageRequests(i, meta.numBlocks, prog);
+        StartImageDownload(i, image);
     }
 }
 
@@ -128,11 +118,15 @@ std::optional<Librarian::Request> Librarian::Pop()
     }
     Request r = *queue.begin();
     queue.erase(r);
+
+    emit NumRequestsChanged();
+    emit SummaryChanged();
     return r;
 }
 
 void Librarian::StopImageDownload(uint8_t image_id)
 {
+    size_t old_len = queue.size();
     std::erase_if(queue, [image_id](const Request &r) {
         if (r.type != RequestType::ImageBlockData) {
             return false;
@@ -142,6 +136,25 @@ void Librarian::StopImageDownload(uint8_t image_id)
         }
         return false;
     });
+    if (queue.size() != old_len) {
+        emit NumRequestsChanged();
+        emit SummaryChanged();
+    }
+}
+
+void Librarian::StartImageDownload(uint8_t image_id, ImageDataHolder *image)
+{
+    ImageMetadataHolder meta = image->metadataForImageId(image_id);
+    if (!meta.isValid()) {
+        // request metadata
+        AddRequest({
+            .type = RequestType::ImageMetadata,
+            .image_metadata_id = image_id,
+        });
+        return;
+    }
+    ImageDataHolder::DownloadProgress prog = image->downloadedPackets(image_id);
+    AddImageRequests(image_id, meta.numBlocks, prog);
 }
 
 void Librarian::AddImageRequests(uint8_t image_id,
@@ -154,6 +167,8 @@ void Librarian::AddImageRequests(uint8_t image_id,
                         .image_data = {.image_id = image_id, .block_index = block_i}});
         }
     }
+    emit NumRequestsChanged();
+    emit SummaryChanged();
 }
 
 bool Librarian::activelyAskingForImage(uint8_t image_id) const
@@ -176,6 +191,8 @@ void Librarian::ImageDataReceived(QDateTime time, const ImageData &data)
         .image_data = {.image_id = data.image_id, .block_index = data.block_index},
     };
     queue.erase(r);
+    emit NumRequestsChanged();
+    emit SummaryChanged();
 }
 
 QList<Librarian::Request> Librarian::getHead(size_t num)
@@ -192,3 +209,38 @@ QList<Librarian::Request> Librarian::getHead(size_t num)
 
 void Librarian::ShellStdoutReceived(const ShellReadOutputData &data) {}
 void Librarian::ShellStderrReceived(const ShellReadOutputData &data) {}
+
+QVariantList Librarian::GetSummary()
+{
+    std::set<QString> sum;
+
+    for (const Request &req : queue) {
+        sum.insert(req.summarize());
+    }
+    qDebug("Summary called len %d", (int) sum.size());
+    QVariantList l;
+    for (const QString &r : sum) {
+        l.append(r);
+    }
+
+    return l;
+}
+
+QString Librarian::Request::summarize() const
+{
+    switch (type) {
+    case ShellStdout:
+        return QString("shell stdout %1").arg(stderr.exec_id);
+    case ShellStderr:
+        return QString("shell stderr %1").arg(stderr.exec_id);
+    case ImageBlockData:
+        return QString("image data %1").arg(image_data.image_id);
+    case ImageMetadata:
+        return QString("image meta %1").arg(image_metadata_id);
+    case ShellExecInfo:
+        return QString("shell return %1").arg(shell_exec_info_id);
+    case TelemetryRequest:
+        return "telemetry"; //telem_type.summarize();
+    }
+    return "Unknown req";
+}

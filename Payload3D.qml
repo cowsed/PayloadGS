@@ -116,7 +116,7 @@ View3D {
     }
 
     // Start with a simple material, using the built-in implementation for everything.
-    Payload {
+    FakePayload {
         id: payload
         scale: Qt.vector3d(1000, 1000, 1000)
 
@@ -140,52 +140,5 @@ View3D {
         rightWallOpenness: v3d.leftWallOpenness
 
         rotation: v3d.payloadOrientation
-
-        // BaseJoint {
-        //     id: baseJoint
-        // }
-
-        // UpperArm {
-        //     id: upperArm
-        //     position.x: -0.109769
-        //     position.y: 0.015418
-        //     // 0
-        //     eulerRotation.y: v3d.shoulderYaw
-        //     eulerRotation.z: v3d.shoulderPitch
-        //     ForeArm {
-        //         id: forearm
-        //         position.y: 0.115517
-        //         eulerRotation.z: v3d.elbowPitch
-        //         Wrist {
-        //             id: wrist
-        //             position.y: 0.085852
-        //             eulerRotation.z: v3d.wristPitch
-        //         }
-        //     }
-        // }
-        // UpperArm {
-        //     id: upperArmGhost
-        //     position.x: -0.109769
-        //     position.y: 0.015418
-        //     isGhost: true
-
-        //     visible: v3d.showGhost
-        //     eulerRotation.y: v3d.ghostShoulderYaw
-        //     eulerRotation.z: v3d.ghostShoulderPitch
-
-        //     ForeArm {
-        //         id: forearmGhost
-        //         position.y: 0.115517
-        //         isGhost: true
-        //         eulerRotation.z: v3d.ghostElbowPitch
-
-        //         Wrist {
-        //             id: wristGhost
-        //             position.y: 0.085852
-        //             eulerRotation.z: v3d.ghostWristPitch
-        //             isGhost: true
-        //         }
-        //     }
-        // }
     }
 }

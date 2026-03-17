@@ -3,9 +3,9 @@ import QtQuick.Controls.Material
 
 Item {
     id: root
-    property int oldImageId: 0
-    property photoTransform oldCrop
-    required property photoTransform crop
+    required property int oldImageId
+    required property photoTransform oldCrop
+    property photoTransform crop
 
     property color bg_color: "#a0a0a0"
     property color old_color: "#000000"
@@ -46,8 +46,7 @@ Item {
             Image {
                 id: backgroundImage
                 visible: root.oldImageId != null
-                source: "file:" + ImageDataHolder.pathForImageThumbnail(
-                            root.oldImageId)
+                source: "file:" + ImageDataHolder.pathForImage(root.oldImageId)
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
             }

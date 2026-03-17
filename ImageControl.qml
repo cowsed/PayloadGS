@@ -19,6 +19,14 @@ Item {
                                   activeImageID)
 
     Connections {
+        target: page
+        function onActiveImageIDChanged() {
+            console.log("OAIIC")
+            controlColumn.reconsiderControlColumn()
+        }
+    }
+
+    Connections {
         target: ImageDataHolder
         function onImageUpdated(image_id) {
             if (image_id == page.activeImageID) {
@@ -90,6 +98,26 @@ Item {
             }
 
             ColumnLayout {
+                id: controlColumn
+                property bool hasAll: ImageDataHolder.imageComplete(
+                                          page.activeImageID)
+
+                function reconsiderControlColumn() {
+                    dlButton.text = Librarian.activelyAskingForImage(
+                                page.activeImageID) ? "Downloading" : "Paused"
+
+                    controlColumn.hasAll = ImageDataHolder.imageComplete(
+                                page.activeImageID)
+                }
+
+                Connections {
+                    target: Librarian
+                    function onNumRequestsChanged() {
+                        console.log("Changed")
+                        controlColumn.reconsiderControlColumn()
+                    }
+                }
+
                 Label {
                     text: "Image #" + page.activeImageID
                 }
@@ -109,9 +137,10 @@ Item {
                 Layout.fillWidth: true
 
                 CropVisualizer {
-                    crop: page.activeImageMetadata.photoTransform()
+                    oldCrop: page.activeImageMetadata.photoTransform()
                     Layout.fillWidth: true
                     Layout.preferredHeight: 120
+                    oldImageId: page.activeImageID
                 }
 
                 Label {
@@ -125,20 +154,31 @@ Item {
                     text: `E: ${page.activeImageMetadata.encodedWidth}x${page.activeImageMetadata.encodedHeight} Q: ${page.activeImageMetadata.encodedQuality}`
                 }
 
-                // check if librarian is asking
-                RowLayout {
-                    property bool looking: Librarian.activelyAskingForImage(
-                                               page.activeImageID)
-                    Label {
-                        // should be 3 state: pause, start, finished
-                        text: parent.looking ? "Downloading" : "Stopped"
-                    }
+                Button {
+                    id: dlButton
+                    visible: !parent.hasAll
+                    checkable: false
 
-                    Button {
-                        // really this should be 3 state: pause, start, finished
-                        text: parent.looking ? "Pause" : "Start"
+                    text: Librarian.activelyAskingForImage(
+                              page.activeImageID) ? "Downloading" : "Paused"
+
+                    onPressed: {
+                        if (Librarian.activelyAskingForImage(
+                                page.activeImageID)) {
+                            Librarian.StopImageDownload(page.activeImageID)
+                        } else {
+
+                            Librarian.StartImageDownload(page.activeImageID,
+                                                         ImageDataHolder)
+                        }
                     }
                 }
+
+                Label {
+                    visible: parent.hasAll
+                    text: "Completed"
+                }
+
                 Button {
                     text: "force reload"
                     onClicked: {

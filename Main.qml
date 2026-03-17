@@ -43,6 +43,13 @@ ApplicationWindow {
     property payloadFlags flags
     property bool flagsValid: false
 
+    function qsIfNanOrNum(num, numPlaces) {
+        if (isNaN(num)) {
+            return "???"
+        }
+        return num.toFixed(numPlaces)
+    }
+
     Connections {
         target: RadioPacketParser
         function onFlightStateUpdated(time, phase, flags) {
@@ -70,37 +77,37 @@ ApplicationWindow {
 
         TabButton {
             id: mapTabButton
-            text: "Map"
+            text: "Map 🗾"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: controlTabButton
-            text: "Control"
+            text: "Control 🕹️"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: telemTabButton
-            text: "Telemetry"
+            text: "Telemetry 📈"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: armTabButton
-            text: "Arm"
+            text: "Arm 🦾"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: imageTabButton
-            text: "Image"
+            text: "Image 📷"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: radioTabButton
-            text: "Radio"
+            text: "Radio 📻"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: shellTabButton
-            text: "Shell"
+            text: "Shell 🖥️"
             onClicked: metaview.currentIndex = 1
         }
 
@@ -225,12 +232,10 @@ ApplicationWindow {
 
                 fullscreenToggle: mainwindow.toggleFullscreen
             }
-            GSPage {
+            MoreTelemetryPage {
                 // over telem
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
             ArmSequenceController {
                 // over arm
@@ -261,8 +266,6 @@ ApplicationWindow {
 
             currentIndex: mainwindow.initTab
 
-            // Layout.fillWidth: true
-            // Layout.fillHeight: true
             onCurrentIndexChanged: {
                 tabbar.currentIndex = currentIndex
             }
@@ -336,14 +339,16 @@ ApplicationWindow {
             }
 
             Label {
-                text: RadioPacketParser.phaseToShortString(mainwindow.phase)
+                text: RadioPacketParser.phaseToShortString(
+                          mainwindow.phase) + "📡"
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
             }
             ToolSeparator {}
 
             Label {
-                text: "Bat: " + TelemetryLogHolder.batteryVoltage.latestValue.toFixed(
+                text: "🔋 " + mainwindow.qsIfNanOrNum(
+                          TelemetryLogHolder.batteryVoltage.latestValue,
                           1) + "V"
                 Layout.alignment: Qt.AlignTop
             }

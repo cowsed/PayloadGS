@@ -9,11 +9,42 @@ Item {
 
     RowLayout {
         ColumnLayout {
-            Label {
-                text: "Ongoing downloads"
-            }
-            Label {
-                text: "timers"
+
+            ColumnLayout {
+                Layout.fillHeight: true
+
+                Label {
+                    text: "Timers (s)"
+                }
+
+                LibrarianTimerControl {
+                    id: flightHearbeatSeconds
+                    from: 0
+                    to: 30 * 60
+                    value: 2 * 60
+                    label: "Flight ♥"
+                }
+                LibrarianTimerControl {
+                    id: landedHearbeatSeconds
+                    from: 0
+                    to: 30 * 60
+                    value: 2 * 60
+                    label: "Landed ♥"
+                }
+                LibrarianTimerControl {
+                    id: sysInfoSeconds
+                    from: 0
+                    to: 30 * 60
+                    value: 10 * 60
+                    label: "SysInfo"
+                }
+                LibrarianTimerControl {
+                    id: gnssSeconds
+                    from: 0
+                    to: 30 * 60
+                    value: 3 * 60
+                    label: "GNSS"
+                }
             }
         }
         ColumnLayout {

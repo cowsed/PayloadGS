@@ -13,7 +13,7 @@ uint8_t ImageDataHolder::numImages() const
 
 ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
 {
-    QString path = QString("%1/Images/%2/meta.json").arg(m_flight_dir).arg(imageName(image_id));
+    QString path = QString("%1/Images/%2/meta.json").arg(m_flight_dir, imageName(image_id));
     if (!QFile::exists(path)) {
         return {}; // invalid default construction
     }
@@ -40,11 +40,11 @@ ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
 }
 QString ImageDataHolder::pathForImage(uint8_t image_id) const
 {
-    return QString("%1/Images/%2/image.jpg").arg(m_flight_dir).arg(imageName(image_id));
+    return QString("%1/Images/%2/image.jpg").arg(m_flight_dir, imageName(image_id));
 }
 QString ImageDataHolder::pathForImageThumbnail(uint8_t image_id) const
 {
-    return QString("%1/Images/%2/thumbnail.jpg").arg(m_flight_dir).arg(imageName(image_id));
+    return QString("%1/Images/%2/thumbnail.jpg").arg(m_flight_dir, imageName(image_id));
 }
 double ImageDataHolder::transmissionPercent(uint8_t image_id) const
 {
@@ -52,8 +52,13 @@ double ImageDataHolder::transmissionPercent(uint8_t image_id) const
     if (meta.numBlocks == 0) {
         return 0;
     }
+    return (float) numDownloadedPackets(image_id) / (float) meta.numBlocks;
+}
 
-    return numDownloadedPackets(image_id) / meta.numBlocks;
+bool ImageDataHolder::imageComplete(uint8_t image_id)
+{
+    ImageMetadataHolder meta = metadataForImageId(image_id);
+    return numDownloadedPackets(image_id) == meta.numBlocks;
 }
 
 void ImageDataHolder::setFlightDir(QString dir)
@@ -63,7 +68,7 @@ void ImageDataHolder::setFlightDir(QString dir)
 
 QString ImageDataHolder::imagePacketDirectory(uint8_t image_id) const
 {
-    return QString("%1/Images/%2/packets").arg(m_flight_dir).arg(imageName(image_id));
+    return QString("%1/Images/%2/packets").arg(m_flight_dir, imageName(image_id));
 }
 
 ImageDataHolder::DownloadProgress ImageDataHolder::downloadedPackets(uint8_t image_id) const
@@ -124,7 +129,6 @@ void ImageDataHolder::rescanCount()
             continue;
         }
 
-        qDebug("Found %d", image_id);
         foundAny = true;
         if (image_id > maximum_entry) {
             maximum_entry = image_id;

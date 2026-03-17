@@ -14,6 +14,7 @@ class Librarian : public QObject
     Q_OBJECT
 
     Q_PROPERTY(uint64_t numRequests READ NumRequests NOTIFY NumRequestsChanged)
+    Q_PROPERTY(QVariantList summary READ GetSummary NOTIFY SummaryChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -63,6 +64,7 @@ public:
         };
         bool operator==(const Request &other) const;
         bool operator<(const Request &other) const;
+        QString summarize() const;
     };
 
     Librarian();
@@ -91,7 +93,8 @@ public:
     std::optional<Librarian::Request> Pop();
 
     // removes requests for this image from what we're looking for
-    void StopImageDownload(uint8_t image_id);
+    Q_INVOKABLE void StopImageDownload(uint8_t image_id);
+    Q_INVOKABLE void StartImageDownload(uint8_t image_id, ImageDataHolder *image);
     void AddImageRequests(uint8_t image_id,
                           uint16_t num_blocks,
                           const ImageDataHolder::DownloadProgress &progress);
@@ -101,7 +104,7 @@ public:
     void DumpInfo() const;
 
     Q_INVOKABLE QList<Request> getHead(size_t num);
-
+    Q_INVOKABLE QVariantList GetSummary();
     // search around directories for what we have and don't have (run at startup)
     void GatherRequestsFromDisk(ImageDataHolder *image);
 
@@ -113,6 +116,7 @@ public slots:
 
 signals:
     void NumRequestsChanged();
+    void SummaryChanged();
 
 protected:
     std::set<Request> queue;

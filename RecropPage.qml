@@ -5,9 +5,8 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property int oldImageID: 1
     property photoTransform oldCrop: ImageDataHolder.metadataForImageId(
-                                         oldImageID).photoTransform()
+                                         imageSelector.value).photoTransform()
     property photoTransform newCrop
 
     function setNewCrop() {
@@ -38,11 +37,24 @@ Item {
     // if some images taken, let pick from them or else just use the one thats selected below
     RowLayout {
         ColumnLayout {
+            RowLayout {
+                SpinBox {
+                    id: imageSelector
+                    from: 0
+                    to: ImageDataHolder.numImages - 1
+                    value: 0
+                    editable: true
+                }
+                Label {
+                    text: "Image ID"
+                }
+            }
+
             CropVisualizer {
                 id: cropVis
                 oldCrop: root.oldCrop
                 crop: root.newCrop
-                oldImageId: root.oldImageID
+                oldImageId: imageSelector.value
             }
         }
         ColumnLayout {

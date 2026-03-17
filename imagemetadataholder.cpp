@@ -14,6 +14,12 @@ PhotoTransformQ::PhotoTransformQ(uint16_t left,
     , encodedQuality(encodedQuality)
 {}
 
+bool PhotoTransformQ::isValid()
+{
+    qDebug("Checking validity");
+    return right > left && bottom < top && encodedQuality <= 7;
+}
+
 ImageMetadataHolder::ImageMetadataHolder() {}
 
 ImageMetadataHolder::ImageMetadataHolder(const ImageMetadata &meta)

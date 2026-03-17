@@ -27,6 +27,8 @@ public:
     Q_PROPERTY(uint16_t encodedWidth MEMBER encodedWidth)
     Q_PROPERTY(uint8_t encodedQuality MEMBER encodedQuality)
 
+    Q_INVOKABLE bool isValid();
+
     uint16_t left = 0;
     uint16_t right = 0;
     uint16_t top = 0;

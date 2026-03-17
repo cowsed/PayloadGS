@@ -21,7 +21,7 @@ Rectangle {
 
     function updatePercent() {
         transmissionPercent.text = (100 * ImageDataHolder.transmissionPercent(
-                                        preview.imageID)).toFixed(0) + "%"
+                                        preview.imageID)).toFixed(2) + "%"
     }
 
     color: (preview.activeImageID == preview.imageID) ? Qt.rgba(

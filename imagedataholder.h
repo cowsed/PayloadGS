@@ -30,6 +30,7 @@ public:
     Q_INVOKABLE QString pathForImage(uint8_t image_id) const;
     Q_INVOKABLE QString pathForImageThumbnail(uint8_t image_id) const;
     Q_INVOKABLE double transmissionPercent(uint8_t image_id) const;
+    Q_INVOKABLE bool imageComplete(uint8_t image_id);
 
     void setFlightDir(QString dir);
 

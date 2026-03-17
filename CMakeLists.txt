@@ -74,7 +74,7 @@ qt_add_qml_module(appPayloadGS
         RESOURCES assets/images/axes_hidden_icon.png assets/images/axes_shown_icon.png
         QML_FILES ControlPage.qml
 RESOURCES assets/payload-models/maps/textureData.png assets/payload-models/maps/textureData13.png assets/payload-models/maps/textureData18.png assets/payload-models/meshes/baseJointMesh_mesh.mesh assets/payload-models/meshes/frameMesh_mesh.mesh assets/payload-models/meshes/leftWall_mesh.mesh assets/payload-models/meshes/lowrLinkMesh_mesh.mesh assets/payload-models/meshes/rightWall_mesh.mesh assets/payload-models/meshes/upperLinkMesh_mesh.mesh assets/payload-models/meshes/wristMesh_mesh.mesh
-QML_FILES assets/payload-models/Payload.qml
+QML_FILES assets/payload-models/FakePayload.qml
 RESOURCES assets/images/wall_shown_icon.png assets/images/wall_hidden_icon.png
 RESOURCES assets/arrowshader.vert
 RESOURCES assets/arrowshader.frag
@@ -99,6 +99,8 @@ SOURCES ssdvdecoder.h ssdvdecoder.cpp
 QML_FILES ArmSequenceController.qml
 QML_FILES MoreTelemetryPage.qml
 QML_FILES RecropPage.qml
+QML_FILES ArmSequencePage.qml
+QML_FILES LibrarianTimerControl.qml
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
