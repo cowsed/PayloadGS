@@ -9,7 +9,6 @@ Item {
 
     required property variant window
     required property int flightNumber
-    required property date lastFlightNumberUpdate
     required property string stateString
 
     property bool forceBoostMenu: false

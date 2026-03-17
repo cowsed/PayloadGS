@@ -19,6 +19,8 @@ class PayloadFlags
     Q_PROPERTY(bool RadioOverTemp MEMBER RadioOverTemp)
     Q_PROPERTY(bool GPSHasFix MEMBER GPSHasFix)
 
+    QML_VALUE_TYPE(payloadFlags)
+
 public:
     static PayloadFlags fromBits(uint16_t bits);
     bool Active;

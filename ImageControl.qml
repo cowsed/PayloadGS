@@ -12,7 +12,7 @@ Item {
     required property int flightNumber
     property int activeImageID: 0
 
-    property ImageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(
+    property imageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(
                                                           activeImageID)
 
     property real numPackets: ImageDataHolder.numDownloadedPackets(
@@ -109,7 +109,7 @@ Item {
                 Layout.fillWidth: true
 
                 CropVisualizer {
-                    crop: page.activeImageMetadata
+                    crop: page.activeImageMetadata.photoTransform()
                     Layout.fillWidth: true
                     Layout.preferredHeight: 120
                 }

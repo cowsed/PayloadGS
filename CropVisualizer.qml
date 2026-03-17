@@ -1,18 +1,21 @@
 import QtQuick
 import QtQuick.Controls.Material
-import QtQuick.Layouts
 
 Item {
     id: root
-    required property ImageMetadataHolder crop
+    property int oldImageId: 0
+    property photoTransform oldCrop
+    required property photoTransform crop
 
     property color bg_color: "#a0a0a0"
+    property color old_color: "#000000"
     property color fg_color: Material.accent
     property real original_width: 6000
+    property real original_height: 4000
 
     width: 400
     height: 400
-    readonly property real aspectRatio: 3 / 2
+    readonly property real aspectRatio: original_width / original_height
 
     Rectangle {
         anchors.centerIn: parent
@@ -29,6 +32,28 @@ Item {
         color: root.bg_color
 
         Rectangle {
+            visible: root.oldCrop != null
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+
+            anchors.bottomMargin: root.oldCrop.bottom * parent.scaleFac
+            anchors.leftMargin: root.oldCrop.left * parent.scaleFac
+
+            width: (root.oldCrop.right - root.oldCrop.left) * parent.scaleFac
+            height: (root.oldCrop.top - root.oldCrop.bottom) * parent.scaleFac
+
+            color: root.old_color
+            Image {
+                id: backgroundImage
+                visible: root.oldImageId != null
+                source: "file:" + ImageDataHolder.pathForImageThumbnail(
+                            root.oldImageId)
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+            }
+        }
+
+        Rectangle {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
 
@@ -39,6 +64,7 @@ Item {
             height: (root.crop.top - root.crop.bottom) * parent.scaleFac
 
             color: root.fg_color
+            opacity: .5
         }
     }
 }

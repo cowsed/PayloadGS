@@ -18,7 +18,7 @@ void Librarian::GatherRequestsFromDisk(ImageDataHolder *image)
             continue;
         }
         ImageDataHolder::DownloadProgress prog = image->downloadedPackets(i);
-        AddImageRequests(i, meta.numBlocks(), prog);
+        AddImageRequests(i, meta.numBlocks, prog);
     }
 }
 

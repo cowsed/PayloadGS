@@ -38,13 +38,17 @@ ApplicationWindow {
     property LoraSettings currentRadioSettings: defaultRadioSettings
 
     property int flightNumber: 0
-    property date lastFlightNumberUpdate: new Date()
 
-    property string stateString: "Unknown"
+    property var phase: RadioPacketParser.Starting
+    property payloadFlags flags
+    property bool flagsValid: false
+
     Connections {
         target: RadioPacketParser
         function onFlightStateUpdated(time, phase, flags) {
-            mainwindow.stateString = RadioPacketParser.phaseToShortString(phase)
+            mainwindow.phase = phase
+            mainwindow.flags = flags
+            mainwindow.flagsValid = true
         }
     }
 
@@ -104,33 +108,85 @@ ApplicationWindow {
             sequences: ["Alt+m", "Alt+1"]
             onActivated: mapTabButton.click()
         }
+
+        Shortcut {
+            sequences: ["Alt+Shift+m", "Alt+Shift+1"]
+            onActivated: {
+                mapTabButton.click()
+                metaview.currentIndex = 0
+            }
+        }
+
         Shortcut {
             sequences: ["Alt+c", "Alt+2"]
             onActivated: controlTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+Shift+c", "Alt+Shift+2"]
+            onActivated: {
+                controlTabButton.click()
+                metaview.currentIndex = 0
+            }
         }
         Shortcut {
             sequences: ["Alt+t", "Alt+3"]
             onActivated: telemTabButton.click()
         }
         Shortcut {
+            sequences: ["Alt+Shift+t", "Alt+Shift+3"]
+            onActivated: {
+                telemTabButton.click()
+                metaview.currentIndex = 0
+            }
+        }
+        Shortcut {
             sequences: ["Alt+a", "Alt+4"]
             onActivated: armTabButton.click()
+        }
+        Shortcut {
+            sequences: ["Alt+Shift+a", "Alt+Shift+4"]
+            onActivated: {
+                armTabButton.click()
+                metaview.currentIndex = 0
+            }
         }
         Shortcut {
             sequences: ["Alt+i", "Alt+5"]
             onActivated: imageTabButton.click()
         }
         Shortcut {
+            sequences: ["Alt+Shift+i", "Alt+Shift+5"]
+            onActivated: {
+                imageTabButton.click()
+                metaview.currentIndex = 0
+            }
+        }
+        Shortcut {
             sequences: ["Alt+r", "Alt+6"]
             onActivated: radioTabButton.click()
+        }
+
+        Shortcut {
+            sequences: ["Alt+Shift+r", "Alt+Shift+6"]
+            onActivated: {
+                radioTabButton.click()
+                metaview.currentIndex = 0
+            }
         }
         Shortcut {
             sequences: ["Alt+s", "Alt+7"]
             onActivated: shellTabButton.click()
         }
         Shortcut {
+            sequences: ["Alt+Shift+s", "Alt+Shift+7"]
+            onActivated: {
+                shellTabButton.click()
+                metaview.currentIndex = 0
+            }
+        }
+        Shortcut {
             sequences: ["Alt+g"]
-            onActivated: metaview.currentIndex = 1
+            onActivated: metaview.currentIndex = 2
         }
 
         onCurrentIndexChanged: {
@@ -176,19 +232,15 @@ ApplicationWindow {
 
                 fullscreenToggle: mainwindow.toggleFullscreen
             }
-            GSPage {
+            ArmSequenceController {
                 // over arm
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
-            GSPage {
+            RecropPage {
                 // over image
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
             LibrarianPage {
                 // over radio
@@ -227,8 +279,8 @@ ApplicationWindow {
 
                 window: mainwindow
                 flightNumber: mainwindow.flightNumber
-                lastFlightNumberUpdate: mainwindow.lastFlightNumberUpdate
-                stateString: mainwindow.stateString
+                stateString: RadioPacketParser.phaseToShortString(
+                                 mainwindow.phase)
             }
 
             TelemetryPage {
@@ -284,7 +336,7 @@ ApplicationWindow {
             }
 
             Label {
-                text: mainwindow.stateString
+                text: RadioPacketParser.phaseToShortString(mainwindow.phase)
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
             }

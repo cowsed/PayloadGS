@@ -49,11 +49,11 @@ QString ImageDataHolder::pathForImageThumbnail(uint8_t image_id) const
 double ImageDataHolder::transmissionPercent(uint8_t image_id) const
 {
     ImageMetadataHolder meta = metadataForImageId(image_id);
-    if (meta.numBlocks() == 0) {
+    if (meta.numBlocks == 0) {
         return 0;
     }
 
-    return numDownloadedPackets(image_id) / meta.numBlocks();
+    return numDownloadedPackets(image_id) / meta.numBlocks;
 }
 
 void ImageDataHolder::setFlightDir(QString dir)

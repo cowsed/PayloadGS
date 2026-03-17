@@ -6,78 +6,90 @@
 #include <QQmlEngine>
 #include "packets_p2g.h"
 
+class PhotoTransformQ
+{
+    Q_GADGET
+    QML_VALUE_TYPE(photoTransform)
+public:
+    PhotoTransformQ() = default;
+    PhotoTransformQ(uint16_t left,
+                    uint16_t right,
+                    uint16_t top,
+                    uint16_t bottom,
+                    uint16_t encodedWidth,
+                    uint8_t encodedQuality);
+
+    Q_PROPERTY(uint16_t left MEMBER left)
+    Q_PROPERTY(uint16_t right MEMBER right)
+    Q_PROPERTY(uint16_t top MEMBER top)
+    Q_PROPERTY(uint16_t bottom MEMBER bottom)
+
+    Q_PROPERTY(uint16_t encodedWidth MEMBER encodedWidth)
+    Q_PROPERTY(uint8_t encodedQuality MEMBER encodedQuality)
+
+    uint16_t left = 0;
+    uint16_t right = 0;
+    uint16_t top = 0;
+    uint16_t bottom = 0;
+    uint16_t encodedWidth = 0;
+    uint8_t encodedQuality = 0;
+};
+
 class ImageMetadataHolder
 {
     Q_GADGET
 
-    Q_PROPERTY(uint8_t image_id READ image_id FINAL CONSTANT)
-    Q_PROPERTY(QDateTime datetime READ datetime FINAL CONSTANT)
-    Q_PROPERTY(uint16_t numBlocks READ numBlocks FINAL CONSTANT)
-    Q_PROPERTY(uint16_t left READ left FINAL CONSTANT)
-    Q_PROPERTY(uint16_t right READ right FINAL CONSTANT)
-    Q_PROPERTY(uint16_t top READ top FINAL CONSTANT)
-    Q_PROPERTY(uint16_t bottom READ bottom FINAL CONSTANT)
+    Q_PROPERTY(uint8_t image_ MEMBER image_id)
+    Q_PROPERTY(QDateTime datetime MEMBER datetime)
+    Q_PROPERTY(uint16_t numBlocks MEMBER numBlocks)
+    Q_PROPERTY(uint16_t left MEMBER left)
+    Q_PROPERTY(uint16_t right MEMBER right)
+    Q_PROPERTY(uint16_t top MEMBER top)
+    Q_PROPERTY(uint16_t bottom MEMBER bottom)
 
-    Q_PROPERTY(uint16_t encodedWidth READ encodedWidth FINAL CONSTANT)
-    Q_PROPERTY(uint16_t encodedHeight READ encodedHeight FINAL CONSTANT)
-    Q_PROPERTY(uint8_t encodedQuality READ encodedQuality FINAL CONSTANT)
+    Q_PROPERTY(uint16_t encodedWidth MEMBER encodedWidth)
+    Q_PROPERTY(uint16_t encodedHeight MEMBER encodedHeight)
+    Q_PROPERTY(uint8_t encodedQuality MEMBER encodedQuality)
 
-    Q_PROPERTY(float latitude READ latitude FINAL CONSTANT)
-    Q_PROPERTY(float longitude READ longitude FINAL CONSTANT)
+    Q_PROPERTY(float latitude MEMBER latitude)
+    Q_PROPERTY(float longitude MEMBER longitude)
 
-    Q_PROPERTY(uint8_t j1 READ j1 FINAL CONSTANT)
-    Q_PROPERTY(uint8_t j2 READ j2 FINAL CONSTANT)
-    Q_PROPERTY(uint8_t j3 READ j3 FINAL CONSTANT)
-    Q_PROPERTY(uint8_t j4 READ j4 FINAL CONSTANT)
+    Q_PROPERTY(uint8_t j1 MEMBER j1)
+    Q_PROPERTY(uint8_t j2 MEMBER j2)
+    Q_PROPERTY(uint8_t j3 MEMBER j3)
+    Q_PROPERTY(uint8_t j4 MEMBER j4)
 
-    QML_ELEMENT
+    QML_VALUE_TYPE(imageMetadataHolder)
 
 public:
     ImageMetadataHolder();
     explicit ImageMetadataHolder(const ImageMetadata &meta);
 
-    uint8_t image_id() const;
-    QDateTime datetime() const;
-    uint16_t numBlocks() const;
-    uint16_t left() const;
-    uint16_t right() const;
-    uint16_t top() const;
-    uint16_t bottom() const;
-    uint16_t encodedWidth() const;
-    uint16_t encodedHeight() const;
-    uint8_t encodedQuality() const;
-
-    float latitude() const;
-    float longitude() const;
-    uint8_t j1() const;
-    uint8_t j2() const;
-    uint8_t j3() const;
-    uint8_t j4() const;
 
     Q_INVOKABLE bool isValid();
+    Q_INVOKABLE PhotoTransformQ photoTransform();
 
     QJsonObject toJson() const;
     static ImageMetadataHolder fromJson(const QJsonObject &json);
 
-private:
-    uint8_t m_image_id = 0;
-    QDateTime m_datetime = QDateTime::fromSecsSinceEpoch(0);
-    uint16_t m_numBlocks = 0;
-    uint16_t m_left = 0;
-    uint16_t m_right = 0;
-    uint16_t m_top = 0;
-    uint16_t m_bottom = 0;
-    uint16_t m_encodedWidth = 0;
-    uint16_t m_encodedHeight = 0;
-    uint8_t m_encodedQuality = 0;
-    float m_latitude = 0;
-    float m_longitude = 0;
+public:
+    uint8_t image_id = 0;
+    QDateTime datetime = QDateTime::fromSecsSinceEpoch(0);
+    uint16_t numBlocks = 0;
+    uint16_t left = 0;
+    uint16_t right = 0;
+    uint16_t top = 0;
+    uint16_t bottom = 0;
+    uint16_t encodedWidth = 0;
+    uint16_t encodedHeight = 0;
+    uint8_t encodedQuality = 0;
+    float latitude = 0;
+    float longitude = 0;
 
-    uint8_t m_j1 = 0;
-    uint8_t m_j2 = 0;
-    uint8_t m_j3 = 0;
-    uint8_t m_j4 = 0;
+    uint8_t j1 = 0;
+    uint8_t j2 = 0;
+    uint8_t j3 = 0;
+    uint8_t j4 = 0;
 };
 
-Q_DECLARE_METATYPE(ImageMetadataHolder)
 #endif // IMAGEMETADATAHOLDER_H

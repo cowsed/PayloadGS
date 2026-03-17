@@ -96,6 +96,9 @@ QML_FILES CropVisualizer.qml
 QML_FILES LibrarianPage.qml
 QML_FILES FakePacketEmitter.qml
 SOURCES ssdvdecoder.h ssdvdecoder.cpp
+QML_FILES ArmSequenceController.qml
+QML_FILES MoreTelemetryPage.qml
+QML_FILES RecropPage.qml
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
