@@ -32,6 +32,7 @@ struct ImageData
     uint8_t image_id;
     uint16_t block_index;
 };
+
 #define SIZEOF_PACKED_IMAGE_DATA IMAGE_DATA_SIZE
 enum UnpackResult unpack_image_data(const uint8_t *buf, uint32_t len, struct ImageData *header);
 // ignores image_id and block_index since those come from the buf

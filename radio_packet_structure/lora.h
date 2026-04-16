@@ -38,7 +38,7 @@ enum CodingRate {
 struct LoraLinkChange {
   bool is_request;  // 1 is request, 0 is response
   bool is_accepted; // 1 is yes i will switch over, 0 is no im staying here,
-                    // only valid if is_response
+                    // only valid if !is_request
   uint8_t num_test_packets; // max [0,63]
 
   enum SpreadingFactor sf;
@@ -46,6 +46,7 @@ struct LoraLinkChange {
   enum CodingRate cr;
   uint32_t freq;
 };
+#define SIZEOF_PACKED_LORA_LINK_CHANGE 6
 
 // buf is at least length 6
 int pack_lora_link_change(const struct LoraLinkChange *link_change,
