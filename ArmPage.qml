@@ -5,34 +5,44 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material
 
 Item {
-    Material.theme: Material.Light
     id: page
+    Material.theme: Material.Light
 
     property real shoulderYaw: 0
     property real shoulderPitch: 0
     property real elbowPitch: 0
     property real wristPitch: 0
 
+    Connections {
+        target: RadioPacketParser
+        function onArmAnglesUpdated(time, shoulder_yaw, shoulder_pitch, elbow_pitch, wrist_pitch) {
+            page.shoulderYaw = shoulder_yaw;
+            page.shoulderPitch = shoulder_pitch;
+            page.elbowPitch = elbow_pitch;
+            page.wristPitch = wrist_pitch;
+        }
+    }
+
     property bool showWalls: true
 
     function explainMovement() {
-        let s = "Take Picture: " + (takePictureButton.checked ? "yes" : "no") + "\n"
-        s += "Shoulder Yaw: " + shoulderYawSlider.value.toFixed(1) + "\n"
-        s += "Shoulder Pitch: " + shoulderPitchSlider.value.toFixed(1) + "\n"
-        s += "Elbow Pitch: " + elbowPitchSlider.value.toFixed(1) + "\n"
-        s += "Wrist Pitch: " + wristPitchSlider.value.toFixed(1) + "\n"
-        return s
+        let s = "Take Picture: " + (takePictureButton.checked ? "yes" : "no") + "\n";
+        s += "Shoulder Yaw: " + shoulderYawSlider.value.toFixed(1) + "\n";
+        s += "Shoulder Pitch: " + shoulderPitchSlider.value.toFixed(1) + "\n";
+        s += "Elbow Pitch: " + elbowPitchSlider.value.toFixed(1) + "\n";
+        s += "Wrist Pitch: " + wristPitchSlider.value.toFixed(1) + "\n";
+        return s;
     }
 
-    Timer {
-        interval: 10
-        running: true // set to true for fun
-        repeat: true
-        onTriggered: {
-            let t = new Date().getTime() / 400
-            page.shoulderYaw = 90 * Math.sin(t)
-        }
-    }
+    // Timer {
+    //     interval: 10
+    //     running: true // set to true for fun
+    //     repeat: true
+    //     onTriggered: {
+    //         let t = new Date().getTime() / 400;
+    //         page.shoulderYaw = 90 * Math.sin(t);
+    //     }
+    // }
 
     RowLayout {
         anchors.fill: parent
@@ -135,10 +145,10 @@ Item {
 
                     radius: 10
                     Slider {
+                        id: wallOpenness
                         enabled: wallTransparency.checked
                         anchors.topMargin: 12
                         anchors.bottomMargin: 12
-                        id: wallOpenness
                         orientation: Qt.Vertical
                         from: 1
                         to: 0
@@ -160,10 +170,10 @@ Item {
                     text: "⟲"
 
                     onClicked: {
-                        shoulderYawSlider.value = page.shoulderYaw
-                        shoulderPitchSlider.value = page.shoulderPitch
-                        elbowPitchSlider.value = page.elbowPitch
-                        wristPitchSlider.value = page.wristPitch
+                        shoulderYawSlider.value = page.shoulderYaw;
+                        shoulderPitchSlider.value = page.shoulderPitch;
+                        elbowPitchSlider.value = page.elbowPitch;
+                        wristPitchSlider.value = page.wristPitch;
                     }
                 }
             }

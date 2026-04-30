@@ -10,7 +10,7 @@ Item {
         Layout.fillWidth: true
         Label {
             Layout.fillWidth: true
-            text: "packet"
+            text: "Fake Packet"
         }
         TextField {
             id: b64
@@ -18,7 +18,7 @@ Item {
             Layout.fillHeight: true
             Layout.minimumWidth: 800
 
-            text: "hex"
+            text: "b64"
 
             cursorVisible: true
             readOnly: false
@@ -27,7 +27,7 @@ Item {
             Layout.fillWidth: true
             text: "Receive"
             onPressed: {
-                RadioPacketParser.b64PacketReceived(new Date(), 1, 1, b64.text)
+                RadioPacketParser.b64PacketReceived(new Date(), 1, 1, b64.text);
             }
         }
     }

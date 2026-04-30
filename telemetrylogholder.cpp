@@ -14,18 +14,29 @@ void TelemetryLogHolder::newFsUsage(QDateTime ts, uint64_t bytes) {}
 
 void TelemetryLogHolder::newPayloadPosition(QDateTime ts, QGeoCoordinate coord)
 {
+    last_payload_pos = coord;
+    last_payload_pos_update = ts;
     emit payloadPositionChanged();
 }
 
 void TelemetryLogHolder::newStationPosition(QDateTime ts, QGeoCoordinate coord)
 {
+    last_station_pos_update = ts;
+    last_station_pos = coord;
     emit payloadPositionChanged();
 }
 
 void TelemetryLogHolder::newRocketPosition(QDateTime ts, QGeoCoordinate coord)
 {
+    last_rocket_pos_update = ts;
     last_rocket_pos = coord;
     emit rocketPositionChanged();
+}
+
+void TelemetryLogHolder::newBatteryInformation(QDateTime ts, double volts, double amps)
+{
+    battery_voltage.newValue(ts, volts);
+    battery_current.newValue(ts, amps);
 }
 
 uint64_t TelemetryLogHolder::latestRamUsage()
@@ -39,12 +50,12 @@ uint64_t TelemetryLogHolder::latestFsUsage()
 
 QGeoCoordinate TelemetryLogHolder::latestPayloadPosition()
 {
-    return QGeoCoordinate(31.0443, -103.53507, 120);
+    return last_payload_pos;
 }
 
 QGeoCoordinate TelemetryLogHolder::latestStationPosition()
 {
-    return QGeoCoordinate(43.0839380, -77.6757720, 10);
+    return last_station_pos;
 }
 QGeoCoordinate TelemetryLogHolder::latestRocketPosition()
 {
@@ -53,15 +64,15 @@ QGeoCoordinate TelemetryLogHolder::latestRocketPosition()
 
 QDateTime TelemetryLogHolder::latestPayloadPositionUpdateTime()
 {
-    return QDateTime::currentDateTime();
+    return last_payload_pos_update;
 }
 QDateTime TelemetryLogHolder::latestStationPositionUpdateTime()
 {
-    return QDateTime::currentDateTime().addSecs(5);
+    return last_station_pos_update;
 }
 QDateTime TelemetryLogHolder::latestRocketPositionUpdateTime()
 {
-    return QDateTime::currentDateTime().addSecs(50);
+    return last_rocket_pos_update;
 }
 
 FrontBackDataHolder *TelemetryLogHolder::getCpuTemp()

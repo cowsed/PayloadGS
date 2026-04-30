@@ -13,10 +13,7 @@ RowLayout {
         Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop | Qt.AlignLeft
         Label {
-            text: "GS View 🎷🐛"
-        }
-        Label {
-            text: "IDK What to put here bc i can't get the FPS view easily"
+            text: "GS Info 🎷🐛"
         }
         ColumnLayout {
 

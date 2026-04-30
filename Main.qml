@@ -45,25 +45,27 @@ ApplicationWindow {
 
     function qsIfNanOrNum(num, numPlaces) {
         if (isNaN(num)) {
-            return "???"
+            return "???";
         }
-        return num.toFixed(numPlaces)
+        return num.toFixed(numPlaces);
     }
 
     Connections {
         target: RadioPacketParser
         function onFlightStateUpdated(time, phase, flags) {
-            mainwindow.phase = phase
-            mainwindow.flags = flags
-            mainwindow.flagsValid = true
+            console.log("state updated1", time, RadioPacketParser.phaseToShortString(phase), flags);
+            mainwindow.phase = phase;
+            mainwindow.flags = RadioPacketParser.statusBitsToFlags(flags);
+            mainwindow.flagsValid = true;
+            console.log("state updated2", RadioPacketParser.phaseToShortString(mainwindow.phase), mainwindow.flags);
         }
     }
 
     function toggleFullscreen() {
         if (mainwindow.visibility === Window.FullScreen) {
-            mainwindow.visibility = Window.Windowed
+            mainwindow.visibility = Window.Windowed;
         } else {
-            mainwindow.visibility = Window.FullScreen
+            mainwindow.visibility = Window.FullScreen;
         }
     }
 
@@ -77,37 +79,37 @@ ApplicationWindow {
 
         TabButton {
             id: mapTabButton
-            text: "Map 🗾"
+            text: "Map"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: controlTabButton
-            text: "Control 🕹️"
+            text: "Control"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: telemTabButton
-            text: "Telemetry 📈"
+            text: "Telemetry"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: armTabButton
-            text: "Arm 🦾"
+            text: "Arm"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: imageTabButton
-            text: "Image 📷"
+            text: "Image"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: radioTabButton
-            text: "Radio 📻"
+            text: "Radio"
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
             id: shellTabButton
-            text: "Shell 🖥️"
+            text: "Shell"
             onClicked: metaview.currentIndex = 1
         }
 
@@ -119,8 +121,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+m", "Alt+Shift+1"]
             onActivated: {
-                mapTabButton.click()
-                metaview.currentIndex = 0
+                mapTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
 
@@ -131,8 +133,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+c", "Alt+Shift+2"]
             onActivated: {
-                controlTabButton.click()
-                metaview.currentIndex = 0
+                controlTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -142,8 +144,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+t", "Alt+Shift+3"]
             onActivated: {
-                telemTabButton.click()
-                metaview.currentIndex = 0
+                telemTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -153,8 +155,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+a", "Alt+Shift+4"]
             onActivated: {
-                armTabButton.click()
-                metaview.currentIndex = 0
+                armTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -164,8 +166,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+i", "Alt+Shift+5"]
             onActivated: {
-                imageTabButton.click()
-                metaview.currentIndex = 0
+                imageTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -176,8 +178,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+r", "Alt+Shift+6"]
             onActivated: {
-                radioTabButton.click()
-                metaview.currentIndex = 0
+                radioTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -187,8 +189,8 @@ ApplicationWindow {
         Shortcut {
             sequences: ["Alt+Shift+s", "Alt+Shift+7"]
             onActivated: {
-                shellTabButton.click()
-                metaview.currentIndex = 0
+                shellTabButton.click();
+                metaview.currentIndex = 0;
             }
         }
         Shortcut {
@@ -197,8 +199,8 @@ ApplicationWindow {
         }
 
         onCurrentIndexChanged: {
-            mainview.currentIndex = currentIndex
-            detailView.currentIndex = currentIndex
+            mainview.currentIndex = currentIndex;
+            detailView.currentIndex = currentIndex;
         }
     }
 
@@ -215,7 +217,7 @@ ApplicationWindow {
 
             currentIndex: mainwindow.initTab
             onCurrentIndexChanged: {
-                tabbar.currentIndex = currentIndex
+                tabbar.currentIndex = currentIndex;
             }
 
             GSPage {
@@ -267,7 +269,7 @@ ApplicationWindow {
             currentIndex: mainwindow.initTab
 
             onCurrentIndexChanged: {
-                tabbar.currentIndex = currentIndex
+                tabbar.currentIndex = currentIndex;
             }
 
             MapPage {
@@ -282,8 +284,7 @@ ApplicationWindow {
 
                 window: mainwindow
                 flightNumber: mainwindow.flightNumber
-                stateString: RadioPacketParser.phaseToShortString(
-                                 mainwindow.phase)
+                stateString: RadioPacketParser.phaseToShortString(mainwindow.phase)
             }
 
             TelemetryPage {
@@ -339,42 +340,35 @@ ApplicationWindow {
             }
 
             Label {
-                text: RadioPacketParser.phaseToShortString(
-                          mainwindow.phase) + "📡"
+                text: RadioPacketParser.phaseToShortString(mainwindow.phase) + "📡"
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
             }
             ToolSeparator {}
 
             Label {
-                text: "🔋 " + mainwindow.qsIfNanOrNum(
-                          TelemetryLogHolder.batteryVoltage.latestValue,
-                          1) + "V"
+                text: "🔋 " + mainwindow.qsIfNanOrNum(TelemetryLogHolder.batteryVoltage.latestValue, 1) + "V"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
 
             Label {
-                text: mainwindow.currentRadioSettings.spreadingFactorString(
-                          mainwindow.currentRadioSettings.spreadingFactor)
+                text: mainwindow.currentRadioSettings.spreadingFactorString(mainwindow.currentRadioSettings.spreadingFactor)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: mainwindow.currentRadioSettings.bandwidthString(
-                          mainwindow.currentRadioSettings.bandwidth)
+                text: mainwindow.currentRadioSettings.bandwidthString(mainwindow.currentRadioSettings.bandwidth)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: mainwindow.currentRadioSettings.codingRateString(
-                          mainwindow.currentRadioSettings.codingRate)
+                text: mainwindow.currentRadioSettings.codingRateString(mainwindow.currentRadioSettings.codingRate)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: "F " + (mainwindow.currentRadioSettings.frequency / 1000000).toFixed(
-                          3) + " MHz"
+                text: "F " + (mainwindow.currentRadioSettings.frequency / 1000000).toFixed(3) + " MHz"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}

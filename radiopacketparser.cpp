@@ -6,15 +6,16 @@
 PayloadFlags PayloadFlags::fromBits(uint16_t bits)
 {
     return {
-        .Active = (bits & StatusBit::Active) != 0,
-        .Autonomous = (bits & StatusBit::Autonomous) != 0,
-        .LastArmMovedStalled = (bits & StatusBit::LastServoMoveStalled) != 0,
-        .LastServoMoveStalled = (bits & StatusBit::LastServoMoveStalled) != 0,
-        .ArmMoving = (bits & StatusBit::ArmMoving) != 0,
-        .ServoMoving = (bits & StatusBit::ServoMoving) != 0,
-        .MotorsOverTemp = (bits & StatusBit::MotorsOverTemp) != 0,
-        .RadioOverTemp = (bits & StatusBit::RadioOverTemp) != 0,
-        .GPSHasFix = (bits & StatusBit::GPSHasFix) != 0,
+        .Active = (bits & (1 << StatusBit::Active)) != 0,
+        .Autonomous = (bits & (1 << StatusBit::Autonomous)) != 0,
+        .LastArmMovedStalled = (bits & (1 << StatusBit::LastArmMoveStalled)) != 0,
+        .LastServoMoveStalled = (bits & (1 << StatusBit::LastServoMoveStalled)) != 0,
+        .ArmMoving = (bits & (1 << StatusBit::ArmMoving)) != 0,
+        .ServoMoving = (bits & (1 << StatusBit::ServoMoving)) != 0,
+        .InIdlePosition = (bits & (1 << StatusBit::InIdlePosition)) != 0,
+        .MotorsOverTemp = (bits & (1 << StatusBit::MotorsOverTemp)) != 0,
+        .RadioOverTemp = (bits & (1 << StatusBit::RadioOverTemp)) != 0,
+        .GPSHasFix = (bits & (1 << StatusBit::GPSHasFix)) != 0,
     };
 }
 
@@ -46,7 +47,7 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
     case P2GPacketType::P2GPacketType_CommandResponse:
         res = unpack_command_response(rest, rest_len, &cmd_resp);
         if (res != UnpackResult_AllGood) {
-            qDebug("Failed to unpack command response");
+            qDebug("Failed to unpack command response: %d", res);
             break;
         }
         emitCommandResponse(time, &cmd_resp);
@@ -69,6 +70,7 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
     switch (telem->telem_type) {
     case TelemetryType_FlightHeartbeat:
+        printf("Emitting telem: %d\n", (int) (telem->flight_heartbeat_stats.state.phase));
         emit flightHeartbeat(time,
                              telem->flight_heartbeat_stats.state,
                              telem->flight_heartbeat_stats.latitude,
@@ -77,7 +79,15 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                              telem->flight_heartbeat_stats.s_since_boost,
                              telem->flight_heartbeat_stats.battery_mV,
                              telem->flight_heartbeat_stats.radio_temp);
-        emit flightStateUpdated(time, telem->flight_heartbeat_stats.state);
+        emit flightStateUpdated(time,
+                                telem->flight_heartbeat_stats.state.phase,
+                                telem->flight_heartbeat_stats.state.status_bits);
+        emit payloadGPSUpdated(time,
+                               QGeoCoordinate(telem->flight_heartbeat_stats.latitude,
+                                              telem->flight_heartbeat_stats.longitude,
+                                              telem->flight_heartbeat_stats.altitude));
+        emit batteryUpdated(time, telem->flight_heartbeat_stats.battery_mV / 1000.0, NAN);
+        emit tempsUpdated(time, telem->flight_heartbeat_stats.radio_temp, NAN);
         break;
     case TelemetryType_LandedHeartbeat:
         emit landedHeartbeat(time,
@@ -88,13 +98,31 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                              telem->landed_heartbeat_stats.battery_mV,
                              telem->landed_heartbeat_stats.motor_temp,
                              telem->landed_heartbeat_stats.radio_temp);
-        emit flightStateUpdated(time, telem->landed_heartbeat_stats.state);
+        emit flightStateUpdated(time,
+                                telem->landed_heartbeat_stats.state.phase,
+                                telem->landed_heartbeat_stats.state.status_bits);
+        emit tempsUpdated(time,
+                          telem->landed_heartbeat_stats.radio_temp,
+                          telem->landed_heartbeat_stats.motor_temp);
     case TelemetryType_Actuators:
+        emit armAnglesUpdated(time,
+                              telem->actuators.arms.shoulder_yaw,
+                              telem->actuators.arms.shoulder_pitch,
+                              telem->actuators.arms.elbow_pitch,
+                              telem->actuators.arms.wrist_pitch);
+        emit servoAnglesUpdated(time,
+                                telem->actuators.servo1,
+                                telem->actuators.servo2,
+                                telem->actuators.servo3,
+                                telem->actuators.servo4);
+        break;
     case TelemetryType_GNSS:
     case TelemetryType_System:
     case TelemetryType_Orientations:
     case TelemetryType_Temps:
     case TelemetryType_Power:
+
+    default:
         qDebug("Unhandled emitTelemetry");
         break;
     }
@@ -169,4 +197,9 @@ QString RadioPacketParser::phaseToShortString(FlightPhaseQML phase)
         return "LManual";
     }
     return "???";
+}
+
+PayloadFlags RadioPacketParser::statusBitsToFlags(uint16_t bits)
+{
+    return PayloadFlags::fromBits(bits);
 }

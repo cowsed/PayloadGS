@@ -23,7 +23,7 @@ struct P2GLinkHeader {
 enum UnpackResult unpack_p2g_link_header(const uint8_t *buf,
                                          uint32_t len,
                                          struct P2GLinkHeader *header);
-int pack_p2g_link_header(uint8_t *buf);
+int pack_p2g_link_header(const struct P2GLinkHeader *header, uint8_t *buf);
 
 struct ImageData
 {
@@ -57,13 +57,13 @@ struct ShellReadOutputData {
 };
 
 enum FlightPhase {
-    FlightState_Starting = 0,
-    FlightState_Pad = 1,
-    FlightState_ExpectingLaunch = 2,
-    FlightState_Flight = 3,
-    FlightState_LandedFlipping = 4,
-    FlightState_LandedAutomatic = 5,
-    FlightState_LandedManual = 6,
+    FlightPhase_Starting = 0,
+    FlightPhase_Pad = 1,
+    FlightPhase_ExpectingLaunch = 2,
+    FlightPhase_Flight = 3,
+    FlightPhase_LandedFlipping = 4,
+    FlightPhase_LandedAutomatic = 5,
+    FlightPhase_LandedManual = 6,
 };
 
 enum StatusBit {
@@ -83,10 +83,10 @@ enum StatusBit {
 
 struct FlightState
 {
-    enum FlightPhase state;
+    enum FlightPhase phase;
     uint16_t status_bits;
 };
-#define SIZEOF_PACKED_FLIGHT_STATE_AND_STATUS 2
+#define SIZEOF_PACKED_FLIGHT_STATE 3
 
 struct LandedHeartbeatStats
 {
@@ -99,7 +99,7 @@ struct LandedHeartbeatStats
     uint8_t radio_temp;
 };
 #define SIZEOF_PACKED_LANDED_HEARTBEAT_STATS \
-    (SIZEOF_FLIGHT_STATE_AND_STATUS + 1 + 1 + SIZEOF_PACKED_ARMSTATUS + 2 + 1 + 1)
+    (SIZEOF_PACKED_FLIGHT_STATE + 1 + 1 + SIZEOF_PACKED_ARM_TARGET + 2 + 1 + 1)
 
 struct FlightHeartbeatStats
 {
@@ -111,8 +111,7 @@ struct FlightHeartbeatStats
     int16_t battery_mV;
     uint8_t radio_temp;
 };
-#define SIZEOF_PACKED_FLIGHT_HEARTBEAT_STATS \
-    (SIZEOF_FLIGHT_STATE_AND_STATUS + SIZEOF_PACKED_FLOAT * 2 + 2 + 2 + 2 + 1)
+#define SIZEOF_PACKED_FLIGHT_HEARTBEAT_STATS (SIZEOF_PACKED_FLIGHT_STATE + 4 * 2 + 2 + 2 + 2 + 1)
 
 /**
  * @brief Data about the state when the image was taken and parameters of its taking
@@ -131,12 +130,28 @@ struct ImageMetadata
 #define SIZEOF_PACKED_IMAGE_METADATA \
     (1 + 4 + 2 + SIZEOF_PACKED_ARM_TARGET + SIZEOF_PACKED_PHOTOTRANSFORM + 2 * 4)
 
+struct ActuatorPositions
+{
+    struct ArmTarget arms;
+    uint8_t servo1;
+    uint8_t servo2;
+    uint8_t servo3;
+    uint8_t servo4;
+};
+
+int pack_actuator_positions(const struct ActuatorPositions *target, uint8_t *buf);
+enum UnpackResult unpack_actuator_positions(const uint8_t *buf,
+                                            uint32_t len,
+                                            struct ActuatorPositions *target);
+
+#define SIZEOF_PACKED_ACTUATOR_POSITIONS = SIZEOF_PACKED_ARM_TARGET + 4
+
 struct Telemetry {
   enum TelemetryType telem_type;
   union {
       struct FlightHeartbeatStats flight_heartbeat_stats;
       struct LandedHeartbeatStats landed_heartbeat_stats;
-      int actuators;
+      struct ActuatorPositions actuators;
       int gnss;
       int orientation;
       int temps;
@@ -144,7 +159,14 @@ struct Telemetry {
   };
 };
 #define SIZEOF_PACKED_TELEMETRY \
-    (1 + MAX7(SIZEOF_PACKED_HEARTBEAT_STATS, SIZEOF_PACKED_GENERAL_STATS_DETAILED, 4, 4, 4, 4, 4))
+    (1 \
+     + MAX7(SIZEOF_PACKED_HEARTBEAT_STATS, \
+            SIZEOF_PACKED_GENERAL_STATS_DETAILED, \
+            SIZEOF_PACKED_ACTUATOR_POSITIONS, \
+            4, \
+            4, \
+            4, \
+            4))
 
 struct CommandResponse
 {
@@ -173,12 +195,13 @@ struct PacketP2G
     };
 };
 
+int pack_command_response(const struct CommandResponse *cmd, uint8_t *buf);
 enum UnpackResult unpack_command_response(const uint8_t *buf,
                                           uint32_t len,
                                           struct CommandResponse *resp);
 
 int pack_telemetry(const struct Telemetry *telem, uint8_t *buf);
-enum UnpackResult unpack_telemetry(uint8_t *buf, uint32_t len, struct Telemetry *telem);
+enum UnpackResult unpack_telemetry(const uint8_t *buf, uint32_t len, struct Telemetry *telem);
 
 #ifdef __cplusplus
 }

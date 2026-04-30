@@ -74,6 +74,8 @@ public slots:
 
     void newPayloadPosition(QDateTime ts, QGeoCoordinate coord);
     void newStationPosition(QDateTime ts, QGeoCoordinate coord);
+
+    void newBatteryInformation(QDateTime ts, double volts, double amps);
     Q_INVOKABLE void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
 
 signals:
@@ -94,7 +96,12 @@ signals:
     void batteryVoltageChanged();
 
 private:
+    QDateTime last_station_pos_update;
+    QGeoCoordinate last_station_pos{43.0839380, -77.6757720, 10};
+    QDateTime last_rocket_pos_update;
     QGeoCoordinate last_rocket_pos{0, 0, 120};
+    QDateTime last_payload_pos_update;
+    QGeoCoordinate last_payload_pos{31.0443, -103.53507, 120};
 
     FrontBackDataHolder battery_voltage;
     FrontBackDataHolder battery_current;

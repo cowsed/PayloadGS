@@ -5,9 +5,8 @@ import QtQuick.Controls.Material
 import QtPositioning
 
 Item {
-    Material.theme: Material.Light
-
     id: telemetry
+    Material.theme: Material.Light
 
     property geoCoordinate payloadCoordinate: TelemetryLogHolder.latestPayloadPosition
     property date payloadCoordinateUpdateTime: TelemetryLogHolder.latestPayloadPositionUpdateTime
@@ -50,48 +49,36 @@ Item {
                     RoundButton {
                         id: payloadPosition
                         font.pointSize: 11
-                        text: "🛰️ " + telemetry.payloadCoordinate.latitude.toFixed(
-                                  5) + ", " + telemetry.payloadCoordinate.longitude.toFixed(
-                                  5)
+                        text: "🛰️ " + telemetry.payloadCoordinate.latitude.toFixed(5) + ", " + telemetry.payloadCoordinate.longitude.toFixed(5)
                         radius: 1
                         // readOnly: true
                         onClicked: {
-                            copierHack.text = telemetry.payloadCoordinate.latitude.toFixed(
-                                        7) + ", " + telemetry.payloadCoordinate.longitude.toFixed(
-                                        7)
-                            copierHack.selectAll()
-                            copierHack.copy()
+                            copierHack.text = telemetry.payloadCoordinate.latitude.toFixed(7) + ", " + telemetry.payloadCoordinate.longitude.toFixed(7);
+                            copierHack.selectAll();
+                            copierHack.copy();
                         }
                     }
                     RoundButton {
                         id: stationPosition
                         font.pointSize: 11
-                        text: "📡 " + telemetry.stationCoordinate.latitude.toFixed(
-                                  5) + ", " + telemetry.stationCoordinate.longitude.toFixed(
-                                  5)
+                        text: "📡 " + telemetry.stationCoordinate.latitude.toFixed(5) + ", " + telemetry.stationCoordinate.longitude.toFixed(5)
                         radius: 1
                         onClicked: {
-                            copierHack.text = "" + telemetry.stationCoordinate.latitude.toFixed(
-                                        7) + ", " + telemetry.stationCoordinate.longitude.toFixed(
-                                        7)
-                            copierHack.selectAll()
-                            copierHack.copy()
+                            copierHack.text = "" + telemetry.stationCoordinate.latitude.toFixed(7) + ", " + telemetry.stationCoordinate.longitude.toFixed(7);
+                            copierHack.selectAll();
+                            copierHack.copy();
                         }
                     }
                     RoundButton {
                         id: rocketPosition
                         font.pointSize: 11
 
-                        text: "🚀 " + telemetry.rocketCoordinate.latitude.toFixed(
-                                  5) + ", " + telemetry.rocketCoordinate.longitude.toFixed(
-                                  5)
+                        text: "🚀 " + telemetry.rocketCoordinate.latitude.toFixed(5) + ", " + telemetry.rocketCoordinate.longitude.toFixed(5)
                         radius: 1
                         onClicked: {
-                            copierHack.text = "" + telemetry.rocketCoordinate.latitude.toFixed(
-                                        7) + ", " + telemetry.rocketCoordinate.longitude.toFixed(
-                                        7)
-                            copierHack.selectAll()
-                            copierHack.copy()
+                            copierHack.text = "" + telemetry.rocketCoordinate.latitude.toFixed(7) + ", " + telemetry.rocketCoordinate.longitude.toFixed(7);
+                            copierHack.selectAll();
+                            copierHack.copy();
                         }
                     }
                 }
@@ -117,9 +104,9 @@ Item {
                     value: 9600
                 }
                 onPositionChanged: {
-                    var coord = src.position.coordinate
-                    console.log("Coordinate:", coord.longitude, coord.latitude)
-                    TelemetryLogHolder.newRocketPosition(new Date(), coord)
+                    var coord = src.position.coordinate;
+                    console.log("Coordinate:", coord.longitude, coord.latitude);
+                    TelemetryLogHolder.newRocketPosition(new Date(), coord);
                 }
             }
 

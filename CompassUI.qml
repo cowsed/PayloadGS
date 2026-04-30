@@ -12,15 +12,21 @@ Control {
     rightInset: 10
     implicitHeight: width
 
-    // anchors.fill: parent
     required property geoCoordinate payloadCoordinate
     required property geoCoordinate stationCoordinate
     required property geoCoordinate rocketCoordinate
 
-    property real stationToPayloadAz: stationCoordinate.azimuthTo(
-                                          payloadCoordinate)
-    property real stationToRocketAz: stationCoordinate.azimuthTo(
-                                         rocketCoordinate)
+    property real stationToPayloadAz: stationCoordinate.azimuthTo(payloadCoordinate)
+    property real stationToRocketAz: stationCoordinate.azimuthTo(rocketCoordinate)
+
+    function displayMeters(meters) {
+        if (meters > 1000) {
+            return (meters / 1000).toFixed(0) + " km";
+        } else if (meters > 100) {
+            return (meters / 1000).toFixed(1) + " km";
+        }
+        return meters.toFixed(0) + "m";
+    }
 
     Image {
         id: northsouth
@@ -58,16 +64,14 @@ Control {
     Label {
         font.pointSize: 22
         color: "#f76902"
-        text: compass.stationCoordinate.distanceTo(
-                  compass.payloadCoordinate).toFixed(0) + "m"
+        text: displayMeters(compass.stationCoordinate.distanceTo(compass.payloadCoordinate))
         anchors.bottom: rangeLabel.top
         anchors.horizontalCenter: rangeLabel.horizontalCenter
     }
     Label {
         font.pointSize: 22
         color: "#7D55C7"
-        text: compass.stationCoordinate.distanceTo(
-                  compass.rocketCoordinate).toFixed(0) + "m"
+        text: compass.stationCoordinate.distanceTo(compass.rocketCoordinate).toFixed(0) + "m"
         anchors.top: rangeLabel.bottom
         anchors.horizontalCenter: rangeLabel.horizontalCenter
     }

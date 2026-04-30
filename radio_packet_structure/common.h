@@ -57,10 +57,10 @@ struct ArmAbsoluteTelemetryLowRes {
 };
 
 struct ArmTarget {
-  uint8_t shoulder_yaw;
-  uint8_t shoulder_pitch;
-  uint8_t elbow_pitch;
-  uint8_t wrist_pitch;
+    int8_t shoulder_yaw;
+    int8_t shoulder_pitch;
+    int8_t elbow_pitch;
+    int8_t wrist_pitch;
 };
 #define SIZEOF_PACKED_ARM_TARGET 4
 

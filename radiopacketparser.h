@@ -4,6 +4,7 @@
 #include "QObject"
 #include "packets_p2g.h"
 #include <qdatetime.h>
+#include <qgeocoordinate.h>
 
 class PayloadFlags
 {
@@ -16,6 +17,7 @@ class PayloadFlags
     Q_PROPERTY(bool ArmMoving MEMBER ArmMoving)
     Q_PROPERTY(bool ServoMoving MEMBER ServoMoving)
     Q_PROPERTY(bool MotorsOverTemp MEMBER MotorsOverTemp)
+    Q_PROPERTY(bool InIdlePosition MEMBER InIdlePosition)
     Q_PROPERTY(bool RadioOverTemp MEMBER RadioOverTemp)
     Q_PROPERTY(bool GPSHasFix MEMBER GPSHasFix)
 
@@ -29,6 +31,7 @@ public:
     bool LastServoMoveStalled;
     bool ArmMoving;
     bool ServoMoving;
+    bool InIdlePosition;
     bool MotorsOverTemp;
     bool RadioOverTemp;
     bool GPSHasFix;
@@ -57,11 +60,12 @@ public:
     Q_ENUM(FlightPhaseQML);
 
     Q_INVOKABLE static QString phaseToShortString(FlightPhaseQML phase);
+    Q_INVOKABLE static PayloadFlags statusBitsToFlags(uint16_t bits);
 
     explicit RadioPacketParser(QObject *parent = nullptr);
 
 signals:
-    void flightStateUpdated(QDateTime time, struct FlightState state);
+    void flightStateUpdated(QDateTime time, enum FlightPhase phase, uint16_t bitflags);
     void flightHeartbeat(QDateTime time,
                          struct FlightState state,
                          float lat,
@@ -81,13 +85,16 @@ signals:
                          uint8_t radio_temp);
 
     void tempsUpdated(QDateTime time, double temp1, double temp2);
-    void payloadGPSUpdated(QDateTime time, float latitude, float longitude, int32_t altitude);
+    void payloadGPSUpdated(QDateTime time, QGeoCoordinate coord);
 
     void ramUpdated(QDateTime time, uint32_t avail_bytes, uint32_t free_bytes);
     void storageUpdated(QDateTime time, uint64_t avail_bytes, uint64_t free_bytes);
     void batteryUpdated(QDateTime time, double volts, double amps);
 
-    void armAnglesUpdated(QDateTime time, float yaw, float shoulder, float elbow, float wrist);
+    void armAnglesUpdated(
+        QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
+    void servoAnglesUpdated(
+        QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
 
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);
 public slots:
