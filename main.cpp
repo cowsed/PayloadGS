@@ -132,6 +132,17 @@ int main(int argc, char *argv[])
                      &TelemetryLogHolder::newBatteryInformation,
                      Qt::QueuedConnection);
 
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::motorTempUpdated,
+                     holder,
+                     &TelemetryLogHolder::newMotorTemp,
+                     Qt::QueuedConnection);
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::radioTempUpdated,
+                     holder,
+                     &TelemetryLogHolder::newRadioTemp,
+                     Qt::QueuedConnection);
+
     engine.loadFromModule("PayloadGS", "Main");
 
     return app.exec();

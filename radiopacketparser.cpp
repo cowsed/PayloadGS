@@ -87,7 +87,7 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                                               telem->flight_heartbeat_stats.longitude,
                                               telem->flight_heartbeat_stats.altitude));
         emit batteryUpdated(time, telem->flight_heartbeat_stats.battery_mV / 1000.0, NAN);
-        emit tempsUpdated(time, telem->flight_heartbeat_stats.radio_temp, NAN);
+        emit radioTempUpdated(time, telem->flight_heartbeat_stats.radio_temp);
         break;
     case TelemetryType_LandedHeartbeat:
         emit landedHeartbeat(time,
@@ -101,9 +101,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
         emit flightStateUpdated(time,
                                 telem->landed_heartbeat_stats.state.phase,
                                 telem->landed_heartbeat_stats.state.status_bits);
-        emit tempsUpdated(time,
-                          telem->landed_heartbeat_stats.radio_temp,
-                          telem->landed_heartbeat_stats.motor_temp);
+        emit motorTempUpdated(time, telem->landed_heartbeat_stats.motor_temp);
+        emit radioTempUpdated(time, telem->landed_heartbeat_stats.radio_temp);
     case TelemetryType_Actuators:
         emit armAnglesUpdated(time,
                               telem->actuators.arms.shoulder_yaw,

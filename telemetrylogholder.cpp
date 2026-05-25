@@ -4,10 +4,20 @@ TelemetryLogHolder::TelemetryLogHolder(QObject *parent)
     : QObject(parent)
     , battery_current(MAX_IN_MEM_BATT_VOLTAGE_ENTRIES)
     , battery_voltage(MAX_IN_MEM_BATT_VOLTAGE_ENTRIES)
-    , cpu_temp(MAX_IN_MEM_CPU_TEMP_ENTRIES)
+    , motor_temp(MAX_IN_MEM_MOTOR_TEMP_ENTRIES)
     , radio_temp(MAX_IN_MEM_RADIO_TEMP_ENTRIES)
 
 {}
+
+void TelemetryLogHolder::newMotorTemp(QDateTime ts, double tempC)
+{
+    motor_temp.newValue(ts, tempC);
+}
+
+void TelemetryLogHolder::newRadioTemp(QDateTime ts, double tempC)
+{
+    radio_temp.newValue(ts, tempC);
+}
 
 void TelemetryLogHolder::newRamUsage(QDateTime ts, uint64_t bytes) {}
 void TelemetryLogHolder::newFsUsage(QDateTime ts, uint64_t bytes) {}
@@ -77,7 +87,7 @@ QDateTime TelemetryLogHolder::latestRocketPositionUpdateTime()
 
 FrontBackDataHolder *TelemetryLogHolder::getCpuTemp()
 {
-    return &cpu_temp;
+    return &motor_temp;
 }
 
 FrontBackDataHolder *TelemetryLogHolder::getRadioTemp()

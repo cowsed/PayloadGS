@@ -29,7 +29,7 @@ int RadioParser::run_watcher()
         emit radio_connected_changed(true);
 
         while (fifo.isOpen()) {
-            QString line = fifo.readLine();
+            // QString line = fifo.readLine();
             // handleLine(line);
         }
 

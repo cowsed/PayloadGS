@@ -45,7 +45,7 @@ class TelemetryLogHolder : public QObject
     QML_SINGLETON
 
 public:
-    static constexpr size_t MAX_IN_MEM_CPU_TEMP_ENTRIES = 20;
+    static constexpr size_t MAX_IN_MEM_MOTOR_TEMP_ENTRIES = 20;
     static constexpr size_t MAX_IN_MEM_RADIO_TEMP_ENTRIES = 20;
     static constexpr size_t MAX_IN_MEM_BATT_VOLTAGE_ENTRIES = 40;
 
@@ -68,6 +68,9 @@ public:
     FrontBackDataHolder *getBatteryCurrent();
     FrontBackDataHolder *getBatteryVoltage();
 public slots:
+
+    void newMotorTemp(QDateTime ts, double tempC);
+    void newRadioTemp(QDateTime ts, double tempC);
 
     void newRamUsage(QDateTime ts, uint64_t);
     void newFsUsage(QDateTime ts, uint64_t);
@@ -105,7 +108,7 @@ private:
 
     FrontBackDataHolder battery_voltage;
     FrontBackDataHolder battery_current;
-    FrontBackDataHolder cpu_temp;
+    FrontBackDataHolder motor_temp;
     FrontBackDataHolder radio_temp;
 };
 

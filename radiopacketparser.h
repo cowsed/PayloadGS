@@ -84,7 +84,8 @@ signals:
                          uint8_t motor_temp,
                          uint8_t radio_temp);
 
-    void tempsUpdated(QDateTime time, double temp1, double temp2);
+    void radioTempUpdated(QDateTime time, double tempC);
+    void motorTempUpdated(QDateTime time, double tempC);
     void payloadGPSUpdated(QDateTime time, QGeoCoordinate coord);
 
     void ramUpdated(QDateTime time, uint32_t avail_bytes, uint32_t free_bytes);

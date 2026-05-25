@@ -3,7 +3,6 @@ import QtCharts
 import QtQuick.Layouts
 
 RowLayout {
-
     id: telem
     Layout.topMargin: 5
     Layout.bottomMargin: 5
@@ -18,16 +17,14 @@ RowLayout {
     property real ramUsed: TelemetryLogHolder.latestRamUsage
     property real fsUsed: TelemetryLogHolder.latestFsUsage
 
-    property bool hasBat: !Number.isNaN(
-                              TelemetryLogHolder.batteryVoltage.latestValue)
+    property bool hasBatV: !Number.isNaN(TelemetryLogHolder.batteryVoltage.latestValue)
+    property bool hasBatC: !Number.isNaN(TelemetryLogHolder.batteryCurrent.latestValue)
     // property real batteryVoltage:
-    property real batteryCurrent: hasBat ? TelemetryLogHolder.batteryCurrent.latestValue : 0
+    property real batteryCurrent: hasBatC ? TelemetryLogHolder.batteryCurrent.latestValue : 0
 
-    property string batteryHealth: hasBat ? ((TelemetryLogHolder.batteryVoltage.latestValue
-                                              > batteryGoodLevel) ? "Good" : ((TelemetryLogHolder.batteryCurrent.latestValue > batteryDangerLevel) ? "Low" : "DANGER")) : "???"
+    property string batteryHealth: hasBatV ? ((TelemetryLogHolder.batteryVoltage.latestValue > batteryGoodLevel) ? "Good" : ((TelemetryLogHolder.batteryCurrent.latestValue > batteryDangerLevel) ? "Low" : "DANGER")) : "???"
 
-    property string batteryColor: hasBat ? ((TelemetryLogHolder.batteryVoltage.latestValue
-                                             > batteryGoodLevel) ? "green" : ((TelemetryLogHolder.batteryCurrent.latestValue > batteryDangerLevel) ? "orange" : "red")) : "red"
+    property string batteryColor: hasBatV ? ((TelemetryLogHolder.batteryVoltage.latestValue > batteryGoodLevel) ? "green" : ((TelemetryLogHolder.batteryCurrent.latestValue > batteryDangerLevel) ? "orange" : "red")) : "red"
     Layout.fillWidth: true
     Layout.fillHeight: true
 
@@ -38,17 +35,15 @@ RowLayout {
         Layout.fillHeight: true
         from: 9.6
         to: 12.6
-        value: telem.hasBat ? TelemetryLogHolder.batteryVoltage.latestValue : 0
+        value: telem.hasBatV ? TelemetryLogHolder.batteryVoltage.latestValue : 0
 
         frontColor: telem.batteryColor
         textColor: telem.batteryColor
 
         gaugeTitle: "Batt"
         topText: telem.batteryHealth
-        mainText: telem.hasBat ? (TelemetryLogHolder.batteryVoltage.latestValue.toFixed(
-                                      2) + "V") : "???"
-        subText: telem.hasBat ? (TelemetryLogHolder.batteryCurrent.latestValue.toFixed(
-                                     0) + "mA") : "???"
+        mainText: telem.hasBatV ? (TelemetryLogHolder.batteryVoltage.latestValue.toFixed(2) + "V") : "???"
+        subText: telem.hasBatC ? (TelemetryLogHolder.batteryCurrent.latestValue.toFixed(0) + "mA") : "???"
     }
     Gauge {
         id: ramGauge

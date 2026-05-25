@@ -25,18 +25,15 @@ ChartView {
         running: false // set to true for fun
         repeat: true
         onTriggered: {
-            let t = (new Date().getTime(
-                         ) - tempChart.startDate.getTime()) / 1000
-            TelemetryLogHolder.cpuTemp.newValue(new Date(),
-                                                30 + 5 * Math.sin(t))
-            TelemetryLogHolder.radioTemp.newValue(new Date(),
-                                                  30 + 5 * Math.cos(t))
+            let t = (new Date().getTime() - tempChart.startDate.getTime()) / 1000;
+            TelemetryLogHolder.cpuTemp.newValue(new Date(), 30 + 5 * Math.sin(t));
+            TelemetryLogHolder.radioTemp.newValue(new Date(), 30 + 5 * Math.cos(t));
 
-            const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime]
-            const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime]
+            const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime];
+            const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime];
 
-            axisX.min = new Date(Math.min(...starts))
-            axisX.max = new Date(Math.max(...ends))
+            axisX.min = new Date(Math.min(...starts));
+            axisX.max = new Date(Math.max(...ends));
         }
     }
 
@@ -44,39 +41,33 @@ ChartView {
         target: TelemetryLogHolder.cpuTemp
 
         function onValueChanged() {
-            TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(
-                                                        cpuTempSeries.name))
+            TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(cpuTempSeries.name));
         }
     }
     Connections {
         target: TelemetryLogHolder.radioTemp
 
         function onValueChanged() {
-            TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(
-                                                          radioTempSeries.name))
+            TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(radioTempSeries.name));
         }
     }
     Connections {
         target: TelemetryLogHolder.batteryVoltage
 
         function onValueChanged() {
-            TelemetryLogHolder.batteryVoltage.fillXYSeries(
-                        tempChart.series(batteryVoltageSeries.name))
+            TelemetryLogHolder.batteryVoltage.fillXYSeries(tempChart.series(batteryVoltageSeries.name));
         }
     }
     Component.onCompleted: {
-        TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(
-                                                    cpuTempSeries.name))
-        TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(
-                                                      radioTempSeries.name))
-        TelemetryLogHolder.batteryVoltage.fillXYSeries(
-                    tempChart.series(batteryVoltageSeries.name))
+        TelemetryLogHolder.cpuTemp.fillXYSeries(tempChart.series(cpuTempSeries.name));
+        TelemetryLogHolder.radioTemp.fillXYSeries(tempChart.series(radioTempSeries.name));
+        TelemetryLogHolder.batteryVoltage.fillXYSeries(tempChart.series(batteryVoltageSeries.name));
 
-        const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime]
-        const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime]
+        const starts = [TelemetryLogHolder.cpuTemp.earliestTime, TelemetryLogHolder.radioTemp.earliestTime, TelemetryLogHolder.batteryVoltage.earliestTime];
+        const ends = [TelemetryLogHolder.cpuTemp.latestTime, TelemetryLogHolder.radioTemp.latestTime, TelemetryLogHolder.batteryVoltage.latestTime];
 
-        axisX.min = new Date(Math.min(...starts))
-        axisX.max = new Date(Math.max(...ends))
+        axisX.min = new Date(Math.min(...starts));
+        axisX.max = new Date(Math.max(...ends));
     }
 
     DateTimeAxis {
@@ -110,7 +101,7 @@ ChartView {
     }
     LineSeries {
         id: cpuTempSeries
-        name: "PI CPU °C"
+        name: "Motor °C"
         axisX: axisX
         axisY: axisYTemp
         color: "blue"
