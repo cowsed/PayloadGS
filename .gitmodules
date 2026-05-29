@@ -1,3 +1,6 @@
 [submodule "radio_handlers/sx1262"]
 	path = radio_handlers/sx1262
 	url = https://github.com/libdriver/sx1262.git
+[submodule "RadioController/vendor/sx127x"]
+	path = RadioController/vendor/sx127x
+	url = https://github.com/dernasherbrezon/sx127x.git
