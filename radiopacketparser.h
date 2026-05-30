@@ -1,8 +1,9 @@
 #ifndef RADIOPACKETPARSER_H
 #define RADIOPACKETPARSER_H
+#include <QLocalSocket>
 #include <QQmlEngine>
 #include "QObject"
-#include "packets_p2g.h"
+#include "cubesat_comms/packets_p2g.h"
 #include <qdatetime.h>
 #include <qgeocoordinate.h>
 
@@ -106,6 +107,7 @@ private:
     void emitCommandResponse(QDateTime time, const CommandResponse *resp);
     void emitTelemetry(QDateTime time, const Telemetry *telem);
 
+    QLocalSocket *sock = nullptr;
     qint64 last_read = 0;
 };
 

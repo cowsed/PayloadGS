@@ -1,4 +1,4 @@
-#include "packets_g2p.h"
+#include "cubesat_comms/packets_g2p.h"
 #include "string.h"
 
 

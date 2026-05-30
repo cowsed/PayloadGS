@@ -15,9 +15,9 @@
 #include "datasource.h"
 #include <qquickview.h>
 
+#include "cubesat_comms/packets_p2g.h"
 #include "imagedataholder.h"
 #include "librarian.h"
-#include "packets_p2g.h"
 #include "radiopacketparser.h"
 #include "telemetrylogholder.h"
 

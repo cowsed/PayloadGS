@@ -1,4 +1,4 @@
-#include "lora.h"
+#include "cubesat_comms/lora.h"
 
 int pack_lora_link_change(const struct LoraLinkChange *link_change,
                           uint8_t *buf) {

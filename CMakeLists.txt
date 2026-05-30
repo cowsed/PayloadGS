@@ -18,13 +18,13 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appPayloadGS
     main.cpp
-    radio_packet_structure/lora.c radio_packet_structure/packets_p2g.c radio_packet_structure/packets_g2p.c
+    cubesat_comms/lora.c cubesat_comms/packets_p2g.c cubesat_comms/packets_g2p.c
 
 )
 
 
 
-target_include_directories(appPayloadGS PRIVATE radio_packet_structure)
+target_include_directories(appPayloadGS PRIVATE cubesat_comms/include)
 
 
 

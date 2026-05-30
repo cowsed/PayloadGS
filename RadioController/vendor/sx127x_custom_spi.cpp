@@ -34,9 +34,7 @@ int sx127x_spi_read_registers(int reg, void *spi_device, size_t data_length, uin
     tr.tx_buf = (__u64)&tx_buf;
     tr.rx_buf = (__u64)&rx_buf;
     tr.len = data_length + 1;
-    radio->activate_spi();
     int code = ioctl(radio->spidev_handle(), SPI_IOC_MESSAGE(1), &tr);
-    radio->deactivate_spi();
 
     if (code == -1) {
         *result = 0;
@@ -64,9 +62,7 @@ int sx127x_spi_read_buffer(int reg, uint8_t *buffer, size_t buffer_length, void 
     tr.tx_buf = (__u64)tx_buf;
     tr.rx_buf = (__u64)rx_buf;
     tr.len = buffer_length + 1;
-    radio->activate_spi();
     int code = ioctl(radio->spidev_handle(), SPI_IOC_MESSAGE(1), &tr);
-    radio->deactivate_spi();
     if (code == -1) {
         return errno;
     }
@@ -88,9 +84,7 @@ int sx127x_spi_write_register(int reg, const uint8_t *data, size_t data_length, 
     memcpy(tmp + 1, data, data_length);
     tr.tx_buf = (unsigned long)tmp;
     tr.len = data_length + 1;
-    radio->activate_spi();
     int code = ioctl(radio->spidev_handle(), SPI_IOC_MESSAGE(1), &tr);
-    radio->deactivate_spi();
     if (code == -1) {
         return errno;
     }
@@ -112,9 +106,7 @@ int sx127x_spi_write_buffer(int reg, const uint8_t *buffer, size_t buffer_length
     tr.tx_buf = (__u64)tx_buf;
     tr.len = buffer_length + 1;
 
-    radio->activate_spi();
     int code = ioctl(radio->spidev_handle(), SPI_IOC_MESSAGE(1), &tr);
-    radio->deactivate_spi();
 
     if (code == -1) {
         return errno;

@@ -8,7 +8,7 @@
 
 class Radio {
   public:
-    Radio(int spidev, gpiod::chip &gpio, int rst_num, int dio0_num, int cs_num);
+    Radio(const char *name, int spidev, gpiod::chip &gpio, int rst_num, int dio0_num);
 
     enum Error {
         Ok,
@@ -29,9 +29,6 @@ class Radio {
     void set_callbacks(TxDoneCb tx, RxCb rx);
 
     int spidev_handle();
-
-    void activate_spi();
-    void deactivate_spi();
 
     void reset();
 
@@ -62,7 +59,6 @@ class Radio {
 
     int m_rst_num;
     int m_dio0_num;
-    int m_spi_cs_num;
 
     gpiod::line_request m_req;
     sx127x sxDev;

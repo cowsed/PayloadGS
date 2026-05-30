@@ -1,5 +1,5 @@
 #include "librarian.h"
-#include "packets_p2g.h"
+#include "cubesat_comms/packets_p2g.h"
 
 Librarian::Librarian() {}
 

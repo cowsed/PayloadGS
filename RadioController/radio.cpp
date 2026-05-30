@@ -4,12 +4,10 @@
 #include <radio.hpp>
 #include <string_view>
 
-Radio::Radio(int spidev, gpiod::chip &gpio, int rst_num, int dio0_num, int cs_num)
-    : m_spidev(spidev), m_gpiochip(gpio), m_rst_num(rst_num), m_dio0_num(dio0_num), m_spi_cs_num(cs_num),
+Radio::Radio(const char *name, int spidev, gpiod::chip &gpio, int rst_num, int dio0_num)
+    : m_spidev(spidev), m_gpiochip(gpio), m_rst_num(rst_num), m_dio0_num(dio0_num),
       m_req(gpio.prepare_request()
-                .set_consumer("RadioController")
-                .add_line_settings(
-                    cs_num, gpiod::line_settings().set_direction(gpiod::line::direction::OUTPUT).set_active_low(true))
+                .set_consumer(std::string{"RServe "}+name)
                 .add_line_settings(m_rst_num, gpiod::line_settings().set_direction(gpiod::line::direction::OUTPUT))
                 .add_line_settings(m_dio0_num, gpiod::line_settings()
                                                    .set_direction(gpiod::line::direction::INPUT)
@@ -20,26 +18,12 @@ Radio::Radio(int spidev, gpiod::chip &gpio, int rst_num, int dio0_num, int cs_nu
 
     int res = sx127x_create((void *)this, &sxDev);
     if (res != SX127X_OK) {
-        printf("Error creating with cs %d: %d\n", m_spi_cs_num, res);
+        printf("Error creating  %d\n", res);
     }
 }
 
 int Radio::spidev_handle() { return m_spidev; }
 
-void Radio::activate_spi() {
-    if (m_spi_cs_num < 0) {
-        return;
-    }
-    // printf("Activating CS: %d\n", m_spi_cs_num);
-    m_req.set_value(m_spi_cs_num, gpiod::line::value::ACTIVE);
-}
-void Radio::deactivate_spi() {
-    if (m_spi_cs_num < 0) {
-        return;
-    }
-    // printf("Deactivating CS: %d\n", m_spi_cs_num);
-    m_req.set_value(m_spi_cs_num, gpiod::line::value::INACTIVE);
-}
 
 void Radio::reset() {
     m_req.set_value(m_rst_num, gpiod::line::value::INACTIVE);

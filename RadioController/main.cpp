@@ -39,15 +39,33 @@ void catchUnixSignals(const std::vector<int> &quitSignals, const std::vector<int
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 7) {
-        fprintf(stderr, "server /path/to/socket /dev/spidev /dev/gpiochip rst_pin dio1_pin cs_pin");
+    const char *socket_path = argv[1];
+    const char * spidev_path = argv[2];
+    const char *gpiodev_path = argv[3];
+    const char *rst_name = argv[4];
+    const char *dio1_name = argv[5];
+
+
+    if (argc < 6) {
+        fprintf(stderr, "server /path/to/socket /dev/spidev /dev/gpiochip rst_pin dio1_pin");
         return -1;
     }
-    char *spi_fname = argv[1];
+    bool parse_ok = false;
+    int rst_pin = QString{rst_name}.toInt(&parse_ok);
+    if(!parse_ok){
+        fprintf(stderr, "Failed to parse %s to pin number for rst\n", rst_name);
+        return -1;
+    }
+    int dio_pin = QString{dio1_name}.toInt(&parse_ok);
+    if(!parse_ok){
+        fprintf(stderr, "Failed to parse %s to pin number for dio\n", dio1_name);
+        return -1;
+    }
 
-    int spi_device_fd = open("/dev/spidev0.0", O_RDWR);
+
+    int spi_device_fd = open(spidev_path, O_RDWR);
     if (spi_device_fd < 0) {
-        perror("unable to open device");
+        perror("unable to open spi device");
         return -1;
     }
 
@@ -60,41 +78,22 @@ int main(int argc, char *argv[]) {
     int max_speed = 8000000;
     ioctl(spi_device_fd, SPI_IOC_WR_MAX_SPEED_HZ, &max_speed);
 
-    gpiod::chip gpiochip{"/dev/gpiochip0"};
-    // Radio *rA = new Radio{spi_device_fd, gpiochip, 19, 13, 26};
-    // Radio *rB = new Radio{spi_device_fd, gpiochip, 20, 12, 7};
-    Radio *rA =  new Radio{spi_device_fd, gpiochip, 16, 25, 8};
-
-    // qputenv("QT_ASSUME_STDERR_HAS_CONSOLE", QByteArray("0"));
+    gpiod::chip gpiochip{gpiodev_path};
+    Radio *radio =  new Radio{socket_path, spi_device_fd, gpiochip, rst_pin, dio_pin};
 
     QCoreApplication a(argc, argv);
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
 
-    RadioServer *server = new RadioServer("/tmp/radio_serverA", rA);
+    RadioServer *server = new RadioServer(socket_path, radio);
     server->setParent(&a);
 
-    InterruptWaiter *waiter = new InterruptWaiter(rA);
+    InterruptWaiter *waiter = new InterruptWaiter(radio);
     QObject::connect(waiter, &InterruptWaiter::interrupt_occurred, server, &RadioServer::dio1_interrupt);
     QObject::connect(waiter, &InterruptWaiter::finished, waiter, &QObject::deleteLater);
     waiter->start();
 
-    uint8_t data[128] = {1, 2, 3, 4, 5, 6};
-    // server->tx(433'000'000, SF::SF12, BW::BW125, CR::CR4_5, LDR::LDR_Off, 8, 20, sizeof(data), data);
-
 
     bool ret = server->startListening();
-
-    // QLocalSocket *sock = new QLocalSocket{};
-    // QObject::connect(server, &QLocalServer::newConnection, [&]() {
-    //     qDebug("new connection happened");
-    //     sock->write("hello from client\n im here\n");
-    // });
-
-    // QObject::connect(sock, &QLocalSocket::errorOccurred, [](QLocalSocket::LocalSocketError err) {
-    // qWarning("error %d", (int) err);
-    // });
-
-    // sock->connectToServer("/tmp/radio_server");
 
     return a.exec();
 }

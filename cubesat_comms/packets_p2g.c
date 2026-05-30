@@ -1,4 +1,4 @@
-#include "packets_p2g.h"
+#include "cubesat_comms/packets_p2g.h"
 #include <stdio.h>
 #include <string.h>
 

@@ -20,7 +20,8 @@ ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
 
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open file for reading:" << file.errorString();
+        qDebug() << "Failed to open metadata file '" << path
+                 << "' for reading:" << file.errorString();
         return {};
     }
 

@@ -4,7 +4,7 @@
 #include <QDateTime>
 #include <QJsonObject>
 #include <QQmlEngine>
-#include "packets_p2g.h"
+#include "cubesat_comms/packets_p2g.h"
 
 class PhotoTransformQ
 {

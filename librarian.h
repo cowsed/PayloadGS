@@ -1,9 +1,9 @@
 #ifndef LIBRARIAN_H
 #define LIBRARIAN_H
 #include <QObject>
-#include "common.h"
+#include "cubesat_comms/common.h"
+#include "cubesat_comms/packets_p2g.h"
 #include "imagedataholder.h"
-#include "packets_p2g.h"
 
 #include <optional>
 #include <qlist.h>
