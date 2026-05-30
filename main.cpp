@@ -18,6 +18,7 @@
 #include "cubesat_comms/packets_p2g.h"
 #include "imagedataholder.h"
 #include "librarian.h"
+#include "radioclient.h"
 #include "radiopacketparser.h"
 #include "telemetrylogholder.h"
 
@@ -28,46 +29,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {
-    FlightHeartbeatStats fhstats{
-        .state = {
-            .phase = FlightPhase_ExpectingLaunch,
-            .status_bits = 0b1000000001,
-        },
-        .latitude = 43.082624,
-        .longitude =  -77.669193,
-        .altitude = 65000,
-        .s_since_boost = 15,
-        .battery_mV = 11100,
-        .radio_temp = 40,
-    };
-    Telemetry telemfh{
-        .telem_type = TelemetryType_FlightHeartbeat,
-        .flight_heartbeat_stats = fhstats,
-    };
-    Telemetry telem{.telem_type = TelemetryType_Actuators,
-                    .actuators = {
-                        .arms = {
-                          .shoulder_yaw = 15,
-                          .shoulder_pitch = 0,
-                          .elbow_pitch = 80,
-                          .wrist_pitch = 30,
-                    },
-                        .servo1 = 0,
-                        .servo2 = 1,
-                        .servo3 = 13,
-                        .servo4 = 240,
-                    },
-    };
-    CommandResponse cmd_resp = {.cmd = Command_TelemetryRequest, .telemetry = telemfh};
-    uint8_t buf[256] = {0XAA};
-    struct P2GLinkHeader lh{.packet_type = P2GPacketType_CommandResponse,
-                            .expected_packets_before_response = 3};
-    int len = pack_p2g_link_header(&lh, buf);
-    len += pack_command_response(&cmd_resp, buf + len);
-    QByteArray arr{(char *) buf, len};
-    printf("Length: %d\n", len);
-    printf("buf: %s\n", qPrintable(arr.toBase64()));
-
     qInstallMessageHandler(myMessageOutput);
 
     QApplication app(argc, argv);
@@ -89,6 +50,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("flight_dir", flight_dir);
 
     QQuickView viewer;
+
+    RadioClient *payload_client = new RadioClient();
 
     TelemetryLogHolder *holder
         = engine.singletonInstance<TelemetryLogHolder *>("PayloadGS", "TelemetryLogHolder");
@@ -113,6 +76,22 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
+
+    QObject::connect(payload_client,
+                     &RadioClient::packetReceived,
+                     radio_parser,
+                     &RadioPacketParser::packetReceived,
+                     Qt::QueuedConnection);
+
+    payload_client->connect("/tmp/radio_serverD");
+
+    QObject::connect(payload_client, &RadioClient::connected, [&]() {
+        payload_client->startReceiving(433000000,
+                                       RadioClient::SF9,
+                                       RadioClient::BW125,
+                                       RadioClient::CR4_5,
+                                       RadioClient::LDR_On);
+    });
 
     QObject::connect(radio_parser,
                      &RadioPacketParser::imageDataReceived,

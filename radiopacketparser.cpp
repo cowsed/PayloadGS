@@ -22,40 +22,7 @@ PayloadFlags PayloadFlags::fromBits(uint16_t bits)
 RadioPacketParser::RadioPacketParser(QObject *parent)
     : QObject{parent}
 {
-    sock = new QLocalSocket{};
-    QObject::connect(sock, &QLocalSocket::connected, this, [this]() {
-        qDebug("Connect4ed to radio servr");
-        sock->write("rx 433000000 SF12 BW125 CR4/5 LDRON 8\n");
-        sock->flush();
-    });
 
-    QObject::connect(sock, &QLocalSocket::errorOccurred, [](QLocalSocket::LocalSocketError err) {
-        qWarning("socket error %d", (int) err);
-    });
-
-    QObject::connect(sock, &QLocalSocket::readyRead, this, [this]() {
-        printf("===== BYTES FROM SOCK ====\n");
-        qDebug("Got bytes from sock");
-        while (sock->canReadLine()) {
-            qDebug("Got line from sock");
-            QByteArray linebs = sock->readLine();
-            QString line = QString::fromUtf8(linebs);
-            auto parts = line.split(" ");
-            if (parts.size() < 5) {
-                qDebug("Ignoring %s", qPrintable(line));
-                continue;
-            }
-            int snr = parts[1].toInt();
-            int rssi = parts[2].toInt();
-
-            if (line.startsWith("rxed")) {
-                b64PacketReceived(QDateTime::currentDateTime(), snr, rssi, parts[4]);
-            }
-            // Process your line of data here
-        };
-    });
-
-    sock->connectToServer("/tmp/radio_serverA");
 }
 
 void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const QByteArray &packet)

@@ -101,6 +101,7 @@ QML_FILES MoreTelemetryPage.qml
 QML_FILES RecropPage.qml
 QML_FILES ArmSequencePage.qml
 QML_FILES LibrarianTimerControl.qml
+SOURCES radioclient.h radioclient.cpp
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
