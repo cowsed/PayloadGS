@@ -35,12 +35,10 @@ ApplicationWindow {
         // toggleFullscreen()
     }
 
-    property LoraSettings currentRadioSettings: defaultRadioSettings
-
     property int flightNumber: 0
 
     property var phase: RadioPacketParser.Starting
-    property payloadFlags flags
+    property payloadFlags pflags
     property bool flagsValid: false
 
     function qsIfNanOrNum(num, numPlaces) {
@@ -49,13 +47,18 @@ ApplicationWindow {
         }
         return num.toFixed(numPlaces);
     }
-
+    function defaultIfNan(num, def) {
+        if (isNaN(num)) {
+            return def;
+        }
+        return num;
+    }
     Connections {
         target: RadioPacketParser
         function onFlightStateUpdated(time, phase, flags) {
             console.log("state updated1", time, RadioPacketParser.phaseToShortString(phase), flags);
             mainwindow.phase = phase;
-            mainwindow.flags = RadioPacketParser.statusBitsToFlags(flags);
+            mainwindow.pflags = RadioPacketParser.statusBitsToFlags(flags);
             mainwindow.flagsValid = true;
             console.log("state updated2", RadioPacketParser.phaseToShortString(mainwindow.phase), mainwindow.flags);
         }
@@ -305,8 +308,6 @@ ApplicationWindow {
             RadioPage {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                currentSettings: defaultRadioSettings
             }
 
             ShellPage {
@@ -353,34 +354,36 @@ ApplicationWindow {
             ToolSeparator {}
 
             Label {
-                text: mainwindow.currentRadioSettings.spreadingFactorString(mainwindow.currentRadioSettings.spreadingFactor)
+                text: RadioPacketParser.loraSettings.spreadingFactorString(RadioPacketParser.loraSettings.spreadingFactor)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: mainwindow.currentRadioSettings.bandwidthString(mainwindow.currentRadioSettings.bandwidth)
+                text: RadioPacketParser.loraSettings.bandwidthString(RadioPacketParser.loraSettings.bandwidth)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: mainwindow.currentRadioSettings.codingRateString(mainwindow.currentRadioSettings.codingRate)
+                text: RadioPacketParser.loraSettings.codingRateString(RadioPacketParser.loraSettings.codingRate)
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             Label {
-                text: "F " + (mainwindow.currentRadioSettings.frequency / 1000000).toFixed(3) + " MHz"
+                text: "F " + (RadioPacketParser.loraSettings.frequency / 1000000).toFixed(3) + " MHz"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             TimeSinceThing {
                 desc: "RX: "
-                event_time: new Date()
+                event_time: RadioPacketParser.latestRxDateTime
+                ifNan: "NVR"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
             TimeSinceThing {
                 desc: "TX: "
-                event_time: new Date()
+                event_time: RadioPacketParser.latestTxDateTime
+                ifNan: "NVR"
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}

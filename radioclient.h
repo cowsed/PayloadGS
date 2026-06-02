@@ -18,6 +18,7 @@ public:
         CR4_7,
         CR4_8,
     };
+
     enum LDR {
         LDR_On,
         LDR_Off,
@@ -37,11 +38,13 @@ public:
 public slots:
     void connect(QString server_path);
     void startReceiving(uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr);
+    void transmit(
+        uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr, int8_t power, const QByteArray &data);
 signals:
     void connected();
     void disconnected();
 
-    void beganReceiving(QDateTime time);
+    void beganReceiving(QDateTime time, uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr);
     void beganTransmitting(QDateTime time);
     void finishedTransmitting(QDateTime time);
 

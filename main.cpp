@@ -15,16 +15,21 @@
 #include "datasource.h"
 #include <qquickview.h>
 
-#include "cubesat_comms/packets_p2g.h"
 #include "imagedataholder.h"
 #include "librarian.h"
-#include "radioclient.h"
+#include "logprovider.h"
 #include "radiopacketparser.h"
 #include "telemetrylogholder.h"
 
+LogProvider *qt_logger{nullptr};
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    printf("TPE: %d %s\n", type, qPrintable(msg));
+    if (qt_logger) {
+        qt_logger->appendLog(qFormatLogMessage(type, context, msg));
+        printf("%s\n", qPrintable(qFormatLogMessage(type, context, msg)));
+    } else {
+        printf("%s\n", qPrintable(qFormatLogMessage(type, context, msg)));
+    }
 }
 
 int main(int argc, char *argv[])
@@ -51,10 +56,11 @@ int main(int argc, char *argv[])
 
     QQuickView viewer;
 
-    RadioClient *payload_client = new RadioClient();
-
     TelemetryLogHolder *holder
         = engine.singletonInstance<TelemetryLogHolder *>("PayloadGS", "TelemetryLogHolder");
+
+    LogProvider *logger = engine.singletonInstance<LogProvider *>("PayloadGS", "LogProvider");
+    qt_logger = logger;
 
     RadioPacketParser *radio_parser
         = engine.singletonInstance<RadioPacketParser *>("PayloadGS", "RadioPacketParser");
@@ -77,21 +83,6 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
-    QObject::connect(payload_client,
-                     &RadioClient::packetReceived,
-                     radio_parser,
-                     &RadioPacketParser::packetReceived,
-                     Qt::QueuedConnection);
-
-    payload_client->connect("/tmp/radio_serverD");
-
-    QObject::connect(payload_client, &RadioClient::connected, [&]() {
-        payload_client->startReceiving(433000000,
-                                       RadioClient::SF9,
-                                       RadioClient::BW125,
-                                       RadioClient::CR4_5,
-                                       RadioClient::LDR_On);
-    });
 
     QObject::connect(radio_parser,
                      &RadioPacketParser::imageDataReceived,

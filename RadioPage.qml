@@ -7,14 +7,11 @@ import QtCharts
 
 // import QtSensors
 Item {
+    id: page
     Material.theme: Material.Light
 
-    id: page
-
     property real freqMin: 410000000
-    property real freqMax: 440000000
-
-    required property LoraSettings currentSettings
+    property real freqMax: 450000000
 
     RowLayout {
         anchors.fill: parent
@@ -234,7 +231,7 @@ Item {
             SpinBox {
                 id: spinBox
                 from: page.freqMin
-                value: page.currentSettings.frequency
+                value: RadioPacketParser.loraSettings.frequency
                 to: page.freqMax
                 stepSize: 1000
                 editable: true
@@ -244,27 +241,42 @@ Item {
             }
 
             RowLayout {
-                Button {
-                    text: "Set"
+                RowLayout {
+                    Button {
+                        text: "Neg"
+                    }
+
+                    Button {
+                        text: "Auto"
+                    }
                 }
+            }
+            RowLayout {
                 Button {
                     id: resetButton
                     text: "↺"
                     onClicked: {
-                        spinBox.value = page.currentSettings.frequency
-                        sfBox.currentValue = page.currentSettings.spreadingFactor
-                        bwBox.currentValue = page.currentSettings.bandwidth
-                        crBox.currentValue = page.currentSettings.codingRate
+                        spinBox.value = RadioPacketParser.loraSettings.frequency;
+                        sfBox.currentValue = RadioPacketParser.loraSettings.spreadingFactor;
+                        bwBox.currentValue = RadioPacketParser.loraSettings.bandwidth;
+                        crBox.currentValue = RadioPacketParser.loraSettings.codingRate;
                     }
                 }
-            }
-            Button {
-                text: "Auto Neg"
+                Button {
+                    text: "Set"
+                    onClicked: RadioPacketParser.setLoraParams(spinBox.value, sfBox.currentValue, bwBox.currentValue, crBox.currentValue)
+                }
             }
 
-            Button {
-                text: "Recover"
-                enabled: false
+            RowLayout {
+                Button {
+                    text: "Recover"
+                    enabled: false
+                }
+                Button {
+                    text: "Call"
+                    onClicked: RadioPacketParser.sendCallsign()
+                }
             }
             // Button {
             //     text: "Set Self"

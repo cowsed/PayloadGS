@@ -163,10 +163,10 @@ signals:
     void codingRateChanged();
 
 private:
-    uint32_t m_frequency;
-    SpreadingFactor m_sf;
-    Bandwidth m_bw;
-    CodingRate m_cr;
+    uint32_t m_frequency{0};
+    SpreadingFactor m_sf{SpreadingFactor::SF7};
+    Bandwidth m_bw{Bandwidth::BW125};
+    CodingRate m_cr{CodingRate::CR4_5};
 };
 
 #endif // LORASETTINGS_H

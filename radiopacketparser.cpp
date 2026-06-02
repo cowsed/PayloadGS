@@ -1,6 +1,7 @@
 #include "radiopacketparser.h"
 #include <QFile>
 #include <QtLogging>
+#include "cubesat_comms/packets_g2p.h"
 #include "cubesat_comms/packets_p2g.h"
 
 PayloadFlags PayloadFlags::fromBits(uint16_t bits)
@@ -22,7 +23,49 @@ PayloadFlags PayloadFlags::fromBits(uint16_t bits)
 RadioPacketParser::RadioPacketParser(QObject *parent)
     : QObject{parent}
 {
+    payload_client = new RadioClient();
 
+    QObject::connect(payload_client,
+                     &RadioClient::packetReceived,
+                     this,
+                     &RadioPacketParser::packetReceived,
+                     Qt::QueuedConnection);
+
+    QObject::connect(payload_client, &RadioClient::connected, this, [&]() {
+        printf("Connected\n");
+        this->payload_client->startReceiving(433000000,
+                                             RadioClient::SF9,
+                                             RadioClient::BW125,
+                                             RadioClient::CR4_5,
+                                             RadioClient::LDR_Off);
+    });
+
+    QObject::connect(payload_client,
+                     &RadioClient::beganReceiving,
+                     this,
+                     &RadioPacketParser::startedReceiving,
+                     Qt::QueuedConnection);
+
+    QObject::connect(payload_client,
+                     &RadioClient::finishedTransmitting,
+                     this,
+                     &RadioPacketParser::finishedTransmitting,
+                     Qt::QueuedConnection);
+
+    payload_client->connect("/tmp/radio_serverD");
+}
+
+void RadioPacketParser::finishedTransmitting(QDateTime time)
+{
+    lastTxDateTime = time;
+    emit latestTxDateTimeChanged();
+}
+
+QDateTime RadioPacketParser::latestTxDateTime(){
+    return lastTxDateTime;
+}
+QDateTime RadioPacketParser::latestRxDateTime(){
+    return lastRxDateTime;
 }
 
 void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const QByteArray &packet)
@@ -66,8 +109,197 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
         qDebug("Other type of p2g packet");
         break;
     }
+    lastRxDateTime = QDateTime::currentDateTime();
+    emit latestRxDateTimeChanged();
 }
 
+LoraSettings::SpreadingFactor rsf_to_sf(RadioClient::SF sf)
+{
+    switch (sf) {
+    case RadioClient::SF5:
+        return LoraSettings::SpreadingFactor::SF5;
+    case RadioClient::SF6:
+        return LoraSettings::SpreadingFactor::SF6;
+    case RadioClient::SF7:
+        return LoraSettings::SpreadingFactor::SF7;
+    case RadioClient::SF8:
+        return LoraSettings::SpreadingFactor::SF8;
+    case RadioClient::SF9:
+        return LoraSettings::SpreadingFactor::SF9;
+    case RadioClient::SF10:
+        return LoraSettings::SpreadingFactor::SF10;
+    case RadioClient::SF11:
+        return LoraSettings::SpreadingFactor::SF11;
+    case RadioClient::SF12:
+        return LoraSettings::SpreadingFactor::SF12;
+    }
+    return LoraSettings::SpreadingFactor::SF7;
+}
+LoraSettings::Bandwidth rbw_to_bw(RadioClient::BW bw)
+{
+    switch (bw) {
+    case RadioClient::BW8:
+        return LoraSettings::Bandwidth::BW8;
+    case RadioClient::BW10:
+        return LoraSettings::Bandwidth::BW10;
+    case RadioClient::BW15:
+        return LoraSettings::Bandwidth::BW15;
+    case RadioClient::BW20:
+        return LoraSettings::Bandwidth::BW20;
+    case RadioClient::BW31:
+        return LoraSettings::Bandwidth::BW31;
+    case RadioClient::BW42:
+        return LoraSettings::Bandwidth::BW41;
+    case RadioClient::BW62:
+        return LoraSettings::Bandwidth::BW62;
+    case RadioClient::BW125:
+        return LoraSettings::Bandwidth::BW125;
+    case RadioClient::BW250:
+        return LoraSettings::Bandwidth::BW250;
+    case RadioClient::BW500:
+        return LoraSettings::Bandwidth::BW500;
+    default:
+        // todo something about this
+        return LoraSettings::Bandwidth::BW125;
+    }
+}
+
+LoraSettings::CodingRate rcr_to_cr(RadioClient::CR cr)
+{
+    switch (cr) {
+    case RadioClient::CR4_5:
+        return LoraSettings::CodingRate::CR4_5;
+    case RadioClient::CR4_6:
+        return LoraSettings::CodingRate::CR4_6;
+    case RadioClient::CR4_7:
+        return LoraSettings::CodingRate::CR4_7;
+    case RadioClient::CR4_8:
+        return LoraSettings::CodingRate::CR4_8;
+    }
+    return LoraSettings::CodingRate::CR4_8;
+}
+
+RadioClient::SF sf_to_rsf(LoraSettings::SpreadingFactor sf)
+{
+    switch (sf) {
+    case LoraSettings::SpreadingFactor::SF5:
+        return RadioClient::SF::SF5;
+    case LoraSettings::SpreadingFactor::SF6:
+        return RadioClient::SF::SF6;
+    case LoraSettings::SpreadingFactor::SF7:
+        return RadioClient::SF::SF7;
+    case LoraSettings::SpreadingFactor::SF8:
+        return RadioClient::SF::SF8;
+    case LoraSettings::SpreadingFactor::SF9:
+        return RadioClient::SF::SF9;
+    case LoraSettings::SpreadingFactor::SF10:
+        return RadioClient::SF::SF10;
+    case LoraSettings::SpreadingFactor::SF11:
+        return RadioClient::SF::SF11;
+    case LoraSettings::SpreadingFactor::SF12:
+        return RadioClient::SF::SF12;
+        break;
+    }
+    return RadioClient::SF::SF7;
+}
+RadioClient::BW bw_to_rbw(LoraSettings::Bandwidth bw)
+{
+    switch (bw) {
+    case LoraSettings::Bandwidth::BW8:
+        return RadioClient::BW::BW8;
+    case LoraSettings::Bandwidth::BW10:
+        return RadioClient::BW::BW10;
+    case LoraSettings::Bandwidth::BW15:
+        return RadioClient::BW::BW15;
+    case LoraSettings::Bandwidth::BW20:
+        return RadioClient::BW::BW20;
+    case LoraSettings::Bandwidth::BW31:
+        return RadioClient::BW::BW31;
+    case LoraSettings::Bandwidth::BW41:
+        return RadioClient::BW::BW42;
+    case LoraSettings::Bandwidth::BW62:
+        return RadioClient::BW::BW62;
+    case LoraSettings::Bandwidth::BW125:
+        return RadioClient::BW::BW125;
+    case LoraSettings::Bandwidth::BW250:
+        return RadioClient::BW::BW250;
+    case LoraSettings::Bandwidth::BW500:
+        return RadioClient::BW::BW500;
+        break;
+    }
+    return RadioClient::BW::BW125;
+}
+RadioClient::CR cr_to_rcr(LoraSettings::CodingRate cr)
+{
+    switch (cr) {
+    case LoraSettings::CodingRate::CR4_5:
+        return RadioClient::CR::CR4_5;
+    case LoraSettings::CodingRate::CR4_6:
+        return RadioClient::CR::CR4_6;
+    case LoraSettings::CodingRate::CR4_7:
+        return RadioClient::CR::CR4_7;
+    case LoraSettings::CodingRate::CR4_8:
+        return RadioClient::CR::CR4_8;
+        break;
+    }
+    return RadioClient::CR::CR4_5;
+}
+
+void RadioPacketParser::startedReceiving(QDateTime time,
+                                         uint32_t freq_hz,
+                                         RadioClient::SF sf,
+                                         RadioClient::BW bw,
+                                         RadioClient::CR cr,
+                                         RadioClient::LDR ldr)
+{
+    currentRadioSettings.setFrequency(freq_hz);
+    currentRadioSettings.setSpreadingFactor(rsf_to_sf(sf));
+    currentRadioSettings.setBandwidth(rbw_to_bw(bw));
+    currentRadioSettings.setCodingRate(rcr_to_cr(cr));
+    qDebug("New Lora settings");
+
+    emit loraSettingsChanged();
+}
+
+Q_INVOKABLE void RadioPacketParser::setLoraParams(uint32_t freq_hz,
+                                                  LoraSettings::SpreadingFactor sf,
+                                                  LoraSettings::Bandwidth bw,
+                                                  LoraSettings::CodingRate cr)
+{
+    bool ldr = true;
+    payload_client->startReceiving(freq_hz,
+                                   sf_to_rsf(sf),
+                                   bw_to_rbw(bw),
+                                   cr_to_rcr(cr),
+                                   ldr ? RadioClient::LDR_On : RadioClient::LDR_Off);
+}
+
+void RadioPacketParser::sendCallsign()
+{
+    CommandAndData cmd{};
+    cmd.command = Command_Callsign;
+    memcpy(cmd.callsign.buf, "KC1TPR", 6);
+    uint8_t buf[256] = {0};
+    size_t len = pack_command_and_data(&cmd, &buf[0]);
+    sendPacket(len, &buf[0]);
+}
+
+void RadioPacketParser::sendPacket(size_t len, uint8_t *buf)
+{
+    auto arr = QByteArray::fromRawData((const char *) buf, len);
+    payload_client->transmit(currentRadioSettings.frequency(),
+                             sf_to_rsf(currentRadioSettings.spreadingFactor()),
+                             bw_to_rbw(currentRadioSettings.bandwidth()),
+                             cr_to_rcr(currentRadioSettings.codingRate()),
+                             RadioClient::LDR_On,
+                             14,
+                             arr);
+}
+
+LoraSettings *RadioPacketParser::loraSettings()
+{
+    return &currentRadioSettings;
+}
 void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
     switch (telem->telem_type) {

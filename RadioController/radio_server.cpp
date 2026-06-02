@@ -27,7 +27,6 @@ bool RadioServer::startListening() {
 }
 void RadioServer::stopListening() { this->close(); }
 void RadioServer::clientReadyRead() {
-    qDebug("Ready read");
     if (active_client == nullptr) {
         qWarning("readyRead Called with no active client wth");
         return;
@@ -35,7 +34,6 @@ void RadioServer::clientReadyRead() {
     while (active_client->canReadLine()) {
         QString line = active_client->readLine();
         line.chop(1);
-        qDebug("Read line %s", qPrintable(line));
         Parse(std::string_view{line.toStdString()});
     }
 }
@@ -54,14 +52,14 @@ void RadioServer::handleNewConnection() {
     QLocalSocket *clientSocket = this->nextPendingConnection();
 
     if (active_client != nullptr) {
-        qWarning("handleNewConnection already had an active)_cliert");
+        qWarning("handleNewConnection already had an active client");
         clientSocket->abort();
         return;
     }
 
     qDebug("got new client");
     active_client = clientSocket;
-    stopListening();
+    // stopListening();
     connect(clientSocket, &QLocalSocket::disconnected, this, &RadioServer::handleDisconnect);
     connect(clientSocket, &QLocalSocket::readyRead, this, &RadioServer::clientReadyRead);
 }
@@ -81,7 +79,9 @@ void RadioServer::Parse(std::string_view str) {
 void RadioServer::dio1_interrupt() { radio->dio1_interrupt(); }
 
 void RadioServer::bad_parse(const std::string &reason) { sendToClient("BAD_PARSE " + reason + "\n"); }
-void RadioServer::unknown_command(std::string_view cmd, std::string_view line) {}
+void RadioServer::unknown_command(std::string_view cmd, std::string_view line) {
+    sendToClient("UNKNOWN_COMMAND " + std::string{cmd} + "\n");
+}
 
 void RadioServer::param_ask() {}
 void RadioServer::reset() {}
@@ -94,12 +94,13 @@ void RadioServer::tx(uint64_t frequency_hz, SF sf, BW bw, CR cr, LDR ldr, uint32
                      uint32_t data_len, uint8_t *data) {
     Radio::Error err = radio->setup_tx(frequency_hz, sf, bw, cr, ldr, preamble_len, power);
     if (err != Radio::Error::Ok) {
-        printf("Failed to setup tx: %s\n", Radio::error_to_string(err));
+        sendToClient("ERROR couldn't setup tx. Reason: " + std::to_string(err));
         return;
     };
     err = radio->tx(data_len, data);
     if (err != Radio::Error::Ok) {
         printf("Failed to start tx\n");
+        sendToClient("ERROR couldn't tx. Reason: " + std::to_string(err));
     }
 }
 
@@ -111,6 +112,8 @@ void RadioServer::rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t pream
     err = radio->rx();
     if (err != Radio::Error::Ok) {
         printf("Failed to start rx\n");
+    } else {
+        sendToClient("rxing");
     }
 }
 void RadioServer::sleep() {}
@@ -120,7 +123,6 @@ void RadioServer::log(std::string_view log_data) {}
 void RadioServer::ctrl(std::string_view ctrl_data) {}
 
 void RadioServer::tx_done_cb() {
-    printf("TXed");
     sendToClient("txed");
 }
 void RadioServer::rx_cb(std::span<uint8_t> data, float snr, int16_t rssi, int freq_error) {

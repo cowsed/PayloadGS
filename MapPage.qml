@@ -122,6 +122,7 @@ Item {
 
                 TimeSinceThing {
                     desc: "Payload: "
+                    ifNan: "Payload: NVR"
                     event_time: telemetry.payloadCoordinateUpdateTime
                 }
                 Rectangle {
@@ -135,6 +136,7 @@ Item {
                 Layout.fillWidth: true
                 TimeSinceThing {
                     desc: "Rocket: "
+                    ifNan: "Rocket: NVR"
                     event_time: telemetry.rocketCoordinateUpdateTime
                 }
                 Rectangle {
@@ -150,6 +152,7 @@ Item {
 
                 TimeSinceThing {
                     desc: "Station: "
+                    ifNan: "Station: NVR"
                     event_time: telemetry.stationCoordinateUpdateTime
                 }
                 Rectangle {

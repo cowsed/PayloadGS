@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 #include "QObject"
 #include "cubesat_comms/packets_p2g.h"
+#include "lorasettings.h"
+#include "radioclient.h"
 #include <qdatetime.h>
 #include <qgeocoordinate.h>
 
@@ -45,6 +47,15 @@ public:
 class RadioPacketParser : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(LoraSettings *loraSettings READ loraSettings NOTIFY loraSettingsChanged FINAL)
+
+    Q_PROPERTY(QDateTime latestTxDateTime READ latestTxDateTime NOTIFY
+                   latestTxDateTimeChanged FINAL)
+
+    Q_PROPERTY(QDateTime latestRxDateTime READ latestRxDateTime NOTIFY
+                   latestRxDateTimeChanged FINAL)
+                   
     QML_ELEMENT
     QML_SINGLETON
     QML_UNCREATABLE("tied to C++ data source")
@@ -62,6 +73,16 @@ public:
 
     Q_INVOKABLE static QString phaseToShortString(FlightPhaseQML phase);
     Q_INVOKABLE static PayloadFlags statusBitsToFlags(uint16_t bits);
+
+    LoraSettings *loraSettings();
+    Q_INVOKABLE QDateTime latestTxDateTime();
+    Q_INVOKABLE QDateTime latestRxDateTime();
+
+    Q_INVOKABLE void sendCallsign();
+    Q_INVOKABLE void setLoraParams(uint32_t freq_hz,
+                                   LoraSettings::SpreadingFactor sf,
+                                   LoraSettings::Bandwidth bw,
+                                   LoraSettings::CodingRate cr);
 
     explicit RadioPacketParser(QObject *parent = nullptr);
 
@@ -99,16 +120,35 @@ signals:
         QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
 
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);
+
+    void loraSettingsChanged();
+    void latestTxDateTimeChanged();
+    void latestRxDateTimeChanged();
+
 public slots:
+    void startedReceiving(QDateTime time,
+                          uint32_t freq_hz,
+                          RadioClient::SF sf,
+                          RadioClient::BW bw,
+                          RadioClient::CR cr,
+                          RadioClient::LDR ldr);
+
+    void finishedTransmitting(QDateTime time);
+
     Q_INVOKABLE void packetReceived(QDateTime time, int snr, int rssi, const QByteArray &packet);
     Q_INVOKABLE void b64PacketReceived(QDateTime time, int snr, int rssi, const QString &packet);
 
 private:
     void emitCommandResponse(QDateTime time, const CommandResponse *resp);
     void emitTelemetry(QDateTime time, const Telemetry *telem);
+    void sendPacket(size_t len, uint8_t *buf);
 
-    QLocalSocket *sock = nullptr;
-    qint64 last_read = 0;
+    RadioClient *payload_client;
+    LoraSettings currentRadioSettings;
+
+    QDateTime lastTxDateTime;
+    QDateTime lastRxDateTime;
+
 };
 
 #endif // RADIOPACKETPARSER_H

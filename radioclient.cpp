@@ -19,10 +19,7 @@ RadioClient::RadioClient()
     });
 
     QObject::connect(sock, &QLocalSocket::readyRead, this, [this]() {
-        printf("===== BYTES FROM SOCK ====\n");
-        qDebug("Got bytes from sock");
         while (sock->canReadLine()) {
-            qDebug("Got line from sock");
             QByteArray linebs = sock->readLine();
             QString line = QString::fromUtf8(linebs);
             handleLine(line);
@@ -101,10 +98,109 @@ const char *CR_Str(RadioClient::CR cr)
     };
     return "CR4/8";
 }
-enum LDR {
-    LDR_On,
-    LDR_Off,
-};
+
+// $sf:   (SF5|SF6|SF7|SF8|SF9|SF10|SF11|SF12)
+std::optional<RadioClient::SF> parse_sf(QString view)
+{
+    using SF = RadioClient::SF;
+    if (view == "SF5") {
+        return SF::SF5;
+    } else if (view == "SF6") {
+        return SF::SF6;
+    } else if (view == "SF7") {
+        return SF::SF7;
+    } else if (view == "SF8") {
+        return SF::SF8;
+    } else if (view == "SF9") {
+        return SF::SF9;
+    } else if (view == "SF10") {
+        return SF::SF10;
+    } else if (view == "SF11") {
+        return SF::SF11;
+    } else if (view == "SF12") {
+        return SF::SF12;
+    }
+
+    return std::nullopt;
+}
+
+// $bw:   (BW8|BW10|BW15|BW20|BW31|BW42|BW62|BW125|BW250|BW500|BW200|BW400|BW800)
+std::optional<RadioClient::BW> parse_bw(QString view)
+{
+    using BW = RadioClient::BW;
+    if (view == "BW8") {
+        return BW::BW8;
+    } else if (view == "BW10") {
+        return BW::BW10;
+    } else if (view == "BW15") {
+        return BW::BW15;
+    } else if (view == "BW20") {
+        return BW::BW20;
+    } else if (view == "BW31") {
+        return BW::BW31;
+    } else if (view == "BW42") {
+        return BW::BW42;
+    } else if (view == "BW62") {
+        return BW::BW62;
+    } else if (view == "BW125") {
+        return BW::BW125;
+    } else if (view == "BW250") {
+        return BW::BW250;
+    } else if (view == "BW500") {
+        return BW::BW500;
+    } else if (view == "BW200") {
+        return BW::BW200;
+    } else if (view == "BW400") {
+        return BW::BW400;
+    } else if (view == "BW800") {
+        return BW::BW800;
+    }
+
+    return std::nullopt;
+}
+// $cr:   (CR4/5|CR4/6|CR4/7|CR4/8)
+std::optional<RadioClient::CR> parse_cr(QString view)
+{
+    using CR = RadioClient::CR;
+    if (view == "CR4/5") {
+        return CR::CR4_5;
+    } else if (view == "CR4/6") {
+        return CR::CR4_6;
+    } else if (view == "CR4/7") {
+        return CR::CR4_7;
+    } else if (view == "CR4/8") {
+        return CR::CR4_8;
+    }
+    return std::nullopt;
+}
+// $ldr:  LDRON|LDROFF low data rate mode
+std::optional<RadioClient::LDR> parse_ldr(QString view)
+{
+    if (view == "LDRON") {
+        return RadioClient::LDR::LDR_On;
+    } else if (view == "LDROFF") {
+        return RadioClient::LDR::LDR_Off;
+    }
+    return std::nullopt;
+}
+std::optional<uint64_t> parse_uint(QString view)
+{
+    bool ok = false;
+    uint64_t val = view.toUInt(&ok);
+    if (!ok) {
+        return std::nullopt;
+    }
+    return val;
+}
+std::optional<int64_t> parse_int(QString view)
+{
+    bool ok = false;
+    int64_t val = view.toUInt(&ok);
+    if (!ok) {
+        return std::nullopt;
+    }
+    return val;
+}
 
 void RadioClient::connect(QString path)
 {
@@ -114,7 +210,7 @@ void RadioClient::connect(QString path)
 
 void RadioClient::handleLine(const QString &line)
 {
-    auto parts = line.split(" ");
+    auto parts = line.trimmed().split(" ");
 
     if (parts.size() < 0) {
         qDebug("Ignoring empty line");
@@ -122,7 +218,22 @@ void RadioClient::handleLine(const QString &line)
     }
     QString ltype = parts[0];
     if (ltype == "rxing") {
-        emit beganReceiving(QDateTime::currentDateTime());
+        auto freq = parse_uint(parts[1]);
+        auto sf = parse_sf(parts[2]);
+        auto bw = parse_bw(parts[3]);
+        auto cr = parse_cr(parts[4]);
+        auto ldr = parse_ldr(parts[5]);
+        printf("began %d %d %d %d %d : %s\n",
+               (bool) freq,
+               (bool) sf,
+               (bool) bw,
+               (bool) cr,
+               (bool) ldr,
+               qPrintable(line));
+        if (freq && sf && bw && cr && ldr) {
+            printf("Emit ebgan\n");
+            emit beganReceiving(QDateTime::currentDateTime(), *freq, *sf, *bw, *cr, *ldr);
+        }
     } else if (ltype == "txing") {
         emit beganTransmitting(QDateTime::currentDateTime());
     } else if (ltype == "txed") {
@@ -140,6 +251,20 @@ void RadioClient::handleLine(const QString &line)
     } else {
         qWarning("Unknown Line from radio server %s: %s", qPrintable(server_path), qPrintable(line));
     }
+}
+
+void RadioClient::transmit(
+    uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr, int8_t power, const QByteArray &data)
+{
+    const QByteArray b64 = data.toBase64();
+    auto str = QString("tx %1 %2 %3 %4 %5 8 %6 %7\n")
+                   .arg(freq_hz)
+                   .arg(SF_str(sf), BW_Str(bw), CR_Str(cr))
+                   .arg(ldr == LDR::LDR_Off ? "LDROFF" : "LDRON")
+                   .arg(power)
+                   .arg(b64);
+    sock->write(str.toUtf8());
+    sock->flush();
 }
 
 void RadioClient::startReceiving(uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr)
