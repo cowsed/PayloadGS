@@ -6,7 +6,7 @@ Librarian::Librarian() {}
 void Librarian::GatherRequestsFromDisk(ImageDataHolder *image)
 {
     // Images
-    qDebug("Gathering info for %hhu images", image->numImages());
+    qDebug("Lib: Gathering info for %hhu images", image->numImages());
     for (uint8_t i = 0; i < image->numImages(); i++) {
         StartImageDownload(i, image);
     }
@@ -49,9 +49,9 @@ bool Librarian::Request::operator==(const Request &other) const
     // types are equal
     switch (type) {
     case RequestType::ShellStdout:
-        return stdout == other.stdout;
+        return this->stdout == other.stdout;
     case RequestType::ShellStderr:
-        return stderr == other.stderr;
+        return this->stderr == other.stderr;
     case RequestType::ImageBlockData:
         return image_data == other.image_data;
     case RequestType::ImageMetadata:
@@ -71,9 +71,9 @@ bool Librarian::Request::operator<(const Request &other) const
     }
     switch (type) {
     case RequestType::ShellStdout:
-        return stdout < other.stdout;
+        return this->stdout < other.stdout;
     case RequestType::ShellStderr:
-        return stderr < other.stderr;
+        return this->stderr < other.stderr;
     case RequestType::ImageBlockData:
         return image_data < other.image_data;
     case RequestType::ImageMetadata:
@@ -86,6 +86,8 @@ bool Librarian::Request::operator<(const Request &other) const
         return false;
     }
 }
+
+void Librarian::ImageMetadataReceived(const struct ImageMetadata &metadata) {}
 
 void Librarian::AddRequest(Request r)
 {
@@ -101,12 +103,12 @@ void Librarian::DumpInfo() const
     for (const auto &req : queue) {
         switch (req.type) {
         case RequestType::ImageBlockData:
-            qDebug("Req: ImageData image: %d block: %d",
+            qDebug("Lib: Req ImageData image: %d block: %d",
                    req.image_data.image_id,
                    req.image_data.block_index);
             break;
         default:
-            qDebug("Unknonw request");
+            qDebug("Lib: Unknown request");
         };
     }
 }
@@ -151,6 +153,7 @@ void Librarian::StartImageDownload(uint8_t image_id, ImageDataHolder *image)
             .type = RequestType::ImageMetadata,
             .image_metadata_id = image_id,
         });
+        qDebug("Lib: Asking for metadata for id %d", image_id);
         return;
     }
     ImageDataHolder::DownloadProgress prog = image->downloadedPackets(image_id);
@@ -217,7 +220,6 @@ QVariantList Librarian::GetSummary()
     for (const Request &req : queue) {
         sum.insert(req.summarize());
     }
-    qDebug("Summary called len %d", (int) sum.size());
     QVariantList l;
     for (const QString &r : sum) {
         l.append(r);

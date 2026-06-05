@@ -12,17 +12,15 @@ Item {
     required property int flightNumber
     property int activeImageID: 0
 
-    property imageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(
-                                                          activeImageID)
+    property imageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(activeImageID)
 
-    property real numPackets: ImageDataHolder.numDownloadedPackets(
-                                  activeImageID)
+    property real numPackets: ImageDataHolder.numDownloadedPackets(activeImageID)
 
     Connections {
         target: page
         function onActiveImageIDChanged() {
-            console.log("OAIIC")
-            controlColumn.reconsiderControlColumn()
+            console.log("OAIIC");
+            controlColumn.reconsiderControlColumn();
         }
     }
 
@@ -30,13 +28,13 @@ Item {
         target: ImageDataHolder
         function onImageUpdated(image_id) {
             if (image_id == page.activeImageID) {
-                activeImage.reload()
+                activeImage.reload();
             }
             if (previews.itemAt(image_id)) {
-                previews.itemAt(image_id).reload()
+                previews.itemAt(image_id).reload();
             }
-            page.activeImageMetadata = ImageDataHolder.metadataForImageId(
-                        page.activeImageID)
+            page.activeImageMetadata = ImageDataHolder.metadataForImageId(page.activeImageID);
+            cropvis.reload();
         }
     }
 
@@ -53,9 +51,9 @@ Item {
             source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
 
             function reload() {
-                const oldSource = activeImage.source
-                activeImage.source = ""
-                activeImage.source = oldSource
+                const oldSource = activeImage.source;
+                activeImage.source = "";
+                activeImage.source = oldSource;
             }
         }
 
@@ -99,22 +97,18 @@ Item {
 
             ColumnLayout {
                 id: controlColumn
-                property bool hasAll: ImageDataHolder.imageComplete(
-                                          page.activeImageID)
+                property bool hasAll: ImageDataHolder.imageComplete(page.activeImageID)
 
                 function reconsiderControlColumn() {
-                    dlButton.text = Librarian.activelyAskingForImage(
-                                page.activeImageID) ? "Downloading" : "Paused"
+                    dlButton.text = Librarian.activelyAskingForImage(page.activeImageID) ? "Downloading" : "Paused";
 
-                    controlColumn.hasAll = ImageDataHolder.imageComplete(
-                                page.activeImageID)
+                    controlColumn.hasAll = ImageDataHolder.imageComplete(page.activeImageID);
                 }
 
                 Connections {
                     target: Librarian
                     function onNumRequestsChanged() {
-                        console.log("Changed")
-                        controlColumn.reconsiderControlColumn()
+                        controlColumn.reconsiderControlColumn();
                     }
                 }
 
@@ -137,6 +131,7 @@ Item {
                 Layout.fillWidth: true
 
                 CropVisualizer {
+                    id: cropvis
                     oldCrop: page.activeImageMetadata.photoTransform()
                     Layout.fillWidth: true
                     Layout.preferredHeight: 120
@@ -144,8 +139,7 @@ Item {
                 }
 
                 Label {
-                    text: `H: ` + page.activeImageMetadata.left
-                          + ` - ${page.activeImageMetadata.right}`
+                    text: `H: ` + page.activeImageMetadata.left + ` - ${page.activeImageMetadata.right}`
                 }
                 Label {
                     text: `V: ${page.activeImageMetadata.bottom} - ${page.activeImageMetadata.top}`
@@ -159,17 +153,13 @@ Item {
                     visible: !parent.hasAll
                     checkable: false
 
-                    text: Librarian.activelyAskingForImage(
-                              page.activeImageID) ? "Downloading" : "Paused"
+                    text: Librarian.activelyAskingForImage(page.activeImageID) ? "Downloading" : "Paused"
 
                     onPressed: {
-                        if (Librarian.activelyAskingForImage(
-                                page.activeImageID)) {
-                            Librarian.StopImageDownload(page.activeImageID)
+                        if (Librarian.activelyAskingForImage(page.activeImageID)) {
+                            Librarian.StopImageDownload(page.activeImageID);
                         } else {
-
-                            Librarian.StartImageDownload(page.activeImageID,
-                                                         ImageDataHolder)
+                            Librarian.StartImageDownload(page.activeImageID, ImageDataHolder);
                         }
                     }
                 }
@@ -182,8 +172,8 @@ Item {
                 Button {
                     text: "force reload"
                     onClicked: {
-                        ImageDataHolder.rescanCount()
-                        activeImage.reload()
+                        ImageDataHolder.rescanCount();
+                        activeImage.reload();
                     }
                 }
             }

@@ -14,11 +14,6 @@ PhotoTransformQ::PhotoTransformQ(uint16_t left,
     , encodedQuality(encodedQuality)
 {}
 
-bool PhotoTransformQ::isValid()
-{
-    qDebug("Checking validity");
-    return right > left && bottom < top && encodedQuality <= 7;
-}
 
 ImageMetadataHolder::ImageMetadataHolder() {}
 
@@ -131,6 +126,27 @@ ImageMetadataHolder ImageMetadataHolder::fromJson(const QJsonObject &json)
     }
 
     return obj;
+}
+
+QString PhotoTransformQ::errors(uint16_t cam_width, uint16_t cam_height)
+{
+    if (left >= right) {
+        return "left >= right";
+    }
+    if (top >= bottom) {
+        return "top >= bottom";
+    }
+    if (right > cam_width) {
+        return "right > cam width";
+    }
+    if (bottom > cam_height) {
+        return "bottom > cam height";
+    }
+    const uint16_t truncatedEncodedWidth = 16 * (encodedWidth / 16);
+    if (truncatedEncodedWidth != encodedWidth) {
+        return "encoded width not a multiple of 16";
+    }
+    return "";
 }
 
 bool ImageMetadataHolder::isValid()

@@ -27,9 +27,8 @@ RadioClient::RadioClient()
     });
 }
 
-const char *SF_str(RadioClient::SF sf)
+const char *RadioClient::SF_Str(RadioClient::SF sf)
 {
-    using SF = RadioClient::SF;
     switch (sf) {
     case SF::SF5:
         return "SF5";
@@ -50,9 +49,8 @@ const char *SF_str(RadioClient::SF sf)
     }
     return "SF12";
 };
-const char *BW_Str(RadioClient::BW bw)
+const char *RadioClient::BW_Str(RadioClient::BW bw)
 {
-    using BW = RadioClient::BW;
     switch (bw) {
     case BW::BW8:
         return "BW8";
@@ -83,9 +81,8 @@ const char *BW_Str(RadioClient::BW bw)
     };
     return "BW125";
 }
-const char *CR_Str(RadioClient::CR cr)
+const char *RadioClient::CR_Str(CR cr)
 {
-    using CR = RadioClient::CR;
     switch (cr) {
     case CR::CR4_5:
         return "CR4/5";
@@ -217,19 +214,13 @@ void RadioClient::handleLine(const QString &line)
         return;
     }
     QString ltype = parts[0];
-    if (ltype == "rxing") {
+    if (ltype == "rxing" && parts.size() >= 6) {
         auto freq = parse_uint(parts[1]);
         auto sf = parse_sf(parts[2]);
         auto bw = parse_bw(parts[3]);
         auto cr = parse_cr(parts[4]);
         auto ldr = parse_ldr(parts[5]);
-        printf("began %d %d %d %d %d : %s\n",
-               (bool) freq,
-               (bool) sf,
-               (bool) bw,
-               (bool) cr,
-               (bool) ldr,
-               qPrintable(line));
+
         if (freq && sf && bw && cr && ldr) {
             printf("Emit ebgan\n");
             emit beganReceiving(QDateTime::currentDateTime(), *freq, *sf, *bw, *cr, *ldr);
@@ -249,7 +240,9 @@ void RadioClient::handleLine(const QString &line)
         }
         emit packetReceived(QDateTime::currentDateTime(), snr, rssi, res.decoded);
     } else {
-        qWarning("Unknown Line from radio server %s: %s", qPrintable(server_path), qPrintable(line));
+        qWarning("Unknown or malformed Line from radio server %s: %s",
+                 qPrintable(server_path),
+                 qPrintable(line));
     }
 }
 
@@ -259,7 +252,7 @@ void RadioClient::transmit(
     const QByteArray b64 = data.toBase64();
     auto str = QString("tx %1 %2 %3 %4 %5 8 %6 %7\n")
                    .arg(freq_hz)
-                   .arg(SF_str(sf), BW_Str(bw), CR_Str(cr))
+                   .arg(SF_Str(sf), BW_Str(bw), CR_Str(cr))
                    .arg(ldr == LDR::LDR_Off ? "LDROFF" : "LDRON")
                    .arg(power)
                    .arg(b64);
@@ -271,7 +264,7 @@ void RadioClient::startReceiving(uint32_t freq_hz, SF sf, BW bw, CR cr, LDR ldr)
 {
     auto str = QString("rx %1 %2 %3 %4 %5 8\n")
                    .arg(freq_hz)
-                   .arg(SF_str(sf), BW_Str(bw), CR_Str(cr))
+                   .arg(SF_Str(sf), BW_Str(bw), CR_Str(cr))
                    .arg((ldr == LDR::LDR_Off ? "LDROFF" : "LDRON"));
     sock->write(str.toUtf8());
     sock->flush();

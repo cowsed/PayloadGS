@@ -15,6 +15,7 @@ ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
 {
     QString path = QString("%1/Images/%2/meta.json").arg(m_flight_dir, imageName(image_id));
     if (!QFile::exists(path)) {
+        qDebug("no meta file for id %d", image_id);
         return {}; // invalid default construction
     }
 
@@ -31,6 +32,8 @@ ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
     QJsonParseError parseError;
     QJsonDocument obj = QJsonDocument::fromJson(jsonBytes, &parseError);
     if (parseError.error != QJsonParseError::NoError) {
+        qDebug("bad meta json for id %d: %s", image_id, qPrintable(parseError.errorString()));
+        qDebug("File: %s", qPrintable(jsonBytes));
         return {};
     }
 
@@ -157,7 +160,6 @@ QString ImageDataHolder::packetName(uint16_t block_id)
 void ImageDataHolder::setNumImages(size_t num)
 {
     size_t old = m_count;
-    qDebug("Setting to %zu", num);
     m_count = num;
     if (old != num) {
         emit numImagesChanged();

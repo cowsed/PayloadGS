@@ -3,7 +3,10 @@
 #include <QLocalSocket>
 #include <QQmlEngine>
 #include "QObject"
+#include "cubesat_comms/packets_g2p.h"
 #include "cubesat_comms/packets_p2g.h"
+#include "frontbackdataholder.h"
+#include "imagemetadataholder.h"
 #include "lorasettings.h"
 #include "radioclient.h"
 #include <qdatetime.h>
@@ -55,11 +58,16 @@ class RadioPacketParser : public QObject
 
     Q_PROPERTY(QDateTime latestRxDateTime READ latestRxDateTime NOTIFY
                    latestRxDateTimeChanged FINAL)
-                   
+
+    Q_PROPERTY(FrontBackDataHolder *radioRSSI READ getRadioRSSI NOTIFY radioRSSIChanged)
+    Q_PROPERTY(FrontBackDataHolder *radioSNR READ getRadioSNR NOTIFY radioSNRChanged)
+
     QML_ELEMENT
     QML_SINGLETON
     QML_UNCREATABLE("tied to C++ data source")
 public:
+    static constexpr size_t MAX_IN_MEM_RADIO_SIGNAL_ENTRIES = 40;
+
     enum FlightPhaseQML {
         Starting,
         Pad,
@@ -78,14 +86,28 @@ public:
     Q_INVOKABLE QDateTime latestTxDateTime();
     Q_INVOKABLE QDateTime latestRxDateTime();
 
-    Q_INVOKABLE void sendCallsign();
-    Q_INVOKABLE void setLoraParams(uint32_t freq_hz,
-                                   LoraSettings::SpreadingFactor sf,
-                                   LoraSettings::Bandwidth bw,
-                                   LoraSettings::CodingRate cr);
+    Q_INVOKABLE void askForFlightHeartbeat();
+    Q_INVOKABLE void askForLandedHeartbeat();
+    Q_INVOKABLE void askForTelemetryInt(uint8_t typ);
+    Q_INVOKABLE void askForTelemetry(TelemetryType typ);
 
+    Q_INVOKABLE void sendCallsign();
+    Q_INVOKABLE void takeStillPicture(PhotoTransformQ transform);
+    Q_INVOKABLE void setLocalLoraParams(uint32_t freq_hz,
+                                        LoraSettings::SpreadingFactor sf,
+                                        LoraSettings::Bandwidth bw,
+                                        LoraSettings::CodingRate cr);
+    Q_INVOKABLE void negotiateLoraParams(uint32_t freq_hz,
+                                         LoraSettings::SpreadingFactor sf,
+                                         LoraSettings::Bandwidth bw,
+                                         LoraSettings::CodingRate cr,
+                                         int8_t remoteDbm);
+
+    FrontBackDataHolder *getRadioRSSI();
+    FrontBackDataHolder *getRadioSNR();
     explicit RadioPacketParser(QObject *parent = nullptr);
 
+    Q_INVOKABLE const LoraSettings &defaultLoraSettings() const;
 signals:
     void flightStateUpdated(QDateTime time, enum FlightPhase phase, uint16_t bitflags);
     void flightHeartbeat(QDateTime time,
@@ -122,9 +144,14 @@ signals:
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);
 
     void loraSettingsChanged();
+
+    void radioRSSIChanged();
+    void radioSNRChanged();
+
     void latestTxDateTimeChanged();
     void latestRxDateTimeChanged();
 
+    void packetReceivedFromRadio(QDateTime time, int snr, int rssi, const QByteArray &packet);
 public slots:
     void startedReceiving(QDateTime time,
                           uint32_t freq_hz,
@@ -135,16 +162,41 @@ public slots:
 
     void finishedTransmitting(QDateTime time);
 
+    // call these to fake a packet reception
     Q_INVOKABLE void packetReceived(QDateTime time, int snr, int rssi, const QByteArray &packet);
     Q_INVOKABLE void b64PacketReceived(QDateTime time, int snr, int rssi, const QString &packet);
 
 private:
     void emitCommandResponse(QDateTime time, const CommandResponse *resp);
     void emitTelemetry(QDateTime time, const Telemetry *telem);
+    void sendCommand(CommandAndData *cmd);
     void sendPacket(size_t len, uint8_t *buf);
 
+    enum NegotiationStage {
+        NotNegotiating,
+        WaitingForLinkChangeAck,
+        WaitingForLinkTestAck,
+    };
+    struct NegotiationState
+    {
+        NegotiationStage stage;
+        LoraSettings targetSettings;
+        int8_t targetDbm;
+    };
+
+    std::optional<LoraSettings> negotiatingTo;
+    bool waitingForNegAck = false;
+
     RadioClient *payload_client;
-    LoraSettings currentRadioSettings;
+    LoraSettings currentStableRadioSettings;
+
+    LoraSettings defaultSettings = {43245000,
+                                    LoraSettings::SpreadingFactor::SF9,
+                                    LoraSettings::Bandwidth::BW125,
+                                    LoraSettings::CodingRate::CR4_5};
+
+    FrontBackDataHolder radio_snr;
+    FrontBackDataHolder radio_rssi;
 
     QDateTime lastTxDateTime;
     QDateTime lastRxDateTime;

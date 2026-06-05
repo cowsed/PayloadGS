@@ -105,7 +105,6 @@ Item {
                 }
                 onPositionChanged: {
                     var coord = src.position.coordinate;
-                    console.log("Coordinate:", coord.longitude, coord.latitude);
                     TelemetryLogHolder.newRocketPosition(new Date(), coord);
                 }
             }

@@ -120,10 +120,10 @@ public:
         }
     }
 
-    uint32_t frequency() { return m_frequency; }
-    SpreadingFactor spreadingFactor() { return m_sf; }
-    Bandwidth bandwidth() { return m_bw; }
-    CodingRate codingRate() { return m_cr; }
+    uint32_t frequency() const { return m_frequency; }
+    SpreadingFactor spreadingFactor() const { return m_sf; }
+    Bandwidth bandwidth() const { return m_bw; }
+    CodingRate codingRate() const { return m_cr; }
 
     void setFrequency(uint32_t new_freq)
     {

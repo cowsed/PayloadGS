@@ -11,13 +11,16 @@ public:
     RadioClient();
 
     enum SF { SF5, SF6, SF7, SF8, SF9, SF10, SF11, SF12 };
+    static const char *SF_Str(SF sf);
     enum BW { BW8, BW10, BW15, BW20, BW31, BW42, BW62, BW125, BW250, BW500, BW200, BW400, BW800 };
+    static const char *BW_Str(BW bw);
     enum CR {
         CR4_5,
         CR4_6,
         CR4_7,
         CR4_8,
     };
+    static const char *CR_Str(CR cr);
 
     enum LDR {
         LDR_On,

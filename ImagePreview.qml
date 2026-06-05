@@ -14,33 +14,31 @@ Rectangle {
     Layout.margins: 5
 
     function reload() {
-        const oldSource = image.source
-        image.source = ""
-        image.source = oldSource
+        console.log("IMAGEPREVEIW REOLAD");
+        const oldSource = image.source;
+        image.source = "";
+        image.source = oldSource;
     }
 
     function updatePercent() {
-        transmissionPercent.text = (100 * ImageDataHolder.transmissionPercent(
-                                        preview.imageID)).toFixed(2) + "%"
+        transmissionPercent.text = (100 * ImageDataHolder.transmissionPercent(preview.imageID)).toFixed(2) + "%";
     }
 
-    color: (preview.activeImageID == preview.imageID) ? Qt.rgba(
-                                                            0, 0, 0,
-                                                            .1) : Material.background
+    color: (preview.activeImageID == preview.imageID) ? Qt.rgba(0, 0, 0, .1) : Material.background
     MouseArea {
         anchors.fill: parent
 
         onClicked: {
-            preview.activeHolder.activeImageID = preview.imageID
+            preview.activeHolder.activeImageID = preview.imageID;
         }
         RowLayout {
             anchors.fill: parent
 
             Image {
                 id: image
+                cache: false
 
-                source: "file:" + ImageDataHolder.pathForImageThumbnail(
-                            preview.imageID)
+                source: "file:" + ImageDataHolder.pathForImageThumbnail(preview.imageID)
                 Layout.preferredWidth: 128
                 Layout.preferredHeight: 128
                 fillMode: Image.PreserveAspectFit
@@ -54,8 +52,7 @@ Rectangle {
                 }
                 Text {
                     id: transmissionPercent
-                    text: (100 * ImageDataHolder.transmissionPercent(
-                               preview.imageID)).toFixed(0) + "%"
+                    text: (100 * ImageDataHolder.transmissionPercent(preview.imageID)).toFixed(0) + "%"
                 }
             }
         }

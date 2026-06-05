@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     engine.addImportPath(":/");
 
     QString working_dir = "/home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir";
-    size_t flight_id = 0;
+    size_t flight_id = 1;
 
     QString flight_dir = QString("%1/%2").arg(working_dir).arg(flight_id);
     engine.rootContext()->setContextProperty("flight_dir", flight_dir);
@@ -70,6 +70,14 @@ int main(int argc, char *argv[])
     img_holder->setFlightDir(flight_dir);
     img_holder->rescanCount();
 
+    QString packetLogFilename = flight_dir + "/rxed_packets.log";
+    qInfo("Opening %s for packet log", qPrintable(packetLogFilename));
+    QFile *packet_log = new QFile{packetLogFilename};
+    packet_log->setParent(&app);
+    if (!packet_log->open(QIODevice::Append | QIODevice::Text)) {
+        qWarning("Failed to open packet log for writing");
+    }
+
     Librarian *lib = engine.singletonInstance<Librarian *>("PayloadGS", "Librarian");
     lib->GatherRequestsFromDisk(img_holder);
     // lib->DumpInfo();
@@ -80,15 +88,40 @@ int main(int argc, char *argv[])
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
-        []() { QCoreApplication::exit(-1); },
+        []() {
+            qDebug("Clsoing");
+            QCoreApplication::exit(-1);
+        },
         Qt::QueuedConnection);
-
 
     QObject::connect(radio_parser,
                      &RadioPacketParser::imageDataReceived,
                      img_holder,
                      &ImageDataHolder::ImageDataReceived,
                      Qt::QueuedConnection);
+
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::imageDataReceived,
+                     lib,
+                     &Librarian::ImageDataReceived,
+                     Qt::QueuedConnection);
+
+    QObject::connect(
+        radio_parser,
+        &RadioPacketParser::packetReceivedFromRadio,
+        &app,
+        [&packet_log](QDateTime time, int snr, int rssi, QByteArray arr) {
+            if (!packet_log->isOpen()) {
+                return;
+            }
+            auto line = QString{"%1,%2,%3,%4\n"}
+                            .arg(time.toString())
+                            .arg(snr)
+                            .arg(rssi)
+                            .arg(arr.toBase64());
+            packet_log->write(line.toUtf8());
+        },
+        Qt::QueuedConnection);
 
     QObject::connect(radio_parser,
                      &RadioPacketParser::payloadGPSUpdated,

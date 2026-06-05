@@ -23,6 +23,7 @@ Item {
                     to: 30 * 60
                     value: 2 * 60
                     label: "Flight ♥"
+                    telem_id: 0
                 }
                 LibrarianTimerControl {
                     id: landedHearbeatSeconds
@@ -30,6 +31,7 @@ Item {
                     to: 30 * 60
                     value: 2 * 60
                     label: "Landed ♥"
+                    telem_id: 1
                 }
                 LibrarianTimerControl {
                     id: sysInfoSeconds
@@ -37,6 +39,7 @@ Item {
                     to: 30 * 60
                     value: 10 * 60
                     label: "SysInfo"
+                    telem_id: 4
                 }
                 LibrarianTimerControl {
                     id: gnssSeconds
@@ -44,6 +47,7 @@ Item {
                     to: 30 * 60
                     value: 3 * 60
                     label: "GNSS"
+                    telem_id: 3
                 }
             }
         }

@@ -17,7 +17,7 @@ Item {
         anchors.fill: parent
 
         ChartView {
-            id: tempChart
+            id: radioChart
             legend.alignment: Qt.AlignTop
             antialiasing: true
 
@@ -30,87 +30,66 @@ Item {
             Layout.fillHeight: true
             theme: ChartView.ChartThemeQt
 
-            ValueAxis {
+            Connections {
+                target: RadioPacketParser.radioRSSI
+
+                function onValueChanged() {
+                    RadioPacketParser.radioRSSI.fillXYSeries(radioChart.series(radioRSSISeries.name));
+                }
+            }
+
+            Connections {
+                target: RadioPacketParser.radioSNR
+
+                function onValueChanged() {
+                    RadioPacketParser.radioSNR.fillXYSeries(radioChart.series(radioSNRSeries.name));
+                    const starts = [RadioPacketParser.radioSNR.earliestTime, RadioPacketParser.radioRSSI.earliestTime];
+                    const ends = [RadioPacketParser.radioSNR.latestTime, RadioPacketParser.radioRSSI.latestTime];
+
+                    axisX.min = new Date(Math.min(...starts));
+                    axisX.max = new Date(Math.max(...ends));
+                }
+            }
+
+            DateTimeAxis {
                 id: axisX
-                min: 0 // Sets the minimum value for the X-axis
-                max: 6 // Sets the maximum value for the X-axis
+                tickCount: 6
+                format: "hh:mm:ss"
             }
 
             ValueAxis {
                 id: rssiAxisY
-                min: 30 // Sets the minimum value for the Y-axis
-                max: 100 // Sets the maximum value for the Y-axis
+                titleText: "RSSI"
+                min: -130
+                max: 10
+                color: "red"
             }
             ValueAxis {
                 id: snrAxisY
-                min: 30 // Sets the minimum value for the Y-axis
-                max: 100 // Sets the maximum value for the Y-axis
+                titleText: "SNR"
+                min: -40
+                max: 20
+                color: "blue"
             }
             LineSeries {
+                id: radioRSSISeries
                 name: "RSSI"
                 axisX: axisX
                 axisY: rssiAxisY
-                XYPoint {
-                    x: 0
-                    y: 35
-                }
-                XYPoint {
-                    x: 1.1
-                    y: 35.1
-                }
-                XYPoint {
-                    x: 1.9
-                    y: 37.3
-                }
-                XYPoint {
-                    x: 2.1
-                    y: 42.1
-                }
-                XYPoint {
-                    x: 2.9
-                    y: 44.9
-                }
-                XYPoint {
-                    x: 3.4
-                    y: 43.0
-                }
-                XYPoint {
-                    x: 4.1
-                    y: 44.3
-                }
+
+                color: "red"
+                width: 2
+                pointsVisible: true
             }
             LineSeries {
+                id: radioSNRSeries
                 name: "SNR"
                 axisX: axisX
                 axisYRight: snrAxisY
-                XYPoint {
-                    x: 0
-                    y: 40
-                }
-                XYPoint {
-                    x: 1.1
-                    y: 41
-                }
-                XYPoint {
-                    x: 1.9
-                    y: 43
-                }
-                XYPoint {
-                    x: 2.1
-                    y: 48
-                }
-                XYPoint {
-                    x: 2.9
-                    y: 49
-                }
-                XYPoint {
-                    x: 3.4
-                    y: 50
-                }
-                XYPoint {
-                    x: 4.1
-                    y: 53
-                }
+
+                color: "blue"
+                width: 2
+                pointsVisible: true
             }
         }
 
@@ -119,7 +98,7 @@ Item {
             Layout.fillHeight: true
             ComboBox {
                 id: sfBox
-                currentIndex: 0
+                currentIndex: 3
                 textRole: "text"
                 valueRole: "value"
 
@@ -156,7 +135,7 @@ Item {
             }
             ComboBox {
                 id: bwBox
-                currentIndex: 0
+                currentIndex: 7
                 textRole: "text"
                 valueRole: "value"
 
@@ -264,7 +243,7 @@ Item {
                 }
                 Button {
                     text: "Set"
-                    onClicked: RadioPacketParser.setLoraParams(spinBox.value, sfBox.currentValue, bwBox.currentValue, crBox.currentValue)
+                    onClicked: RadioPacketParser.setLocalLoraParams(spinBox.value, sfBox.currentValue, bwBox.currentValue, crBox.currentValue)
                 }
             }
 

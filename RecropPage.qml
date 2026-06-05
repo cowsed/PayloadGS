@@ -5,32 +5,32 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property photoTransform oldCrop: ImageDataHolder.metadataForImageId(
-                                         imageSelector.value).photoTransform()
+    property int cam_width: 1280
+    property int cam_height: 800
+
+    property photoTransform oldCrop: ImageDataHolder.metadataForImageId(imageSelector.value).photoTransform()
     property photoTransform newCrop
-
     function setNewCrop() {
-        root.newCrop.left = left.value
-        root.newCrop.right = right.value
-        root.newCrop.top = top.value
-        root.newCrop.bottom = bottom.value
-        root.newCrop.encodedWidth = encodedWidth.value
-        root.newCrop.encodedQuality = encodedWidth.value
+        root.newCrop.left = left.value;
+        root.newCrop.right = right.value;
+        root.newCrop.top = top.value;
+        root.newCrop.bottom = bottom.value;
+        root.newCrop.encodedWidth = encodedWidth.value;
+        root.newCrop.encodedQuality = encodedWidth.value;
 
-        const w = (root.newCrop.right - root.newCrop.left)
-        const h = (root.newCrop.top - root.newCrop.bottom)
+        const w = (root.newCrop.right - root.newCrop.left);
+        const h = (root.newCrop.bottom - root.newCrop.top);
 
-        width.text = "Width: " + w.toFixed(0)
-        height.text = "Height: " + h.toFixed(0)
+        dimensions.text = "Dimensions: " + w.toFixed(0) + "x" + h.toFixed(0);
 
-        encodedHeight.text = "encodedHeight: " + (root.newCrop.encodedWidth * h / w).toFixed(
-                    0)
+        const encodedHeight = (root.newCrop.encodedWidth * h / w).toFixed(0);
+        encodedDimensions.text = "Encoded Dims: " + encodedWidth.value + "x" + encodedHeight;
 
-        cropVis.crop = newCrop
+        cropVis.crop = newCrop;
     }
 
     Component.onCompleted: {
-        setNewCrop()
+        setNewCrop();
     }
 
     // if no images taken, say that
@@ -55,6 +55,8 @@ Item {
                 oldCrop: root.oldCrop
                 crop: root.newCrop
                 oldImageId: imageSelector.value
+                original_width: root.cam_width
+                original_height: root.cam_height
             }
         }
         ColumnLayout {
@@ -62,8 +64,8 @@ Item {
                 SpinBox {
                     id: left
                     from: 0
-                    to: cropVis.original_width
-                    value: 128
+                    to: root.cam_width
+                    value: 0
                     stepSize: 16
                     editable: true
                     onValueModified: root.setNewCrop()
@@ -77,8 +79,8 @@ Item {
                 SpinBox {
                     id: right
                     from: 0
-                    to: cropVis.original_width
-                    value: 256
+                    to: root.cam_width
+                    value: root.cam_width
                     stepSize: 16
                     editable: true
                     onValueModified: root.setNewCrop()
@@ -91,8 +93,8 @@ Item {
                 SpinBox {
                     id: top
                     from: 0
-                    to: cropVis.original_height
-                    value: 256
+                    to: root.cam_height
+                    value: 0
                     stepSize: 16
                     editable: true
                     onValueModified: root.setNewCrop()
@@ -105,9 +107,9 @@ Item {
                 SpinBox {
                     id: bottom
                     from: 0
-                    to: cropVis.original_height
+                    to: root.cam_height
                     onValueModified: root.setNewCrop()
-                    value: 128
+                    value: root.cam_height
                     stepSize: 16
                     editable: true
                 }
@@ -120,8 +122,8 @@ Item {
                 SpinBox {
                     id: encodedWidth
                     from: 0
-                    to: 8192
-                    value: 128
+                    to: (right.value - left.value)
+                    value: (right.value - left.value)
                     editable: true
                     stepSize: 16
                     onValueModified: root.setNewCrop()
@@ -151,22 +153,29 @@ Item {
         }
         ColumnLayout {
             Label {
-                id: width
-                text: "Width: 0"
+                id: dimensions
+                text: "Dimensions: 0x0"
             }
             Label {
-                id: height
-                text: "Height: 0"
-            }
-            Label {
-                id: encodedHeight
-                text: "Encoded Height: "
-                      + (root.newCrop.encodedWidth * (root.newCrop.top - root.newCrop.bottom)
-                         / (root.newCrop.right - root.newCrop.left)).toFixed(0)
+                id: encodedDimensions
+                text: "Encoded Dims: 0x0"
             }
 
             Button {
                 text: "Enhance"
+            }
+            Button {
+                text: "Still Picture"
+                onClicked: function () {
+                    const xform = root.newCrop;
+                    const errors = xform.errors(root.cam_width, root.cam_height);
+                    if (errors == "") {
+                        console.log("Stil pcutre transform", xform);
+                        RadioPacketParser.takeStillPicture(xform);
+                    } else {
+                        console.log("Invalid settings", errors);
+                    }
+                }
             }
         }
     }

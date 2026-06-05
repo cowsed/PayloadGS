@@ -5,6 +5,7 @@ import QtQuick.Controls.Material
 
 RowLayout {
     id: root
+    property int telem_id: 0
     required property string label
     property int from: 0
     property int to: 30 * 60
@@ -17,5 +18,9 @@ RowLayout {
 
     Label {
         text: root.label
+    }
+    Button {
+        text: "Now"
+        onClicked: RadioPacketParser.askForTelemetryInt(root.telem_id)
     }
 }

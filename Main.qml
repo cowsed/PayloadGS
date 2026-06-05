@@ -22,14 +22,6 @@ ApplicationWindow {
     font.weight: Font.ExtraBold
     font.pointSize: 13
 
-    LoraSettings {
-        id: defaultRadioSettings
-        spreadingFactor: LoraSettings.SF7
-        bandwidth: LoraSettings.BW125
-        codingRate: LoraSettings.CR4_8
-        frequency: 433000000
-    }
-
     Component.onCompleted: {
 
         // toggleFullscreen()
