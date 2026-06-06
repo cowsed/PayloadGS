@@ -34,6 +34,7 @@ void RadioServer::clientReadyRead() {
     while (active_client->canReadLine()) {
         QString line = active_client->readLine();
         line.chop(1);
+        qDebug("GotLinFromClient: %s", qPrintable(line));
         Parse(std::string_view{line.toStdString()});
     }
 }
@@ -102,32 +103,32 @@ void RadioServer::tx(uint64_t frequency_hz, SF sf, BW bw, CR cr, LDR ldr, uint32
         printf("Failed to start tx\n");
         sendToClient("ERROR couldn't tx. Reason: " + std::to_string(err));
     }
-}
+                     }
 
-void RadioServer::rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) {
-    Radio::Error err = radio->setup_rx(freq, sf, bw, cr, ldr, preamble_len);
-    if (err != Radio::Error::Ok) {
-        printf("Failed to setup rx\n");
-    };
-    err = radio->rx();
-    if (err != Radio::Error::Ok) {
-        printf("Failed to start rx\n");
-    } else {
-        sendToClient("rxing");
-    }
-}
-void RadioServer::sleep() {}
-void RadioServer::standby() {}
+                     void RadioServer::rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) {
+                         Radio::Error err = radio->setup_rx(freq, sf, bw, cr, ldr, preamble_len);
+                         if (err != Radio::Error::Ok) {
+                             printf("Failed to setup rx\n");
+                         };
+                         err = radio->rx();
+                         if (err != Radio::Error::Ok) {
+                             printf("Failed to start rx\n");
+                         } else {
+                             sendToClient(QString{"rxing %1 %2 %3 %4 %5"}.arg(freq).arg(SF_Str(sf)).arg(BW_Str(bw)).arg(CR_Str(cr)).arg(ldr == LDR_On ? "LDRON" : "LDROFF").arg(preamble_len).toStdString());
+                         }
+                     }
+                     void RadioServer::sleep() {}
+                     void RadioServer::standby() {}
 
-void RadioServer::log(std::string_view log_data) {}
-void RadioServer::ctrl(std::string_view ctrl_data) {}
+                     void RadioServer::log(std::string_view log_data) {}
+                     void RadioServer::ctrl(std::string_view ctrl_data) {}
 
-void RadioServer::tx_done_cb() {
-    sendToClient("txed");
-}
-void RadioServer::rx_cb(std::span<uint8_t> data, float snr, int16_t rssi, int freq_error) {
-    auto arr = QByteArray::fromRawData((char *)data.data(), data.size());
-    std::string str64 = arr.toBase64().toStdString();
-    auto str = std::format("rxed {} {} {} {}", snr, rssi, freq_error, str64);
-    sendToClient(str);
-}
+                     void RadioServer::tx_done_cb() {
+                         sendToClient("txed");
+                     }
+                     void RadioServer::rx_cb(std::span<uint8_t> data, float snr, int16_t rssi, int freq_error) {
+                         auto arr = QByteArray::fromRawData((char *)data.data(), data.size());
+                         std::string str64 = arr.toBase64().toStdString();
+                         auto str = std::format("rxed {} {} {} {}", snr, rssi, freq_error, str64);
+                         sendToClient(str);
+                     }

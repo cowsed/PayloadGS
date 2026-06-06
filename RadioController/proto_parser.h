@@ -3,12 +3,12 @@
 #include <QList>
 #include <QString>
 #include <cstdint>
+#include <format>
 #include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <format>
 
 enum SF { SF5, SF6, SF7, SF8, SF9, SF10, SF11, SF12 };
 enum BW { BW8, BW10, BW15, BW20, BW31, BW42, BW62, BW125, BW250, BW500, BW200, BW400, BW800 };
@@ -35,44 +35,80 @@ enum RxSeqMode {
 };
 
 class ClientToDriverParser {
-  public:
+public:
     void parse(std::string_view str);
 
-  protected:
+protected:
     virtual void bad_parse(const std::string &reason) = 0;
     virtual void unknown_command(std::string_view cmd, std::string_view line) = 0;
 
-    const char *BW_str(BW bw) {
-        switch (bw) {
-        case BW::BW8:
-            return "BW8";
-        case BW::BW10:
-            return "BW10";
-        case BW::BW15:
-            return "BW15";
-        case BW::BW20:
-            return "BW20";
-        case BW::BW31:
-            return "BW31";
-        case BW::BW42:
-            return "BW42";
-        case BW::BW62:
-            return "BW62";
-        case BW::BW125:
-            return "BW125";
-        case BW::BW250:
-            return "BW250";
-        case BW::BW500:
-            return "BW500";
-        case BW::BW200:
-            return "BW200";
-        case BW::BW400:
-            return "BW400";
-        case BW::BW800:
-            return "BW800";
-        default:
-            return "BW???";
+    const char *SF_Str(SF sf)
+    {
+        switch (sf) {
+            case SF::SF5:
+                return "SF5";
+            case SF::SF6:
+                return "SF6";
+            case SF::SF7:
+                return "SF7";
+            case SF::SF8:
+                return "SF8";
+            case SF::SF9:
+                return "SF9";
+            case SF::SF10:
+                return "SF10";
+            case SF::SF11:
+                return "SF11";
+            case SF::SF12:
+                return "SF12";
         }
+        return "SF12";
+    };
+    const char *BW_Str(BW bw)
+    {
+        switch (bw) {
+            case BW::BW8:
+                return "BW8";
+            case BW::BW10:
+                return "BW10";
+            case BW::BW15:
+                return "BW15";
+            case BW::BW20:
+                return "BW20";
+            case BW::BW31:
+                return "BW31";
+            case BW::BW42:
+                return "BW42";
+            case BW::BW62:
+                return "BW62";
+            case BW::BW125:
+                return "BW125";
+            case BW::BW250:
+                return "BW250";
+            case BW::BW500:
+                return "BW500";
+            case BW::BW200:
+                return "BW200";
+            case BW::BW400:
+                return "BW400";
+            case BW::BW800:
+                return "BW800";
+        };
+        return "BW125";
+    }
+    const char *CR_Str(CR cr)
+    {
+        switch (cr) {
+            case CR::CR4_5:
+                return "CR4/5";
+            case CR::CR4_6:
+                return "CR4/6";
+            case CR::CR4_7:
+                return "CR4/7";
+            case CR::CR4_8:
+                return "CR4/8";
+        };
+        return "CR4/8";
     }
 
     // required to implement
@@ -116,21 +152,21 @@ class ClientToDriverParser {
     // $data hex encoded string of bytes 0123456789abcdef etc
     virtual void tx(uint64_t frequency_hz, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len, int32_t power,
                     uint32_t data_len, uint8_t *data) = 0;
-    // Format:
-    // rx $freq $sf $bw $cr $ldr $plen $hdr $data
-    // $freq: decimal number containing frequency in hertz
-    // $sf:   (SF5|SF6|SF7|SF8|SF9|SF10|SF11|SF12)
-    // $sw:   (BW8|BW10|BW15|BW20|BW31|BW42|BW62|BW125|BW250|BW500|BW200|BW400|BW800)
-    // $cr:   (CR4/5|CR4/6|CR4/7|CR4/8)
-    // $ldr:  LDRON|LDROFF low data rate mode
-    // $plen: preamble length
-    virtual void rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) = 0;
+                    // Format:
+                    // rx $freq $sf $bw $cr $ldr $plen $hdr $data
+                    // $freq: decimal number containing frequency in hertz
+                    // $sf:   (SF5|SF6|SF7|SF8|SF9|SF10|SF11|SF12)
+                    // $sw:   (BW8|BW10|BW15|BW20|BW31|BW42|BW62|BW125|BW250|BW500|BW200|BW400|BW800)
+                    // $cr:   (CR4/5|CR4/6|CR4/7|CR4/8)
+                    // $ldr:  LDRON|LDROFF low data rate mode
+                    // $plen: preamble length
+                    virtual void rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) = 0;
 
-    // optional to implement
-    virtual void log(std::string_view log_data) {}
-    virtual void ctrl(std::string_view ctrl_data) {}
+                    // optional to implement
+                    virtual void log(std::string_view log_data) {}
+                    virtual void ctrl(std::string_view ctrl_data) {}
 
-  private:
+private:
     std::optional<SF> parse_sf(QString view);
     std::optional<BW> parse_bw(QString view);
     std::optional<CR> parse_cr(QString view);
@@ -156,13 +192,10 @@ class ClientParser {
 };
 
 class DebuggingDriver : ClientToDriverParser {
-  public:
+public:
     void Parse(std::string_view str) { parse(str); }
 
-    void bad_parse(const std::string &reason) override { 
-        std::printf("Bad Parse: %s", reason.c_str());
-
-     }
+    void bad_parse(const std::string &reason) override { std::printf("Bad Parse: %s", reason.c_str()); }
 
     void unknown_command(std::string_view cmd, std::string_view line) override {
         printf("Unknown CMD: %.*s\n", (int)cmd.length(), cmd.data());
@@ -178,14 +211,14 @@ class DebuggingDriver : ClientToDriverParser {
 
     void tx(uint64_t frequency_hz, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len, int32_t power,
             uint32_t data_len, uint8_t *data) override {
-        printf("TX: freq:%lu  %s\n", frequency_hz, BW_str(bw));
-    }
-    virtual void rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) override {
-        printf("RX: %s\n", BW_str(bw));
-    }
-    void sleep() override { printf("Sleep\n"); }
-    void standby() override { printf("Standby\n"); }
+                printf("TX: freq:%lu  %s\n", frequency_hz, BW_Str(bw));
+            }
+            virtual void rx(uint64_t freq, SF sf, BW bw, CR cr, LDR ldr, uint32_t preamble_len) override {
+                printf("RX: %s\n", BW_Str(bw));
+            }
+            void sleep() override { printf("Sleep\n"); }
+            void standby() override { printf("Standby\n"); }
 
-    void log(std::string_view log_data) override { printf("Log: %.*s\n", (int)log_data.size(), log_data.data()); }
-    void ctrl(std::string_view ctrl_data) override { printf("Ctrl: %.*s\n", (int)ctrl_data.size(), ctrl_data.data()); }
+            void log(std::string_view log_data) override { printf("Log: %.*s\n", (int)log_data.size(), log_data.data()); }
+            void ctrl(std::string_view ctrl_data) override { printf("Ctrl: %.*s\n", (int)ctrl_data.size(), ctrl_data.data()); }
 };

@@ -5,7 +5,7 @@
 void ClientToDriverParser::parse(std::string_view str) {
     size_t first_space_i = str.find(" ");
     std::string_view command =
-        (first_space_i == std::string::npos) ? std::string_view{str} : str.substr(0, first_space_i);
+    (first_space_i == std::string::npos) ? std::string_view{str} : str.substr(0, first_space_i);
     std::string_view args = (first_space_i == std::string::npos) ? std::string_view{""} : str.substr(first_space_i + 1);
 
     // printf("cmd:  %d  %*.s\n", (int)command.size(), (int)command.size(), command.data());
@@ -22,11 +22,11 @@ void ClientToDriverParser::parse(std::string_view str) {
         pair{(const char *)"sleep", [this](std::string_view) { sleep(); }},
 
         pair{(const char *)"tx_seq_mode",
-             std::bind(&ClientToDriverParser::parse_tx_seq_mode, this, std::placeholders::_1)},
-        pair{(const char *)"rx_seq_mode",
-             std::bind(&ClientToDriverParser::parse_rx_seq_mode, this, std::placeholders::_1)},
-        pair{(const char *)"tx", std::bind(&ClientToDriverParser::parse_tx, this, std::placeholders::_1)},
-        pair{(const char *)"rx", std::bind(&ClientToDriverParser::parse_rx, this, std::placeholders::_1)},
+            std::bind(&ClientToDriverParser::parse_tx_seq_mode, this, std::placeholders::_1)},
+            pair{(const char *)"rx_seq_mode",
+                std::bind(&ClientToDriverParser::parse_rx_seq_mode, this, std::placeholders::_1)},
+                pair{(const char *)"tx", std::bind(&ClientToDriverParser::parse_tx, this, std::placeholders::_1)},
+                pair{(const char *)"rx", std::bind(&ClientToDriverParser::parse_rx, this, std::placeholders::_1)},
     };
 
     bool handled = false;
@@ -152,14 +152,14 @@ void ClientToDriverParser::parse_tx(std::string_view view) {
         bad_parse(help);
         return;
     }
-    std::optional<uint64_t> maybe_freq = parse_uint(parts[0]);
-    std::optional<SF> maybe_sf = parse_sf(parts[1]);
-    std::optional<BW> maybe_bw = parse_bw(parts[2]);
-    std::optional<CR> maybe_cr = parse_cr(parts[3]);
-    std::optional<LDR> maybe_ldr = parse_ldr(parts[4]);
-    std::optional<uint64_t> maybe_plen = parse_uint(parts[5]);
-    std::optional<int64_t> maybe_power = parse_int(parts[6]);
-    std::optional<QByteArray> maybe_data = parse_b64_data(parts[7]);
+    std::optional<uint64_t> maybe_freq = parse_uint(parts[0].trimmed());
+    std::optional<SF> maybe_sf = parse_sf(parts[1].trimmed());
+    std::optional<BW> maybe_bw = parse_bw(parts[2].trimmed());
+    std::optional<CR> maybe_cr = parse_cr(parts[3].trimmed());
+    std::optional<LDR> maybe_ldr = parse_ldr(parts[4].trimmed());
+    std::optional<uint64_t> maybe_plen = parse_uint(parts[5].trimmed());
+    std::optional<int64_t> maybe_power = parse_int(parts[6].trimmed());
+    std::optional<QByteArray> maybe_data = parse_b64_data(parts[7].trimmed());
 
     using namespace Qt::StringLiterals;
     if (!maybe_freq) {
