@@ -51,24 +51,13 @@ Item {
                 }
             }
         }
+
         ColumnLayout {
-            Label {
-                text: "Queue"
-            }
-            Label {
-                text: "telem: GNSS"
-            }
-            Label {
-                text: "MIid: 0"
-            }
-            Label {
-                text: "Iid: 0, bid: 0"
-            }
-            Label {
-                text: "Iid: 0, bid: 1"
-            }
-            Label {
-                text: "Sid: 0, bid: 0"
+
+            Button {
+                text: "Perform Request"
+                // on click, pop off the stack and send it to radio
+                onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser)
             }
         }
     }

@@ -16,7 +16,7 @@ public:
 
     void run();
 signals:
-    void conversionFinsihed(uint8_t image_id, int result);
+    void conversionFinished(uint8_t image_id, int result);
 
 private:
     QString script_dir;

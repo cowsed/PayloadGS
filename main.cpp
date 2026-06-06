@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
     }
 
     Librarian *lib = engine.singletonInstance<Librarian *>("PayloadGS", "Librarian");
-    lib->GatherRequestsFromDisk(img_holder);
-    // lib->DumpInfo();
 
     qDebug("Have %zu requests", lib->NumRequests());
 
@@ -105,6 +103,24 @@ int main(int argc, char *argv[])
                      lib,
                      &Librarian::ImageDataReceived,
                      Qt::QueuedConnection);
+
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::ImageMetadataReceived,
+                     img_holder,
+                     &ImageDataHolder::ImageMetadataReceived,
+                     Qt::QueuedConnection);
+
+    QObject::connect(radio_parser,
+                     &RadioPacketParser::numImagesIncreased,
+                     img_holder,
+                     &ImageDataHolder::newImageAvailable,
+                     Qt::QueuedConnection);
+
+    // QObject::connect(radio_parser,
+    //                  &RadioPacketParser::ImageMetadataReceived,
+    //                  lib,
+    //                  &Librarian::ImageMetadataReceived,
+    //                  Qt::QueuedConnection);
 
     QObject::connect(
         radio_parser,

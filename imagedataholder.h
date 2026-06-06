@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include "ssdvdecoder.h"
 #include <imagemetadataholder.h>
 
 class ImageDataHolder : public QObject
@@ -52,16 +53,24 @@ signals:
     void readyForSSDVDecode(uint8_t image_id);
 
 public slots:
+    void newImageAvailable(QDateTime time, uint8_t lastest_id);
+    void ImageMetadataReceived(QDateTime time, const ImageMetadata &buf);
     void ImageDataReceived(QDateTime time, const ImageData &buf);
 
     // received when decode(packets->big binary->image->thumbnail pipeline is finished
     void SSDVDecodeFinished(uint8_t image_id, int exit_code);
 
-    // got metadata packet
 private:
     void setNumImages(size_t num);
+
+    // create image directory if it doesnt exist. If creating fails, return false
+    bool verifyImageDirectory(uint8_t image_id);
+
     size_t m_count = 0;
     QString m_flight_dir;
+
+    bool activelyDecoding = false;
+    SSDVDecoder *next_decoder = nullptr;
 };
 
 #endif // IMAGEDATAHOLDER_H

@@ -29,6 +29,7 @@ Rectangle {
         anchors.fill: parent
 
         onClicked: {
+            console.log("clicked");
             preview.activeHolder.activeImageID = preview.imageID;
         }
         RowLayout {

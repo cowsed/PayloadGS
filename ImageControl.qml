@@ -9,18 +9,16 @@ import QtQuick.Controls.Material
 Item {
     id: page
 
-    required property int flightNumber
     property int activeImageID: 0
-
-    property imageMetadataHolder activeImageMetadata: ImageDataHolder.metadataForImageId(activeImageID)
-
-    property real numPackets: ImageDataHolder.numDownloadedPackets(activeImageID)
 
     Connections {
         target: page
         function onActiveImageIDChanged() {
             console.log("OAIIC");
-            controlColumn.reconsiderControlColumn();
+            const activeImageMetadata = ImageDataHolder.metadataForImageId(page.activeImageID);
+            controlColumn.reconsiderControlColumn(activeImageMetadata);
+            imageId.text = "Image #" + page.activeImageID;
+            activeImage.source = "file:" + ImageDataHolder.pathForImage(page.activeImageID);
         }
     }
 
@@ -33,7 +31,6 @@ Item {
             if (previews.itemAt(image_id)) {
                 previews.itemAt(image_id).reload();
             }
-            page.activeImageMetadata = ImageDataHolder.metadataForImageId(page.activeImageID);
             cropvis.reload();
         }
     }
@@ -99,31 +96,41 @@ Item {
                 id: controlColumn
                 property bool hasAll: ImageDataHolder.imageComplete(page.activeImageID)
 
-                function reconsiderControlColumn() {
+                function reconsiderControlColumn(metadata) {
                     dlButton.text = Librarian.activelyAskingForImage(page.activeImageID) ? "Downloading" : "Paused";
 
-                    controlColumn.hasAll = ImageDataHolder.imageComplete(page.activeImageID);
+                    const numDownloaded = ImageDataHolder.numDownloadedPackets(page.activeImageID);
+
+                    controlColumn.hasAll = numDownloaded == metadata.numBlocks;
+                    numBlocksTotal.text = "Blocks total: " + metadata.numBlocks;
+                    numBlocksDownloaded.text = "Blocks downloaded: " + numDownloaded;
+                    numBlocksRemaining.text = "Blocks Remaining: " + (metadata.numBlocks - numDownloaded);
+                    cropvis.oldCrop = metadata.photoTransform();
                 }
 
                 Connections {
                     target: Librarian
                     function onNumRequestsChanged() {
-                        controlColumn.reconsiderControlColumn();
+                        controlColumn.reconsiderControlColumn(ImageDataHolder.metadataForImageId(page.activeImageID));
                     }
                 }
 
                 Label {
-                    text: "Image #" + page.activeImageID
+                    id: imageId
+                    text: "Image #"
                 }
 
                 Label {
-                    text: "Blocks total: " + page.activeImageMetadata.numBlocks
+                    id: numBlocksTotal
+                    text: "Blocks total: "
                 }
                 Label {
-                    text: "Blocks downloaded: " + page.numPackets
+                    id: numBlocksDownloaded
+                    text: "Blocks downloaded: "
                 }
                 Label {
-                    text: `Remaining: ${page.activeImageMetadata.numBlocks - page.numPackets}`
+                    id: numBlocksRemaining
+                    text: `Remaining: `
                 }
 
                 Layout.horizontalStretchFactor: 4
@@ -132,20 +139,21 @@ Item {
 
                 CropVisualizer {
                     id: cropvis
-                    oldCrop: page.activeImageMetadata.photoTransform()
+                    oldCrop: undefined
                     Layout.fillWidth: true
                     Layout.preferredHeight: 120
                     oldImageId: page.activeImageID
                 }
 
                 Label {
-                    text: `H: ` + page.activeImageMetadata.left + ` - ${page.activeImageMetadata.right}`
+
+                    text: `W: `
                 }
                 Label {
-                    text: `V: ${page.activeImageMetadata.bottom} - ${page.activeImageMetadata.top}`
+                    text: `H: `
                 }
                 Label {
-                    text: `E: ${page.activeImageMetadata.encodedWidth}x${page.activeImageMetadata.encodedHeight} Q: ${page.activeImageMetadata.encodedQuality}`
+                    text: `E: `
                 }
 
                 Button {

@@ -41,7 +41,7 @@ class ImageMetadataHolder
 {
     Q_GADGET
 
-    Q_PROPERTY(uint8_t image_ MEMBER image_id)
+    Q_PROPERTY(uint8_t image_id MEMBER image_id)
     Q_PROPERTY(QDateTime datetime MEMBER datetime)
     Q_PROPERTY(uint16_t numBlocks MEMBER numBlocks)
     Q_PROPERTY(uint16_t left MEMBER left)

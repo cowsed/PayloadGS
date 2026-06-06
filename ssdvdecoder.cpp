@@ -29,7 +29,7 @@ void SSDVDecoder::run()
         qDebug("finished SSDV process for image %d", image_id);
 
         int exit = proc.exitCode();
-        emit conversionFinsihed(image_id, exit);
+        emit conversionFinished(image_id, exit);
     } else {
         qDebug("SSDV encoder wait returned false: %d - %s",
                proc.exitCode(),

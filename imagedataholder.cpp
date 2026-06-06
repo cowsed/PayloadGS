@@ -157,6 +157,12 @@ QString ImageDataHolder::packetName(uint16_t block_id)
     return QString("%1%2").arg(PACKET_PREFIX).arg(block_id, 5, 10, QLatin1Char('0'));
 }
 
+void ImageDataHolder::newImageAvailable(QDateTime time, uint8_t latest_id)
+{
+    verifyImageDirectory(latest_id);
+    setNumImages(latest_id + 1);
+}
+
 void ImageDataHolder::setNumImages(size_t num)
 {
     size_t old = m_count;
@@ -168,6 +174,10 @@ void ImageDataHolder::setNumImages(size_t num)
 
 void ImageDataHolder::ImageDataReceived(QDateTime time, const ImageData &buf)
 {
+    if (!verifyImageDirectory(buf.image_id)) {
+        return;
+    }
+
     QString fname = imagePacketDirectory(buf.image_id) + "/" + packetName(buf.block_index);
     QFile file{fname};
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -178,18 +188,86 @@ void ImageDataHolder::ImageDataReceived(QDateTime time, const ImageData &buf)
     file.write((char *) &buf.buf[0], IMAGE_DATA_SIZE);
     file.close();
 
-    SSDVDecoder *dec = new SSDVDecoder{m_flight_dir + "/..",
+    if (activelyDecoding) {
+        if (next_decoder != nullptr) {
+            delete next_decoder;
+        }
+        next_decoder = new SSDVDecoder{m_flight_dir + "/..",
                                        m_flight_dir,
                                        IMAGE_DATA_SIZE,
                                        buf.image_id};
-    dec->setAutoDelete(true);
-    connect(dec, &::SSDVDecoder::conversionFinsihed, this, &ImageDataHolder::SSDVDecodeFinished);
-    qDebug("Starting ssdv decoder");
-    QThreadPool::globalInstance()->start(dec);
+    } else {
+        SSDVDecoder *dec = new SSDVDecoder{m_flight_dir + "/..",
+                                           m_flight_dir,
+                                           IMAGE_DATA_SIZE,
+                                           buf.image_id};
+        dec->setAutoDelete(true);
+        connect(dec, &::SSDVDecoder::conversionFinished, this, &ImageDataHolder::SSDVDecodeFinished);
+        qDebug("Starting ssdv decoder");
+        activelyDecoding = true;
+        QThreadPool::globalInstance()->start(dec);
+    }
+}
+
+bool ImageDataHolder::verifyImageDirectory(uint8_t image_id)
+{
+    QDir dir{imagePacketDirectory(image_id)};
+    if (!dir.exists()) {
+        if (!dir.mkpath(dir.path())) {
+            qWarning("Failed to create directory for image id %d at %s",
+                     image_id,
+                     qPrintable(imagePacketDirectory(image_id)));
+            return false;
+        }
+    }
+    return true;
+}
+
+void ImageDataHolder::ImageMetadataReceived(QDateTime time, const ImageMetadata &meta)
+{
+    qDebug("Image data holder got meta for id %d", meta.image_id);
+
+    ImageMetadataHolder holder{meta};
+    if (!verifyImageDirectory(meta.image_id)) {
+        return;
+    }
+
+    QString path = QString("%1/Images/%2/meta.json").arg(m_flight_dir, imageName(meta.image_id));
+    if (QFile::exists(path)) {
+        qWarning("metadaat already exists for id %d", meta.image_id);
+        return;
+    }
+
+    QJsonDocument jsonDoc(holder.toJson());
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open metadata file '" << path
+                   << "' for writing:" << file.errorString();
+        return;
+    }
+    file.write(jsonDoc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    emit gotNewMetadata(meta.image_id);
 }
 
 void ImageDataHolder::SSDVDecodeFinished(uint8_t image_id, int exit_code)
 {
     qDebug("Finished decoding image %d with exit code %d", image_id, exit_code);
+
+    if (next_decoder != nullptr) {
+        SSDVDecoder *dec = next_decoder;
+        next_decoder = nullptr;
+
+        dec->setAutoDelete(true);
+        connect(dec, &::SSDVDecoder::conversionFinished, this, &ImageDataHolder::SSDVDecodeFinished);
+        qDebug("Starting ssdv decoder");
+        activelyDecoding = true;
+        QThreadPool::globalInstance()->start(dec);
+    } else {
+        activelyDecoding = false;
+    }
+
     emit imageUpdated(image_id);
 }

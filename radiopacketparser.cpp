@@ -4,6 +4,7 @@
 #include "cubesat_comms/packets_g2p.h"
 #include "cubesat_comms/packets_p2g.h"
 #include "imagemetadataholder.h"
+#include <algorithm>
 
 LoraSettings::SpreadingFactor rsf_to_sf(RadioClient::SF sf);
 LoraSettings::Bandwidth rbw_to_bw(RadioClient::BW bw);
@@ -119,6 +120,7 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
             qDebug("Failed to unpack command response: %d", (int) res);
             break;
         }
+        qDebug("Got command response for cm type %d", (int) cmd_resp.cmd);
         emitCommandResponse(time, &cmd_resp);
         break;
     case P2GPacketType::P2GPacketType_ImageResponse:
@@ -328,6 +330,31 @@ Q_INVOKABLE void RadioPacketParser::negotiateLoraParams(uint32_t freq_hz,
     // tODO
 }
 
+void RadioPacketParser::sendArmTarget() {}
+
+void RadioPacketParser::sendToPhase(FlightPhaseQML phase)
+{
+    CommandAndData cmd;
+    switch (phase) {
+    case FlightPhaseQML::Pad:
+        cmd.command = Command_BackToPad;
+        break;
+    case FlightPhaseQML::Expecting:
+        cmd.command = Command_ExpectFlight;
+        break;
+    case FlightPhaseQML::Flight:
+        cmd.command = Command_ForceFlight;
+        break;
+    case FlightPhaseQML::LandedManual:
+        cmd.command = Command_ForceManual;
+        break;
+    default:
+        qWarning("Not a phase we can go to");
+        return;
+    }
+    sendCommand(&cmd);
+}
+
 void RadioPacketParser::sendCallsign()
 {
     CommandAndData cmd{};
@@ -346,7 +373,27 @@ void RadioPacketParser::takeStillPicture(PhotoTransformQ xform)
                                       xform.bottom,
                                       xform.encodedWidth,
                                       xform.encodedQuality};
+
     sendCommand(&cmd);
+}
+
+void RadioPacketParser::askForBlocks(uint8_t image_id, const std::vector<uint16_t> &block_ids)
+{
+    ImageBlockRequest req;
+    req.image_id = image_id;
+    req.num = std::min(block_ids.size(), (size_t) MAX_BLOCKS_PER_REQUEST);
+    qInfo("Requesting %d blocks for image %d", req.num, image_id);
+
+    for (size_t i = 0; i < req.num; i++) {
+        req.block_ids[i] = block_ids[i];
+    }
+
+    uint8_t buf[256] = {0};
+    G2PLinkHeader header{G2PPacketType_ImageControl, 0};
+    pack_g2p_link_header(&header, buf);
+    size_t size = pack_image_block_request(&req, buf + 1);
+    qInfo("%lu bytes worth of packet after header", size);
+    sendPacket(size + 1, buf);
 }
 
 void RadioPacketParser::sendCommand(CommandAndData *cmd)
@@ -392,6 +439,14 @@ void RadioPacketParser::askForLandedHeartbeat()
     askForTelemetry(TelemetryType_LandedHeartbeat);
 }
 
+void RadioPacketParser::askForMetadata(uint8_t image_id)
+{
+    CommandAndData cmd;
+    cmd.command = Command_ImageMetadata;
+    cmd.metadata_ask_image_id = image_id;
+    sendCommand(&cmd);
+}
+
 void RadioPacketParser::askForTelemetry(TelemetryType typ)
 {
     CommandAndData cmd;
@@ -424,6 +479,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
         emit radioTempUpdated(time, telem->flight_heartbeat_stats.radio_temp);
         break;
     case TelemetryType_LandedHeartbeat:
+        qInfo("New landed heartbeat. Image id %d",
+              (int) telem->landed_heartbeat_stats.next_image_id);
         emit landedHeartbeat(time,
                              telem->landed_heartbeat_stats.state,
                              telem->landed_heartbeat_stats.next_image_id,
@@ -437,6 +494,10 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                                 telem->landed_heartbeat_stats.state.status_bits);
         emit motorTempUpdated(time, telem->landed_heartbeat_stats.motor_temp);
         emit radioTempUpdated(time, telem->landed_heartbeat_stats.radio_temp);
+        if (telem->landed_heartbeat_stats.next_image_id > last_image_id) {
+            last_image_id = telem->landed_heartbeat_stats.next_image_id;
+            emit numImagesIncreased(time, last_image_id);
+        }
     case TelemetryType_Actuators:
         emit armAnglesUpdated(time,
                               telem->actuators.arms.shoulder_yaw,
@@ -467,7 +528,7 @@ void RadioPacketParser::emitCommandResponse(QDateTime time, const CommandRespons
     case Command_ForceManual:
     case Command_ForceFlight:
     case Command_ExpectFlight:
-    case Command_UnexpectFlight:
+    case Command_BackToPad:
     case Command_StartVideo:
     case Command_StopVideo:
     case Command_TakePicture:
@@ -475,16 +536,12 @@ void RadioPacketParser::emitCommandResponse(QDateTime time, const CommandRespons
     case Command_SendArmTargetAndComeBack:
     case Command_SendArmTargetForPhotoAndComeBack:
     case Command_SendIdlePosition:
-    case Command_WriteArmSequence:
-    case Command_ReadArmSequence:
-    case Command_ExecuteArmSequence:
-    case Command_CancelExecutingArmSequence:
     case Command_ZeroShoulder_AssumeOpen:
     case Command_RunOpenSequence:
     case Command_ShellExec:
-    case Command_ClearFlightDANGER:
-    case Command_GetFlightNumber:
+    case Command_NewFlightDanger:
     case Command_Callsign:
+    case Command_SendArmTarget:
     case Command_MaxCommand:
         qDebug("COMMAND RESPONSERECEIVED WITH NO EMIT HANDLER");
         break;
@@ -493,6 +550,14 @@ void RadioPacketParser::emitCommandResponse(QDateTime time, const CommandRespons
     case Command_ShellReadStdout:
         break;
     case Command_ShellReadStderr:
+        break;
+    case Command_ImageMetadata:
+        qDebug("Radio packet parser got metadata for id %d", resp->image_metadata.image_id);
+        if (resp->image_metadata.image_id > last_image_id) {
+            emit numImagesIncreased(time, resp->image_metadata.image_id);
+            last_image_id = resp->image_metadata.image_id;
+        }
+        emit ImageMetadataReceived(time, resp->image_metadata);
         break;
     case Command_TelemetryRequest:
         emitTelemetry(time, &resp->telemetry);

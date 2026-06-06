@@ -86,12 +86,18 @@ public:
     Q_INVOKABLE QDateTime latestTxDateTime();
     Q_INVOKABLE QDateTime latestRxDateTime();
 
+    Q_INVOKABLE void askForMetadata(uint8_t image_id);
+    Q_INVOKABLE void askForBlocks(uint8_t image_id, const std::vector<uint16_t> &block_ids);
     Q_INVOKABLE void askForFlightHeartbeat();
     Q_INVOKABLE void askForLandedHeartbeat();
     Q_INVOKABLE void askForTelemetryInt(uint8_t typ);
     Q_INVOKABLE void askForTelemetry(TelemetryType typ);
 
     Q_INVOKABLE void sendCallsign();
+
+    Q_INVOKABLE void sendArmTarget();
+    Q_INVOKABLE void sendToPhase(FlightPhaseQML phase);
+
     Q_INVOKABLE void takeStillPicture(PhotoTransformQ transform);
     Q_INVOKABLE void setLocalLoraParams(uint32_t freq_hz,
                                         LoraSettings::SpreadingFactor sf,
@@ -141,7 +147,9 @@ signals:
     void servoAnglesUpdated(
         QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
 
+    void numImagesIncreased(QDateTime time, uint8_t next_image);
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);
+    void ImageMetadataReceived(QDateTime time, const ImageMetadata &meta);
 
     void loraSettingsChanged();
 
@@ -168,6 +176,7 @@ public slots:
 
 private:
     void emitCommandResponse(QDateTime time, const CommandResponse *resp);
+    void emitImageMetadata(QDateTime time, const Telemetry *telem);
     void emitTelemetry(QDateTime time, const Telemetry *telem);
     void sendCommand(CommandAndData *cmd);
     void sendPacket(size_t len, uint8_t *buf);
@@ -201,6 +210,7 @@ private:
     QDateTime lastTxDateTime;
     QDateTime lastRxDateTime;
 
+    uint8_t last_image_id = 0;
 };
 
 #endif // RADIOPACKETPARSER_H

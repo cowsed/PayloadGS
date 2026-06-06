@@ -29,7 +29,7 @@ ImageMetadataHolder::ImageMetadataHolder(const ImageMetadata &meta)
     , encodedHeight(((meta.transform.right - meta.transform.left) == 0)
                         ? 0
                         : meta.transform.output_width
-                              * ((float) (meta.transform.top - meta.transform.bottom))
+                              * ((float) (meta.transform.bottom - meta.transform.top))
                               / ((float) (meta.transform.right - meta.transform.left)))
     , encodedQuality(meta.transform.quality)
     , latitude(meta.latitude)

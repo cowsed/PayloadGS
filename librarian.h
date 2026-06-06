@@ -4,6 +4,7 @@
 #include "cubesat_comms/common.h"
 #include "cubesat_comms/packets_p2g.h"
 #include "imagedataholder.h"
+#include "radiopacketparser.h"
 
 #include <optional>
 #include <qlist.h>
@@ -28,7 +29,7 @@ public:
         ShellStderr,
 
         ImageBlockData,
-        ImageMetadata,
+        SingleImageMetadata,
 
         ShellExecInfo,
         TelemetryRequest,
@@ -72,7 +73,7 @@ public:
     /**
      * @brief SubmitRequestToRadio grabs the highest priority request from its queue and sends it to the radio
      */
-    void SubmitRequestToRadio();
+    Q_INVOKABLE void SubmitRequestToRadio(RadioPacketParser *radio);
 
     /**
      * @brief AddRequests to the list of pondered requests that the librarian will choose from
@@ -91,6 +92,7 @@ public:
 
     size_t NumRequests();
     std::optional<Librarian::Request> Pop();
+    std::vector<uint16_t> gatherImageBlocksToRequest(uint8_t image_id, uint16_t first_block);
 
     // removes requests for this image from what we're looking for
     Q_INVOKABLE void StopImageDownload(uint8_t image_id);
@@ -105,10 +107,13 @@ public:
 
     Q_INVOKABLE QList<Request> getHead(size_t num);
     Q_INVOKABLE QVariantList GetSummary();
+
     // search around directories for what we have and don't have (run at startup)
-    void GatherRequestsFromDisk(ImageDataHolder *image);
+    void GatherRequestsFromDisk();
 
 public slots:
+    void NumImagesIncreased(QDateTime time, uint8_t next_image);
+    void ImageMetadataReceived(QDateTime time, const ImageMetadata &metadata);
     void ImageDataReceived(QDateTime time, const ImageData &data);
 
     void ShellStdoutReceived(const ShellReadOutputData &data);
@@ -120,6 +125,7 @@ signals:
 
 protected:
     std::set<Request> queue;
+    ImageDataHolder *holder;
 };
 
 #endif // LIBRARIAN_H

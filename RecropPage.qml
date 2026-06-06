@@ -16,7 +16,7 @@ Item {
         root.newCrop.top = top.value;
         root.newCrop.bottom = bottom.value;
         root.newCrop.encodedWidth = encodedWidth.value;
-        root.newCrop.encodedQuality = encodedWidth.value;
+        root.newCrop.encodedQuality = encodedQuality.value;
 
         const w = (root.newCrop.right - root.newCrop.left);
         const h = (root.newCrop.bottom - root.newCrop.top);
@@ -176,6 +176,10 @@ Item {
                         console.log("Invalid settings", errors);
                     }
                 }
+            }
+            Button {
+                text: "Ask Metadata"
+                onClicked: RadioPacketParser.askForMetadata(imageSelector.value)
             }
         }
     }

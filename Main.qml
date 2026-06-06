@@ -292,7 +292,6 @@ ApplicationWindow {
             }
 
             ImageControl {
-                flightNumber: mainwindow.flightNumber
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

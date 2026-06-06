@@ -1,14 +1,19 @@
 #include "librarian.h"
+#include <QQmlApplicationEngine>
 #include "cubesat_comms/packets_p2g.h"
 
-Librarian::Librarian() {}
+Librarian::Librarian()
+{
+    QQmlApplicationEngine engine;
+    holder = engine.singletonInstance<ImageDataHolder *>("PayloadGS", "ImageDataHolder");
+}
 
-void Librarian::GatherRequestsFromDisk(ImageDataHolder *image)
+void Librarian::GatherRequestsFromDisk()
 {
     // Images
-    qDebug("Lib: Gathering info for %hhu images", image->numImages());
-    for (uint8_t i = 0; i < image->numImages(); i++) {
-        StartImageDownload(i, image);
+    qDebug("Lib: Gathering info for %hhu images", holder->numImages());
+    for (uint8_t i = 0; i < holder->numImages(); i++) {
+        StartImageDownload(i, holder);
     }
 }
 
@@ -54,7 +59,7 @@ bool Librarian::Request::operator==(const Request &other) const
         return this->stderr == other.stderr;
     case RequestType::ImageBlockData:
         return image_data == other.image_data;
-    case RequestType::ImageMetadata:
+    case RequestType::SingleImageMetadata:
         return image_metadata_id == other.image_metadata_id;
     case RequestType::ShellExecInfo:
         return shell_exec_info_id == other.shell_exec_info_id;
@@ -76,7 +81,7 @@ bool Librarian::Request::operator<(const Request &other) const
         return this->stderr < other.stderr;
     case RequestType::ImageBlockData:
         return image_data < other.image_data;
-    case RequestType::ImageMetadata:
+    case RequestType::SingleImageMetadata:
         return image_metadata_id < other.image_metadata_id;
     case RequestType::ShellExecInfo:
         return shell_exec_info_id < other.shell_exec_info_id;
@@ -87,7 +92,11 @@ bool Librarian::Request::operator<(const Request &other) const
     }
 }
 
-void Librarian::ImageMetadataReceived(const struct ImageMetadata &metadata) {}
+void Librarian::NumImagesIncreased(QDateTime time, uint8_t next_image)
+{
+    // StartImageDownload(next_image);
+}
+void Librarian::ImageMetadataReceived(QDateTime time, const struct ImageMetadata &metadata) {}
 
 void Librarian::AddRequest(Request r)
 {
@@ -110,6 +119,53 @@ void Librarian::DumpInfo() const
         default:
             qDebug("Lib: Unknown request");
         };
+    }
+}
+
+std::vector<uint16_t> Librarian::gatherImageBlocksToRequest(uint8_t image_id, uint16_t first_block)
+{
+    std::vector<uint16_t> blocks{};
+    blocks.reserve(MAX_BLOCKS_PER_REQUEST);
+    blocks.push_back(first_block);
+
+    for (auto req : queue) { // traverse in order
+        if (req.type != RequestType::ImageBlockData) {
+            // not an image anymore
+            break;
+        }
+        if (req.image_data.image_id != image_id) {
+            // not this one anymore
+            break;
+        }
+        if (blocks.size() >= MAX_BLOCKS_PER_REQUEST) {
+            // full up
+            break;
+        }
+        blocks.push_back(req.image_data.block_index);
+    }
+    return blocks;
+}
+
+void Librarian::SubmitRequestToRadio(RadioPacketParser *radio)
+{
+    std::optional<Librarian::Request> maybe_req = Pop();
+    if (!maybe_req) {
+        qDebug("Nothing for librarian to do right now");
+        return;
+    }
+    switch (maybe_req->type) {
+    case RequestType::SingleImageMetadata:
+        qDebug("Asking for metadata for image %d", (int) maybe_req->image_metadata_id);
+        radio->askForMetadata(maybe_req->image_metadata_id);
+        break;
+    case RequestType::ImageBlockData: {
+        std::vector<uint16_t> ids = gatherImageBlocksToRequest(maybe_req->image_data.image_id,
+                                                               maybe_req->image_data.block_index);
+        radio->askForBlocks(maybe_req->image_data.image_id, ids);
+    } break;
+    default:
+        qWarning("Have pity, the librarian is not smart and can't handle type %d",
+                 (int) maybe_req->type);
     }
 }
 
@@ -150,7 +206,7 @@ void Librarian::StartImageDownload(uint8_t image_id, ImageDataHolder *image)
     if (!meta.isValid()) {
         // request metadata
         AddRequest({
-            .type = RequestType::ImageMetadata,
+            .type = RequestType::SingleImageMetadata,
             .image_metadata_id = image_id,
         });
         qDebug("Lib: Asking for metadata for id %d", image_id);
@@ -180,7 +236,7 @@ bool Librarian::activelyAskingForImage(uint8_t image_id) const
         if (r.type == RequestType::ImageBlockData) {
             return r.image_data.image_id == image_id;
         }
-        if (r.type == RequestType::ImageMetadata) {
+        if (r.type == RequestType::SingleImageMetadata) {
             return r.image_metadata_id == image_id;
         }
         return false;
@@ -237,7 +293,7 @@ QString Librarian::Request::summarize() const
         return QString("shell stderr %1").arg(stderr.exec_id);
     case ImageBlockData:
         return QString("image data %1").arg(image_data.image_id);
-    case ImageMetadata:
+    case SingleImageMetadata:
         return QString("image meta %1").arg(image_metadata_id);
     case ShellExecInfo:
         return QString("shell return %1").arg(shell_exec_info_id);
