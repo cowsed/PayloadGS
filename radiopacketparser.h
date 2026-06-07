@@ -66,16 +66,18 @@ class RadioPacketParser : public QObject
     QML_SINGLETON
     QML_UNCREATABLE("tied to C++ data source")
 public:
-    static constexpr size_t MAX_IN_MEM_RADIO_SIGNAL_ENTRIES = 40;
+    static constexpr size_t MAX_IN_MEM_RADIO_SIGNAL_ENTRIES = 100;
 
     enum FlightPhaseQML {
-        Starting,
-        Pad,
-        Expecting,
-        Flight,
-        LandedFlipping,
-        LandedAutomatic,
-        LandedManual,
+        Starting = FlightPhase_Starting,
+        Pad = FlightPhase_Pad,
+        Expecting = FlightPhase_ExpectingLaunch,
+        Flight = FlightPhase_Flight,
+        LandedFlipping = FlightPhase_LandedFlipping,
+        LandedUnfolding = FlightPhase_Unfolding,
+        LandedAutomaticCamera = FlightPhase_AutoCamera,
+        LandedManual = FlightPhase_ManualControl,
+        Emergency = FlightPhase_Emergency,
     };
     Q_ENUM(FlightPhaseQML);
 
@@ -92,6 +94,12 @@ public:
     Q_INVOKABLE void askForLandedHeartbeat();
     Q_INVOKABLE void askForTelemetryInt(uint8_t typ);
     Q_INVOKABLE void askForTelemetry(TelemetryType typ);
+
+    Q_INVOKABLE void askToGoToPosition(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch);
+    Q_INVOKABLE void askToGoToPositionAndComeBack(int8_t syaw,
+                                                  int8_t spitch,
+                                                  int8_t epitch,
+                                                  int8_t wpitch);
 
     Q_INVOKABLE void sendCallsign();
 

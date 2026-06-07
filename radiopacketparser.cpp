@@ -455,6 +455,33 @@ void RadioPacketParser::askForTelemetry(TelemetryType typ)
     sendCommand(&cmd);
 }
 
+void RadioPacketParser::askToGoToPosition(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch)
+{
+    qDebug("Asking to go to arm target");
+    CommandAndData cmd;
+    cmd.command = Command_SendArmTarget;
+    cmd.send_arm_to_target.shoulder_yaw = syaw;
+    cmd.send_arm_to_target.shoulder_pitch = spitch;
+    cmd.send_arm_to_target.elbow_pitch = epitch;
+    cmd.send_arm_to_target.wrist_pitch = wpitch;
+    sendCommand(&cmd);
+}
+
+void RadioPacketParser::askToGoToPositionAndComeBack(int8_t syaw,
+                                                     int8_t spitch,
+                                                     int8_t epitch,
+                                                     int8_t wpitch)
+{
+    qDebug("Asking to go to arm target and come back");
+    CommandAndData cmd;
+    cmd.command = Command_SendArmTargetAndComeBack;
+    cmd.send_arm_to_target.shoulder_yaw = syaw;
+    cmd.send_arm_to_target.shoulder_pitch = spitch;
+    cmd.send_arm_to_target.elbow_pitch = epitch;
+    cmd.send_arm_to_target.wrist_pitch = wpitch;
+    sendCommand(&cmd);
+}
+
 void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
     switch (telem->telem_type) {
@@ -498,6 +525,12 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
             last_image_id = telem->landed_heartbeat_stats.next_image_id;
             emit numImagesIncreased(time, last_image_id);
         }
+        emit armAnglesUpdated(time,
+                              telem->landed_heartbeat_stats.arm_position.shoulder_yaw,
+                              telem->landed_heartbeat_stats.arm_position.shoulder_pitch,
+                              telem->landed_heartbeat_stats.arm_position.elbow_pitch,
+                              telem->landed_heartbeat_stats.arm_position.wrist_pitch);
+
     case TelemetryType_Actuators:
         emit armAnglesUpdated(time,
                               telem->actuators.arms.shoulder_yaw,
@@ -589,13 +622,15 @@ QString RadioPacketParser::phaseToShortString(FlightPhaseQML phase)
     case Flight:
         return "Flight";
     case LandedFlipping:
-        return "LFlip";
-    case LandedAutomatic:
-        return "LAuto";
+        return "Flip";
+    case LandedUnfolding:
+        return "Unfold";
+    case LandedAutomaticCamera:
+        return "AutoCamera";
     case LandedManual:
         return "LManual";
     }
-    return "???";
+    return QString{"?%d?"}.arg((int) phase);
 }
 
 PayloadFlags RadioPacketParser::statusBitsToFlags(uint16_t bits)

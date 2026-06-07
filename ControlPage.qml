@@ -82,6 +82,7 @@ Item {
                 Layout.fillWidth: true
                 text: "Expect Launch"
                 visible: !control.forceBoostMenu
+                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Expecting)
             }
             Button {
                 font.pointSize: 20
@@ -98,6 +99,7 @@ Item {
                 Layout.fillWidth: true
                 text: "Cancel Boost"
                 visible: !control.forceBoostMenu
+                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Pad)
             }
             Button {
                 font.pointSize: 20
@@ -105,6 +107,7 @@ Item {
                 Layout.fillWidth: true
                 text: "Force Manual"
                 visible: !control.forceBoostMenu
+                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.LandedManual)
             }
             Button {
                 font.pointSize: 20
@@ -121,6 +124,7 @@ Item {
                 text: "Really Force"
                 Material.background: Material.Red
                 visible: control.forceBoostMenu
+                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Flight)
             }
         }
     }

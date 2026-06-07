@@ -12,6 +12,11 @@ ColumnLayout {
     required property string label
 
     property real value: (from + to) / 2
+    function update(newVal) {
+        root.value = newVal;
+        slider.value = newVal;
+        currentBox.value = newVal;
+    }
 
     Label {
         Layout.alignment: Qt.AlignHCenter
@@ -23,16 +28,17 @@ ColumnLayout {
         id: slider
         from: root.from
         to: root.to
-        value: root.value
+        value: (root.to + root.from) / 2
         orientation: Qt.Vertical
-        onValueChanged: root.value = value
+        onValueChanged: root.update(value)
     }
     SpinBox {
+        id: currentBox
         implicitWidth: slider.width
         from: root.from
         to: root.to
-        value: root.value
-        onValueChanged: root.value = value
+        value: (root.to + root.from) / 2
+        onValueChanged: root.update(value)
         editable: true
         Layout.preferredHeight: 40
         up.indicator: Item {
@@ -45,6 +51,7 @@ ColumnLayout {
     }
 
     SpinBox {
+        id: actualBox
         implicitWidth: slider.width
         from: root.from
         to: root.to

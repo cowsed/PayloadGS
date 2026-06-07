@@ -40,6 +40,9 @@ Item {
         anchors.fill: parent
         Image {
             id: activeImage
+            Layout.fillWidth: true
+            Layout.horizontalStretchFactor: 3
+
             cache: false
             Layout.preferredWidth: 512 - 60
             Layout.preferredHeight: 512 - 60
@@ -57,6 +60,7 @@ Item {
         RowLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.horizontalStretchFactor: 1
             // Layout.alignment: Qt.AlignLeft
             ColumnLayout {
                 Layout.horizontalStretchFactor: 1

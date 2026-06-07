@@ -12,14 +12,17 @@ Item {
     property real shoulderPitch: 0
     property real elbowPitch: 0
     property real wristPitch: 0
+    property bool comeBack: true
 
     Connections {
         target: RadioPacketParser
         function onArmAnglesUpdated(time, shoulder_yaw, shoulder_pitch, elbow_pitch, wrist_pitch) {
+            timeSinceAngles.event_time = time;
             page.shoulderYaw = shoulder_yaw;
             page.shoulderPitch = shoulder_pitch;
             page.elbowPitch = elbow_pitch;
             page.wristPitch = wrist_pitch;
+            console.log("ArmAnglesUpdated", time, shoulder_yaw, shoulder_pitch, elbow_pitch, wrist_pitch);
         }
     }
 
@@ -31,6 +34,7 @@ Item {
         s += "Shoulder Pitch: " + shoulderPitchSlider.value.toFixed(1) + "\n";
         s += "Elbow Pitch: " + elbowPitchSlider.value.toFixed(1) + "\n";
         s += "Wrist Pitch: " + wristPitchSlider.value.toFixed(1) + "\n";
+        s += "Come Back: " + page.comeBack + "\n";
         return s;
     }
 
@@ -243,17 +247,27 @@ Item {
             RowLayout {
                 Button {
                     text: "Move"
-                    onClicked: confMovement.visible = true
+                    onClicked: function () {
+                        page.comeBack = false;
+                        confMovement.visible = true;
+                    }
                 }
                 Button {
                     text: "Set Idle"
                     Material.background: Material.Red
                 }
             }
+            Button {
+                text: "Move and Back"
+                onClicked: function () {
+                    page.comeBack = true;
+                    confMovement.visible = true;
+                }
+            }
 
             TimeSinceThing {
+                id: timeSinceAngles
                 desc: "Angles: "
-                event_time: new Date()
             }
             TimeSinceThing {
                 desc: "Accels: "
@@ -269,7 +283,18 @@ Item {
         visible: false
         buttons: Dialog.Yes | Dialog.No
 
-        onAccepted: function () {}
+        onAccepted: function () {
+            if (takePictureButton.checked && page.comeBack) {
+                console.log("go and back with pic");
+                RadioPacketParser.askToGoToPositionAndComeBack(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+            } else if (!takePictureButton.checked && page.comeBack) {
+                console.log("go and back no pic");
+                RadioPacketParser.askToGoToPositionAndComeBack(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+            } else {
+                console.log("just go not back");
+                RadioPacketParser.askToGoToPosition(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+            }
+        }
 
         onRejected: console.log("aborted")
     }
