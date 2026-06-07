@@ -1,6 +1,7 @@
 #include "radiopacketparser.h"
 #include <QFile>
 #include <QtLogging>
+#include "cubesat_comms/lora.h"
 #include "cubesat_comms/packets_g2p.h"
 #include "cubesat_comms/packets_p2g.h"
 #include "imagemetadataholder.h"
@@ -321,13 +322,26 @@ Q_INVOKABLE void RadioPacketParser::setLocalLoraParams(uint32_t freq_hz,
                                    ldr ? RadioClient::LDR_On : RadioClient::LDR_Off);
 }
 
-Q_INVOKABLE void RadioPacketParser::negotiateLoraParams(uint32_t freq_hz,
-                                                        LoraSettings::SpreadingFactor sf,
-                                                        LoraSettings::Bandwidth bw,
-                                                        LoraSettings::CodingRate cr,
-                                                        int8_t remoteDbm)
+// SpreadingFactor sf_to_lsf(LoraSettings::SpreadingFactor sf)
+// {
+//     switch (sf) {};
+// }
+// Bandwidth bw_to_lbw(LoraSettings::Bandwidth bw)
+// {
+//     switch (bw) {};
+// }
+// CodingRate cr_to_lcr(LoraSettings::CodingRate cr)
+// {
+//     switch (cr) {};
+// }
+
+void RadioPacketParser::negotiateLoraParams(uint32_t freq_hz,
+                                            LoraSettings::SpreadingFactor sf,
+                                            LoraSettings::Bandwidth bw,
+                                            LoraSettings::CodingRate cr,
+                                            int8_t remoteDbm)
 {
-    // tODO
+    // LoraLinkChange settings{2, remoteDbm, freq_hz, sf_to_lsf(sf), sf_to_lsf(bw), cr_to_lcr(cr)};
 }
 
 void RadioPacketParser::sendArmTarget() {}
@@ -484,9 +498,10 @@ void RadioPacketParser::askToGoToPositionAndComeBack(int8_t syaw,
 
 void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
+    qDebug("Got Telem %d", telem->telem_type);
     switch (telem->telem_type) {
     case TelemetryType_FlightHeartbeat:
-        printf("Emitting telem: %d\n", (int) (telem->flight_heartbeat_stats.state.phase));
+        printf("Emitting telem: PHASE   %d\n", (int) (telem->flight_heartbeat_stats.state.phase));
         emit flightHeartbeat(time,
                              telem->flight_heartbeat_stats.state,
                              telem->flight_heartbeat_stats.latitude,
@@ -530,6 +545,7 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                               telem->landed_heartbeat_stats.arm_position.shoulder_pitch,
                               telem->landed_heartbeat_stats.arm_position.elbow_pitch,
                               telem->landed_heartbeat_stats.arm_position.wrist_pitch);
+        break;
 
     case TelemetryType_Actuators:
         emit armAnglesUpdated(time,
@@ -550,7 +566,7 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
     case TelemetryType_Power:
 
     default:
-        qDebug("Unhandled emitTelemetry");
+        qDebug("Unhandled emitTelemetry of type", telem->telem_type);
         break;
     }
 }

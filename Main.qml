@@ -48,11 +48,9 @@ ApplicationWindow {
     Connections {
         target: RadioPacketParser
         function onFlightStateUpdated(time, phase, flags) {
-            console.log("state updated", time, phase, RadioPacketParser.phaseToShortString(phase), flags);
             mainwindow.phase = phase;
             mainwindow.pflags = RadioPacketParser.statusBitsToFlags(flags);
             mainwindow.flagsValid = true;
-            console.log("state updated2", RadioPacketParser.phaseToShortString(mainwindow.phase), mainwindow.flags);
         }
     }
 

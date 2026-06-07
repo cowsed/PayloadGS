@@ -159,7 +159,7 @@ Node {
                 source: "meshes/lowrLinkMesh_mesh.mesh"
                 materials: [material_material]
 
-                eulerRotation.z: node.shoulderPitch + 90
+                eulerRotation.z: -node.shoulderPitch + 90
 
                 // OrientationArrow {
                 // id: link1IMU
@@ -174,7 +174,7 @@ Node {
                     position: Qt.vector3d(0.135, 0, -0.0439932)
                     source: "meshes/upperLinkMesh_mesh.mesh"
                     materials: [material_003_material]
-                    eulerRotation.z: node.elbowPitch + 180
+                    eulerRotation.z: -node.elbowPitch * 3/2+ 180
 
                     Model {
                         id: wrist
@@ -184,7 +184,7 @@ Node {
                         scale: Qt.vector3d(1, 1, 1)
                         source: "meshes/wristMesh_mesh.mesh"
                         materials: [material_004_material]
-                        eulerRotation.z: node.wristPitch
+                        eulerRotation.z: -node.wristPitch
                     }
                 }
             }
@@ -203,7 +203,7 @@ Node {
                 position: Qt.vector3d(0, 0, 0.000311086)
                 source: "meshes/lowrLinkMesh_mesh.mesh"
                 materials: [ghostMat]
-                eulerRotation.z: node.ghostShoulderPitch + 90
+                eulerRotation.z: -node.ghostShoulderPitch + 90
 
                 Model {
                     id: upper_linkGhost
@@ -211,7 +211,7 @@ Node {
                     position: Qt.vector3d(0.135, 0, -0.0439932)
                     source: "meshes/upperLinkMesh_mesh.mesh"
                     materials: [ghostMat]
-                    eulerRotation.z: node.ghostElbowPitch + 180
+                    eulerRotation.z: -node.ghostElbowPitch*3/2 + 180
 
                     Model {
                         id: wristGhost
@@ -221,7 +221,7 @@ Node {
                         scale: Qt.vector3d(1, 1, 1)
                         source: "meshes/wristMesh_mesh.mesh"
                         materials: [ghostMat]
-                        eulerRotation.z: node.ghostWristPitch
+                        eulerRotation.z: -node.ghostWristPitch
                     }
                 }
             }

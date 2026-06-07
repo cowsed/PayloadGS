@@ -111,6 +111,7 @@ public:
                                         LoraSettings::SpreadingFactor sf,
                                         LoraSettings::Bandwidth bw,
                                         LoraSettings::CodingRate cr);
+
     Q_INVOKABLE void negotiateLoraParams(uint32_t freq_hz,
                                          LoraSettings::SpreadingFactor sf,
                                          LoraSettings::Bandwidth bw,
@@ -150,10 +151,8 @@ signals:
     void storageUpdated(QDateTime time, uint64_t avail_bytes, uint64_t free_bytes);
     void batteryUpdated(QDateTime time, double volts, double amps);
 
-    void armAnglesUpdated(
-        QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
-    void servoAnglesUpdated(
-        QDateTime time, uint8_t yaw, uint8_t shoulder, uint8_t elbow, uint8_t wrist);
+    void armAnglesUpdated(QDateTime time, int8_t yaw, int8_t shoulder, int8_t elbow, int8_t wrist);
+    void servoAnglesUpdated(QDateTime time, uint8_t s0, uint8_t s1, uint8_t s2, uint8_t s3);
 
     void numImagesIncreased(QDateTime time, uint8_t next_image);
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);

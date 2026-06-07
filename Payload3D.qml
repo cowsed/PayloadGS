@@ -34,25 +34,24 @@ View3D {
         running: false // set to true for fun
         repeat: true
         onTriggered: {
-            let t = new Date().getTime() / 400
-            v3d.baseOrientation = Qt.vector3d(Math.sin(t), -1,
-                                              Math.sin(3 * t / 2)).normalized()
+            let t = new Date().getTime() / 400;
+            v3d.baseOrientation = Qt.vector3d(Math.sin(t), -1, Math.sin(3 * t / 2)).normalized();
         }
     }
 
     function quatFromImuAndReference() {
         // https://github.com/toji/gl-matrix/blob/f0583ef53e94bc7e78b78c8a24f09ed5e2f7a20c/src/gl-matrix/quat.js#L54
         // https://stackoverflow.com/questions/18558910/direction-vector-to-rotation-matrix
-        let ref = v3d.referenceBaseOrientation.normalized()
-        let me = v3d.baseOrientation.normalized()
-        let a = ref.crossProduct(me)
-        let d = ref.dotProduct(me)
+        let ref = v3d.referenceBaseOrientation.normalized();
+        let me = v3d.baseOrientation.normalized();
+        let a = ref.crossProduct(me);
+        let d = ref.dotProduct(me);
 
-        let s = ref.length() * me.length() + d
+        let s = ref.length() * me.length() + d;
 
-        let q = Qt.quaternion(s, a.x, a.y, a.z).normalized()
+        let q = Qt.quaternion(s, a.x, a.y, a.z).normalized();
 
-        return q
+        return q;
     }
     property quaternion payloadOrientation: quatFromImuAndReference()
     property real minY: payload.calcBounds(payloadOrientation)

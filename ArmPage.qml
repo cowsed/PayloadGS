@@ -238,8 +238,8 @@ Item {
                 }
                 AngleSliderWithBox {
                     id: wristPitchSlider
-                    from: -90
-                    to: 90
+                    from: -127
+                    to: 127
                     label: "W"
                     actual: page.wristPitch
                 }
@@ -257,13 +257,13 @@ Item {
                     Material.background: Material.Red
                 }
             }
-            Button {
-                text: "Move and Back"
-                onClicked: function () {
-                    page.comeBack = true;
-                    confMovement.visible = true;
-                }
-            }
+            // Button {
+            //     text: "Move and Back"
+            //     onClicked: function () {
+            //         page.comeBack = true;
+            //         confMovement.visible = true;
+            //     }
+            // }
 
             TimeSinceThing {
                 id: timeSinceAngles
@@ -286,13 +286,13 @@ Item {
         onAccepted: function () {
             if (takePictureButton.checked && page.comeBack) {
                 console.log("go and back with pic");
-                RadioPacketParser.askToGoToPositionAndComeBack(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+                RadioPacketParser.askToGoToPositionAndComeBack(shoulderYawSlider.value, shoulderPitchSlider.value, elbowPitchSlider.value, wristPitchSlider.value);
             } else if (!takePictureButton.checked && page.comeBack) {
                 console.log("go and back no pic");
-                RadioPacketParser.askToGoToPositionAndComeBack(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+                RadioPacketParser.askToGoToPositionAndComeBack(shoulderYawSlider.value, shoulderPitchSlider.value, elbowPitchSlider.value, wristPitchSlider.value);
             } else {
                 console.log("just go not back");
-                RadioPacketParser.askToGoToPosition(page.shoulderYaw, page.shoulderPitch, page.elbowPitch, page.wristPitch);
+                RadioPacketParser.askToGoToPosition(shoulderYawSlider.value, shoulderPitchSlider.value, elbowPitchSlider.value, wristPitchSlider.value);
             }
         }
 
