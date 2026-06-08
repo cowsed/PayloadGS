@@ -1,5 +1,6 @@
 #include "radiopacketparser.h"
 #include <QFile>
+#include <QTimer>
 #include <QtLogging>
 #include "cubesat_comms/lora.h"
 #include "cubesat_comms/packets_g2p.h"
@@ -49,6 +50,8 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
     , radio_rssi(MAX_IN_MEM_RADIO_SIGNAL_ENTRIES)
 {
     payload_client = new RadioClient();
+    linkTestExpiredTimer = new QTimer(this);
+    linkTestExpiredTimer->callOnTimeout([this]() { this->linkTestFailed(); });
 
     QObject::connect(payload_client,
                      &RadioClient::packetReceived,
@@ -57,7 +60,7 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
                      Qt::QueuedConnection);
 
     QObject::connect(payload_client, &RadioClient::connected, this, [&]() {
-        printf("Connected\n");
+        setStatusLine("radio conn");
 
         const LoraSettings &defaults = defaultLoraSettings();
         bool ldro = compute_ldro(defaults.spreadingFactor(), defaults.bandwidth());
@@ -66,6 +69,10 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
                                              bw_to_rbw(defaults.bandwidth()),
                                              cr_to_rcr(defaults.codingRate()),
                                              (ldro ? RadioClient::LDR_On : RadioClient::LDR_Off));
+    });
+
+    QObject::connect(payload_client, &RadioClient::disconnected, this, [&]() {
+        setStatusLine("radio disconn");
     });
 
     QObject::connect(payload_client,
@@ -80,6 +87,11 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
                      &RadioPacketParser::finishedTransmitting,
                      Qt::QueuedConnection);
 
+    payload_client->connect("/tmp/radio_serverD");
+}
+
+void RadioPacketParser::redialServer()
+{
     payload_client->connect("/tmp/radio_serverD");
 }
 
@@ -115,6 +127,15 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
     ImageData data = {0};
 
     switch (header.packet_type) {
+    case P2GPacketType::P2GPacketType_LinkControl:
+        setStatusLine("hrd chg");
+        QTimer::singleShot(500, this, [this]() { this->testLink(); });
+        break;
+    case P2GPacketType::P2GPacketType_LinkTestResponse:
+        setStatusLine("tst ack");
+        linkTestExpiredTimer->stop();
+        break;
+
     case P2GPacketType::P2GPacketType_CommandResponse:
         res = unpack_command_response(rest, rest_len, &cmd_resp);
         if (res != UnpackResult_AllGood) {
@@ -136,6 +157,9 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
         qDebug("Other type of p2g packet");
         break;
     }
+
+    numLeftBeforeResponse = header.expected_packets_before_response;
+    emit numLeftBeforeResponseChanged();
     lastRxDateTime = QDateTime::currentDateTime();
     emit latestRxDateTimeChanged();
 
@@ -144,6 +168,11 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
     emit radioSNRChanged();
     emit radioRSSIChanged();
     emit packetReceivedFromRadio(time, snr, rssi, packet);
+}
+
+int RadioPacketParser::getNumLeftBeforeResponse()
+{
+    return numLeftBeforeResponse;
 }
 
 FrontBackDataHolder *RadioPacketParser::getRadioSNR()
@@ -294,10 +323,11 @@ void RadioPacketParser::startedReceiving(QDateTime time,
                                          RadioClient::CR cr,
                                          RadioClient::LDR ldr)
 {
-    currentStableRadioSettings.setFrequency(freq_hz);
-    currentStableRadioSettings.setSpreadingFactor(rsf_to_sf(sf));
-    currentStableRadioSettings.setBandwidth(rbw_to_bw(bw));
-    currentStableRadioSettings.setCodingRate(rcr_to_cr(cr));
+    currentRadioSettings.setFrequency(freq_hz);
+    currentRadioSettings.setSpreadingFactor(rsf_to_sf(sf));
+    currentRadioSettings.setBandwidth(rbw_to_bw(bw));
+    currentRadioSettings.setCodingRate(rcr_to_cr(cr));
+
     qDebug("radio confirmed new Lora settings %d %s %s %s %s",
            freq_hz,
            RadioClient::SF_Str(sf),
@@ -308,10 +338,10 @@ void RadioPacketParser::startedReceiving(QDateTime time,
     emit loraSettingsChanged();
 }
 
-Q_INVOKABLE void RadioPacketParser::setLocalLoraParams(uint32_t freq_hz,
-                                                       LoraSettings::SpreadingFactor sf,
-                                                       LoraSettings::Bandwidth bw,
-                                                       LoraSettings::CodingRate cr)
+void RadioPacketParser::setLocalLoraParams(uint32_t freq_hz,
+                                           LoraSettings::SpreadingFactor sf,
+                                           LoraSettings::Bandwidth bw,
+                                           LoraSettings::CodingRate cr)
 {
     bool ldr = compute_ldro(sf, bw);
 
@@ -322,26 +352,131 @@ Q_INVOKABLE void RadioPacketParser::setLocalLoraParams(uint32_t freq_hz,
                                    ldr ? RadioClient::LDR_On : RadioClient::LDR_Off);
 }
 
-// SpreadingFactor sf_to_lsf(LoraSettings::SpreadingFactor sf)
-// {
-//     switch (sf) {};
-// }
-// Bandwidth bw_to_lbw(LoraSettings::Bandwidth bw)
-// {
-//     switch (bw) {};
-// }
-// CodingRate cr_to_lcr(LoraSettings::CodingRate cr)
-// {
-//     switch (cr) {};
-// }
+SpreadingFactor sf_to_lsf(LoraSettings::SpreadingFactor sf)
+{
+    switch (sf) {
+    case LoraSettings::SpreadingFactor::SF7:
+        return SpreadingFactor::SF_7;
+    case LoraSettings::SpreadingFactor::SF8:
+        return SpreadingFactor::SF_8;
+    case LoraSettings::SpreadingFactor::SF9:
+        return SpreadingFactor::SF_9;
+    case LoraSettings::SpreadingFactor::SF10:
+        return SpreadingFactor::SF_10;
+    case LoraSettings::SpreadingFactor::SF11:
+        return SpreadingFactor::SF_11;
+    case LoraSettings::SpreadingFactor::SF12:
+        return SpreadingFactor::SF_12;
+    default:
+        qWarning("Unsupported spreadingfactor for link change:: %d", (int) sf);
+        return SpreadingFactor::SF_7;
+    };
+}
+Bandwidth bw_to_lbw(LoraSettings::Bandwidth bw)
+{
+    switch (bw) {
+    case LoraSettings::Bandwidth::BW500:
+        return Bandwidth::BW_500;
+    case LoraSettings::Bandwidth::BW250:
+        return Bandwidth::BW_250;
+    case LoraSettings::Bandwidth::BW125:
+        return Bandwidth::BW_125;
+    case LoraSettings::Bandwidth::BW62:
+        return Bandwidth::BW_62_5;
+    default:
+        qWarning("unsupoorted bw for link change: %d", (int) bw);
+        return Bandwidth::BW_125;
+    };
+}
 
+CodingRate cr_to_lcr(LoraSettings::CodingRate cr)
+{
+    switch (cr) {
+    case LoraSettings::CodingRate::CR4_5:
+        return CodingRate::CR_4_5;
+    case LoraSettings::CodingRate::CR4_6:
+        return CodingRate::CR_4_6;
+    case LoraSettings::CodingRate::CR4_7:
+        return CodingRate::CR_4_7;
+    case LoraSettings::CodingRate::CR4_8:
+        return CodingRate::CR_4_8;
+    };
+    qWarning("unsupoorted cr for link change: %d", (int) cr);
+
+    return CodingRate::CR_4_5;
+}
+
+void RadioPacketParser::setTxPower(uint8_t new_power)
+{
+    current_power = new_power;
+}
 void RadioPacketParser::negotiateLoraParams(uint32_t freq_hz,
                                             LoraSettings::SpreadingFactor sf,
                                             LoraSettings::Bandwidth bw,
                                             LoraSettings::CodingRate cr,
                                             int8_t remoteDbm)
 {
-    // LoraLinkChange settings{2, remoteDbm, freq_hz, sf_to_lsf(sf), sf_to_lsf(bw), cr_to_lcr(cr)};
+    oldStableSettings.FromOther(currentRadioSettings);
+
+    negotiatingTo.setFrequency(freq_hz);
+    negotiatingTo.setSpreadingFactor(sf);
+    negotiatingTo.setBandwidth(bw);
+    negotiatingTo.setCodingRate(cr);
+
+    qDebug("%s",
+           qPrintable(QString{"Negotiating to %1 %2 %3 %4 %5"}
+                          .arg(freq_hz)
+                          .arg(LoraSettings::spreadingFactorString(sf))
+                          .arg(LoraSettings::bandwidthString(bw))
+                          .arg(LoraSettings::codingRateString(cr))
+                          .arg(remoteDbm)));
+
+    LoraLinkChange settings{1, remoteDbm, freq_hz, sf_to_lsf(sf), bw_to_lbw(bw), cr_to_lcr(cr)};
+    std::vector<uint8_t> packet;
+    packet.resize(1 + SIZEOF_PACKED_LORA_LINK_CHANGE);
+    G2PLinkHeader header{G2PPacketType_LinkControl, 0};
+    pack_g2p_link_header(&header, packet.data());
+
+    pack_lora_link_change(&settings, packet.data() + 1);
+
+    sendPacket(packet.size(), packet.data());
+    setStatusLine("lnk chng");
+}
+
+void RadioPacketParser::testLink()
+{
+    std::vector<uint8_t> packet;
+    packet.resize(1 + 26);
+    G2PLinkHeader header{G2PPacketType_LinkTest, 0};
+    pack_g2p_link_header(&header, packet.data());
+    for (size_t i = 0; i < 26; i++) {
+        packet[i + 1] = 'a' + i;
+    }
+    sendPacketOtherParams(packet.size(), packet.data(), negotiatingTo);
+    setStatusLine("lnk test");
+    linkTestExpiredTimer->setSingleShot(true);
+    linkTestExpiredTimer->start(std::chrono::milliseconds(30 * 1000));
+    payload_client->startReceiving(negotiatingTo.frequency(),
+                                   sf_to_rsf(negotiatingTo.spreadingFactor()),
+                                   bw_to_rbw(negotiatingTo.bandwidth()),
+                                   cr_to_rcr(negotiatingTo.codingRate()),
+                                   compute_ldro(negotiatingTo.spreadingFactor(),
+                                                negotiatingTo.bandwidth())
+                                       ? RadioClient::LDR_On
+                                       : RadioClient::LDR_Off);
+}
+
+void RadioPacketParser::linkTestFailed()
+{
+    setStatusLine("chg fail");
+    payload_client->startReceiving(oldStableSettings.frequency(),
+                                   sf_to_rsf(oldStableSettings.spreadingFactor()),
+                                   bw_to_rbw(oldStableSettings.bandwidth()),
+                                   cr_to_rcr(oldStableSettings.codingRate()),
+                                   compute_ldro(oldStableSettings.spreadingFactor(),
+                                                oldStableSettings.bandwidth())
+                                       ? RadioClient::LDR_On
+                                       : RadioClient::LDR_Off);
 }
 
 void RadioPacketParser::sendArmTarget() {}
@@ -422,20 +557,33 @@ void RadioPacketParser::sendCommand(CommandAndData *cmd)
 void RadioPacketParser::sendPacket(size_t len, uint8_t *buf)
 {
     auto arr = QByteArray::fromRawData((const char *) buf, len);
-    bool ldro = compute_ldro(currentStableRadioSettings.spreadingFactor(),
-                             currentStableRadioSettings.bandwidth());
-    payload_client->transmit(currentStableRadioSettings.frequency(),
-                             sf_to_rsf(currentStableRadioSettings.spreadingFactor()),
-                             bw_to_rbw(currentStableRadioSettings.bandwidth()),
-                             cr_to_rcr(currentStableRadioSettings.codingRate()),
+    bool ldro = compute_ldro(currentRadioSettings.spreadingFactor(),
+                             currentRadioSettings.bandwidth());
+    payload_client->transmit(currentRadioSettings.frequency(),
+                             sf_to_rsf(currentRadioSettings.spreadingFactor()),
+                             bw_to_rbw(currentRadioSettings.bandwidth()),
+                             cr_to_rcr(currentRadioSettings.codingRate()),
                              ldro ? RadioClient::LDR_On : RadioClient::LDR_Off,
-                             14,
+                             current_power,
+                             arr);
+}
+
+void RadioPacketParser::sendPacketOtherParams(size_t len, uint8_t *buf, const LoraSettings &settings)
+{
+    auto arr = QByteArray::fromRawData((const char *) buf, len);
+    bool ldro = compute_ldro(settings.spreadingFactor(), settings.bandwidth());
+    payload_client->transmit(settings.frequency(),
+                             sf_to_rsf(settings.spreadingFactor()),
+                             bw_to_rbw(settings.bandwidth()),
+                             cr_to_rcr(settings.codingRate()),
+                             ldro ? RadioClient::LDR_On : RadioClient::LDR_Off,
+                             current_power,
                              arr);
 }
 
 LoraSettings *RadioPacketParser::loraSettings()
 {
-    return &currentStableRadioSettings;
+    return &currentRadioSettings;
 }
 
 void RadioPacketParser::askForTelemetryInt(uint8_t typ)
@@ -502,6 +650,7 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
     switch (telem->telem_type) {
     case TelemetryType_FlightHeartbeat:
         printf("Emitting telem: PHASE   %d\n", (int) (telem->flight_heartbeat_stats.state.phase));
+        setStatusLine("Got FHB");
         emit flightHeartbeat(time,
                              telem->flight_heartbeat_stats.state,
                              telem->flight_heartbeat_stats.latitude,
@@ -519,8 +668,10 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                                               telem->flight_heartbeat_stats.altitude));
         emit batteryUpdated(time, telem->flight_heartbeat_stats.battery_mV / 1000.0, NAN);
         emit radioTempUpdated(time, telem->flight_heartbeat_stats.radio_temp);
+        emit flightElapsedUpdated(time, telem->flight_heartbeat_stats.s_since_boost);
         break;
     case TelemetryType_LandedHeartbeat:
+        setStatusLine("Got LHB");
         qInfo("New landed heartbeat. Image id %d",
               (int) telem->landed_heartbeat_stats.next_image_id);
         emit landedHeartbeat(time,
@@ -548,6 +699,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
         break;
 
     case TelemetryType_Actuators:
+        setStatusLine("Got Actu");
+
         emit armAnglesUpdated(time,
                               telem->actuators.arms.shoulder_yaw,
                               telem->actuators.arms.shoulder_pitch,
@@ -566,7 +719,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
     case TelemetryType_Power:
 
     default:
-        qDebug("Unhandled emitTelemetry of type", telem->telem_type);
+        setStatusLine(QString{"Got Telem %1"}.arg(telem->telem_type));
+        qDebug("Unhandled emitTelemetry of type %d", telem->telem_type);
         break;
     }
 }
@@ -585,8 +739,7 @@ void RadioPacketParser::emitCommandResponse(QDateTime time, const CommandRespons
     case Command_SendArmTargetAndComeBack:
     case Command_SendArmTargetForPhotoAndComeBack:
     case Command_SendIdlePosition:
-    case Command_ZeroShoulder_AssumeOpen:
-    case Command_RunOpenSequence:
+    case Command_SetShoulder:
     case Command_ShellExec:
     case Command_NewFlightDanger:
     case Command_Callsign:
@@ -626,6 +779,20 @@ void RadioPacketParser::b64PacketReceived(QDateTime time, int snr, int rssi, con
     packetReceived(time, snr, rssi, res.decoded);
 }
 
+QString RadioPacketParser::statusLine()
+{
+    return statusLine_;
+}
+
+void RadioPacketParser::setStatusLine(QString line)
+{
+    bool update = line != statusLine_;
+    if (update) {
+        statusLine_ = line;
+        emit statusLineChanged();
+    }
+}
+
 QString RadioPacketParser::phaseToShortString(FlightPhaseQML phase)
 {
     switch (phase) {
@@ -645,6 +812,8 @@ QString RadioPacketParser::phaseToShortString(FlightPhaseQML phase)
         return "AutoCamera";
     case LandedManual:
         return "LManual";
+    case Emergency:
+        return "Emergency";
     }
     return QString{"?%d?"}.arg((int) phase);
 }

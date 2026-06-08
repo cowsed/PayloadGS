@@ -162,8 +162,12 @@ Item {
             }
 
             Button {
-                text: "Enhance"
+                text: "force reload"
+                onClicked: {
+                    ImageDataHolder.rescanCount();
+                }
             }
+
             Button {
                 text: "Still Picture"
                 onClicked: function () {
@@ -176,10 +180,6 @@ Item {
                         console.log("Invalid settings", errors);
                     }
                 }
-            }
-            Button {
-                text: "Ask Metadata"
-                onClicked: RadioPacketParser.askForMetadata(imageSelector.value)
             }
         }
     }

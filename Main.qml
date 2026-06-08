@@ -51,6 +51,13 @@ ApplicationWindow {
             mainwindow.phase = phase;
             mainwindow.pflags = RadioPacketParser.statusBitsToFlags(flags);
             mainwindow.flagsValid = true;
+
+            const phaseStr = RadioPacketParser.phaseToShortString(mainwindow.phase);
+            if (phaseStr == "Flight") {
+                controlPage.stateString = `${phaseStr}: ${s_since_boost}s`;
+            } else {
+                controlPage.stateString = phaseStr;
+            }
         }
     }
 
@@ -101,9 +108,9 @@ ApplicationWindow {
             onClicked: metaview.currentIndex = 1
         }
         TabButton {
-            id: shellTabButton
-            text: "Shell"
-            onClicked: metaview.currentIndex = 1
+            id: status
+            text: "Status"
+            enabled: false
         }
 
         Shortcut {
@@ -172,17 +179,6 @@ ApplicationWindow {
             sequences: ["Alt+Shift+r", "Alt+Shift+6"]
             onActivated: {
                 radioTabButton.click();
-                metaview.currentIndex = 0;
-            }
-        }
-        Shortcut {
-            sequences: ["Alt+s", "Alt+7"]
-            onActivated: shellTabButton.click()
-        }
-        Shortcut {
-            sequences: ["Alt+Shift+s", "Alt+Shift+7"]
-            onActivated: {
-                shellTabButton.click();
                 metaview.currentIndex = 0;
             }
         }
@@ -362,6 +358,11 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}
+            Label {
+                text: RadioPacketParser.statusLine
+                Layout.alignment: Qt.AlignTop
+            }
+            ToolSeparator {}
             TimeSinceThing {
                 desc: "RX: "
                 event_time: RadioPacketParser.latestRxDateTime
@@ -377,7 +378,7 @@ ApplicationWindow {
             }
             ToolSeparator {}
             Label {
-                text: "Rem: 4"
+                text: "Rem: " + RadioPacketParser.numLeftBeforeResponse
                 Layout.alignment: Qt.AlignTop
             }
             ToolSeparator {}

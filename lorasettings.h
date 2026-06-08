@@ -32,6 +32,14 @@ public:
         , m_cr(cr)
     {}
 
+    void FromOther(const LoraSettings &other)
+    {
+        m_frequency = other.m_frequency;
+        m_sf = other.m_sf;
+        m_bw = other.m_bw;
+        m_cr = other.m_cr;
+    }
+
     Q_INVOKABLE QString toString() const
     {
         return QString("LoraSettings(sf: %1, bw: %2, cr: %3, f: %4)")

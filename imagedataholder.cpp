@@ -15,7 +15,6 @@ ImageMetadataHolder ImageDataHolder::metadataForImageId(uint8_t image_id) const
 {
     QString path = QString("%1/Images/%2/meta.json").arg(m_flight_dir, imageName(image_id));
     if (!QFile::exists(path)) {
-        qDebug("no meta file for id %d", image_id);
         return {}; // invalid default construction
     }
 

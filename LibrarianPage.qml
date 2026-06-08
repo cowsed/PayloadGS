@@ -53,11 +53,26 @@ Item {
         }
 
         ColumnLayout {
+            SpinBox{
+                id: blocksPerRequest
+                from: 1
+                to: 60
+                value: 60
+            }
+            Label{
+                text: "Blocks/req"
+            }
 
             Button {
                 text: "Perform Request"
                 // on click, pop off the stack and send it to radio
                 onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser)
+            }
+
+            Button {
+                text: "Reconnect"
+                // on click, pop off the stack and send it to radio
+                onClicked: RadioPacketParser.redialServer()
             }
         }
     }

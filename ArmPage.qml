@@ -174,10 +174,10 @@ Item {
                     text: "⟲"
 
                     onClicked: {
-                        shoulderYawSlider.value = page.shoulderYaw;
-                        shoulderPitchSlider.value = page.shoulderPitch;
-                        elbowPitchSlider.value = page.elbowPitch;
-                        wristPitchSlider.value = page.wristPitch;
+                        shoulderYawSlider.update(page.shoulderYaw);
+                        shoulderPitchSlider.update(page.shoulderPitch);
+                        elbowPitchSlider.update(page.elbowPitch);
+                        wristPitchSlider.update(page.wristPitch);
                     }
                 }
             }
@@ -217,22 +217,22 @@ Item {
             RowLayout {
                 AngleSliderWithBox {
                     id: shoulderYawSlider
-                    from: -110
-                    to: 110
+                    from: -127
+                    to: 127
                     label: "Y"
                     actual: page.shoulderYaw
                 }
                 AngleSliderWithBox {
                     id: shoulderPitchSlider
-                    from: -90
-                    to: 90
+                    from: -127
+                    to: 127
                     label: "S"
                     actual: page.shoulderPitch
                 }
                 AngleSliderWithBox {
                     id: elbowPitchSlider
-                    from: -180
-                    to: 180
+                    from: -127
+                    to: 127
                     label: "E"
                     actual: page.elbowPitch
                 }

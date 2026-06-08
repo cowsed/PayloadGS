@@ -7,11 +7,65 @@ RowLayout {
     id: root
     ColumnLayout {
         id: servoColumn
-        SpinBox {
-            id: servoId
-            from: 1
-            to: 3
-            value: 0
+        Label {
+            text: "Move Servo"
+        }
+
+        RowLayout {
+            SpinBox {
+                id: servoId
+                from: 1
+                to: 3
+                value: 0
+            }
+            Label {
+                text: "Servo ID"
+            }
+        }
+        RowLayout {
+            SpinBox {
+                id: openTo
+                from: 1
+                to: 255
+                value: 0
+            }
+            Label {
+                text: "Open To"
+            }
+        }
+        RowLayout {
+            SpinBox {
+                id: openDuration
+                from: 1
+                to: 2550
+                value: 0
+            }
+            Label {
+                text: "Open Time (ms)"
+            }
+        }
+
+        RowLayout {
+            SpinBox {
+                id: closeTo
+                from: 1
+                to: 255
+                value: 0
+            }
+            Label {
+                text: "Close To"
+            }
+        }
+        RowLayout {
+            SpinBox {
+                id: closeDuration
+                from: 1
+                to: 2550
+                value: 0
+            }
+            Label {
+                text: "Close Time (ms)"
+            }
         }
 
         CheckBox {
@@ -25,6 +79,9 @@ RowLayout {
     }
     ColumnLayout {
         id: zeroArmColumn
+        Label {
+            text: "Zero Arm"
+        }
         SpinBox {
             id: yawZero
             from: -127
@@ -52,9 +109,5 @@ RowLayout {
         Button {
             text: "Zero"
         }
-    }
-
-    Label {
-        text: "Arm sequencer or more stats"
     }
 }

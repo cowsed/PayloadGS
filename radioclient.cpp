@@ -48,7 +48,7 @@ const char *RadioClient::SF_Str(RadioClient::SF sf)
         return "SF12";
     }
     return "SF12";
-};
+}
 const char *RadioClient::BW_Str(RadioClient::BW bw)
 {
     switch (bw) {
@@ -222,7 +222,6 @@ void RadioClient::handleLine(const QString &line)
         auto ldr = parse_ldr(parts[5]);
 
         if (freq && sf && bw && cr && ldr) {
-            printf("Emit ebgan\n");
             emit beganReceiving(QDateTime::currentDateTime(), *freq, *sf, *bw, *cr, *ldr);
         }
     } else if (ltype == "txing") {
@@ -235,7 +234,7 @@ void RadioClient::handleLine(const QString &line)
 
         QByteArray::FromBase64Result res = QByteArray::fromBase64Encoding(parts[4].toUtf8());
         if (res.decodingStatus != QByteArray::Base64DecodingStatus::Ok) {
-            qDebug("Bad b64 decode");
+            qDebug("Bad b64 decode from radio server");
             return;
         }
         emit packetReceived(QDateTime::currentDateTime(), snr, rssi, res.decoded);

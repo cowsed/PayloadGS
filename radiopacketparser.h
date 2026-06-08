@@ -59,6 +59,11 @@ class RadioPacketParser : public QObject
     Q_PROPERTY(QDateTime latestRxDateTime READ latestRxDateTime NOTIFY
                    latestRxDateTimeChanged FINAL)
 
+    Q_PROPERTY(QString statusLine READ statusLine NOTIFY statusLineChanged FINAL)
+
+    Q_PROPERTY(
+        int numLeftBeforeResponse READ getNumLeftBeforeResponse NOTIFY numLeftBeforeResponseChanged)
+
     Q_PROPERTY(FrontBackDataHolder *radioRSSI READ getRadioRSSI NOTIFY radioRSSIChanged)
     Q_PROPERTY(FrontBackDataHolder *radioSNR READ getRadioSNR NOTIFY radioSNRChanged)
 
@@ -87,6 +92,7 @@ public:
     LoraSettings *loraSettings();
     Q_INVOKABLE QDateTime latestTxDateTime();
     Q_INVOKABLE QDateTime latestRxDateTime();
+    Q_INVOKABLE QString statusLine();
 
     Q_INVOKABLE void askForMetadata(uint8_t image_id);
     Q_INVOKABLE void askForBlocks(uint8_t image_id, const std::vector<uint16_t> &block_ids);
@@ -117,8 +123,16 @@ public:
                                          LoraSettings::Bandwidth bw,
                                          LoraSettings::CodingRate cr,
                                          int8_t remoteDbm);
+    Q_INVOKABLE void setTxPower(uint8_t new_power);
 
+    void testLink();
+    void linkTestFailed();
+
+    Q_INVOKABLE void redialServer();
+
+    int getNumLeftBeforeResponse();
     FrontBackDataHolder *getRadioRSSI();
+
     FrontBackDataHolder *getRadioSNR();
     explicit RadioPacketParser(QObject *parent = nullptr);
 
@@ -146,6 +160,7 @@ signals:
     void radioTempUpdated(QDateTime time, double tempC);
     void motorTempUpdated(QDateTime time, double tempC);
     void payloadGPSUpdated(QDateTime time, QGeoCoordinate coord);
+    void flightElapsedUpdated(QDateTime time, int16_t seconds_elapased);
 
     void ramUpdated(QDateTime time, uint32_t avail_bytes, uint32_t free_bytes);
     void storageUpdated(QDateTime time, uint64_t avail_bytes, uint64_t free_bytes);
@@ -165,6 +180,9 @@ signals:
 
     void latestTxDateTimeChanged();
     void latestRxDateTimeChanged();
+    void numLeftBeforeResponseChanged();
+
+    void statusLineChanged();
 
     void packetReceivedFromRadio(QDateTime time, int snr, int rssi, const QByteArray &packet);
 public slots:
@@ -187,6 +205,8 @@ private:
     void emitTelemetry(QDateTime time, const Telemetry *telem);
     void sendCommand(CommandAndData *cmd);
     void sendPacket(size_t len, uint8_t *buf);
+    void sendPacketOtherParams(size_t len, uint8_t *buf, const LoraSettings &settings);
+    void setStatusLine(QString str);
 
     enum NegotiationStage {
         NotNegotiating,
@@ -200,22 +220,29 @@ private:
         int8_t targetDbm;
     };
 
-    std::optional<LoraSettings> negotiatingTo;
+    LoraSettings negotiatingTo;
+    LoraSettings oldStableSettings;
+
     bool waitingForNegAck = false;
 
     RadioClient *payload_client;
-    LoraSettings currentStableRadioSettings;
+    QTimer *linkTestExpiredTimer;
 
     LoraSettings defaultSettings = {43245000,
-                                    LoraSettings::SpreadingFactor::SF9,
+                                    LoraSettings::SpreadingFactor::SF12,
                                     LoraSettings::Bandwidth::BW125,
                                     LoraSettings::CodingRate::CR4_5};
 
+    LoraSettings currentRadioSettings;
+    uint8_t current_power = 14; // 2 to 18
+
+    QString statusLine_ = "not conn";
     FrontBackDataHolder radio_snr;
     FrontBackDataHolder radio_rssi;
 
     QDateTime lastTxDateTime;
     QDateTime lastRxDateTime;
+    int numLeftBeforeResponse = 0;
 
     uint8_t last_image_id = 0;
 };

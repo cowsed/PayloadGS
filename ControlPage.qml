@@ -44,30 +44,19 @@ Item {
                 }
             }
 
-            Rectangle {
-                color: Material.primary
-                Layout.margins: 4
-                radius: 4
-                border.width: 2
-                border.color: Qt.rgba(.95, .95, .95)
+            ColumnLayout {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Label {
-                    text: "Control: "
+                    text: "Status: "
                     padding: 4
                 }
                 Label {
-                    anchors.fill: parent
-                    anchors.centerIn: parent
-                    color: "green"
-
-                    font.bold: true
-                    font.pointSize: 40
-
-                    text: "Manual"
-                    horizontalAlignment: Qt.AlignHCenter
-                    verticalAlignment: Qt.AlignVCenter
+                    text: "GPS Has Fix: ?"
+                }
+                Label {
+                    text: "GPS Has Fix: ?"
                 }
             }
         }

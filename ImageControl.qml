@@ -110,6 +110,9 @@ Item {
                     numBlocksDownloaded.text = "Blocks downloaded: " + numDownloaded;
                     numBlocksRemaining.text = "Blocks Remaining: " + (metadata.numBlocks - numDownloaded);
                     cropvis.oldCrop = metadata.photoTransform();
+                    originalSizeLabel.text = `O Size: ${metadata.right - metadata.left}x${metadata.bottom - metadata.top}`;
+                    encodedSizeLabel.text = `E Size: ${metadata.encodedWidth}x${metadata.encodedHeight}`;
+                    qualityLabel.text = "Quality: " + metadata.encodedQuality;
                 }
 
                 Connections {
@@ -150,43 +153,56 @@ Item {
                 }
 
                 Label {
-
-                    text: `W: `
+                    id: originalSizeLabel
+                    text: `O Size: `
                 }
                 Label {
-                    text: `H: `
+                    id: encodedSizeLabel
+                    text: `E Size: `
                 }
                 Label {
-                    text: `E: `
+                    id: qualityLabel
+                    text: `Quality: `
                 }
 
-                Button {
-                    id: dlButton
-                    visible: !parent.hasAll
-                    checkable: false
+                RowLayout {
+                    Button {
+                        id: dlButton
+                        visible: !controlColumn.hasAll
+                        checkable: false
 
-                    text: Librarian.activelyAskingForImage(page.activeImageID) ? "Downloading" : "Paused"
+                        text: Librarian.activelyAskingForImage(page.activeImageID) ? "Downloading" : "Paused"
 
-                    onPressed: {
-                        if (Librarian.activelyAskingForImage(page.activeImageID)) {
-                            Librarian.StopImageDownload(page.activeImageID);
-                        } else {
-                            Librarian.StartImageDownload(page.activeImageID, ImageDataHolder);
+                        onPressed: {
+                            if (Librarian.activelyAskingForImage(page.activeImageID)) {
+                                Librarian.StopImageDownload(page.activeImageID);
+                            } else {
+                                Librarian.StartImageDownload(page.activeImageID, ImageDataHolder);
+                            }
                         }
                     }
+
+                    Label {
+                        visible: controlColumn.hasAll
+                        text: "Completed"
+                    }
+                    Button {
+                        text: "Ask Info"
+                        onClicked: RadioPacketParser.askForMetadata(page.activeImageIDChanged)
+                    }
                 }
 
-                Label {
-                    visible: parent.hasAll
-                    text: "Completed"
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.maximumHeight: 1
+                    Layout.minimumHeight: 1
+                    color: "#D3D3D3" // Light gray color line
                 }
 
                 Button {
-                    text: "force reload"
-                    onClicked: {
-                        ImageDataHolder.rescanCount();
-                        activeImage.reload();
-                    }
+                    text: "Request"
+                    // on click, pop off the stack and send it to radio
+                    onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser)
                 }
             }
         }
