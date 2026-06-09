@@ -26,7 +26,7 @@ Item {
         target: ImageDataHolder
         function onImageUpdated(image_id) {
             if (image_id == page.activeImageID) {
-                activeImage.reload();
+                activeImage.reload(ImageDataHolder.metadataForImageId(page.activeImageID));
             }
             if (previews.itemAt(image_id)) {
                 previews.itemAt(image_id).reload();
@@ -50,10 +50,11 @@ Item {
 
             source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
 
-            function reload() {
+            function reload(metadata) {
                 const oldSource = activeImage.source;
                 activeImage.source = "";
                 activeImage.source = oldSource;
+                activeImage.mirrorVertically = metadata.j4 < 0;
             }
         }
 

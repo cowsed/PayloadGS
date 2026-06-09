@@ -53,6 +53,10 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
     linkTestExpiredTimer = new QTimer(this);
     linkTestExpiredTimer->callOnTimeout([this]() { this->linkTestFailed(); });
 
+    keepAliveTimer = new QTimer(this);
+    keepAliveTimerr->callOnTimeout([this]() { this->needKeepAlive = true; });
+    keepAliveTimer->start(2 * 60 * 1000);
+
     QObject::connect(payload_client,
                      &RadioClient::packetReceived,
                      this,
@@ -168,6 +172,12 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
     emit radioSNRChanged();
     emit radioRSSIChanged();
     emit packetReceivedFromRadio(time, snr, rssi, packet);
+    if (need_keep_alive && header.packet_type != P2GPacketType::P2GPacketType_LinkControl
+        && header.packet_type != P2GPacketType::P2GPacketType_LinkTest
+        && header.expected_packets_before_response == 0) {
+        askForFlightHeartbeat();
+        need_keep_alive = false;
+    }
 }
 
 int RadioPacketParser::getNumLeftBeforeResponse()

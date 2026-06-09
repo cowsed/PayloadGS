@@ -227,6 +227,8 @@ private:
 
     RadioClient *payload_client;
     QTimer *linkTestExpiredTimer;
+    QTimer *keepAliveTimer;
+    bool need_keep_alive = false;
 
     LoraSettings defaultSettings = {43245000,
                                     LoraSettings::SpreadingFactor::SF12,

@@ -56,10 +56,10 @@ class ImageMetadataHolder
     Q_PROPERTY(float latitude MEMBER latitude)
     Q_PROPERTY(float longitude MEMBER longitude)
 
-    Q_PROPERTY(uint8_t j1 MEMBER j1)
-    Q_PROPERTY(uint8_t j2 MEMBER j2)
-    Q_PROPERTY(uint8_t j3 MEMBER j3)
-    Q_PROPERTY(uint8_t j4 MEMBER j4)
+    Q_PROPERTY(int8_t j1 MEMBER j1)
+    Q_PROPERTY(int8_t j2 MEMBER j2)
+    Q_PROPERTY(int8_t j3 MEMBER j3)
+    Q_PROPERTY(int8_t j4 MEMBER j4)
 
     QML_VALUE_TYPE(imageMetadataHolder)
 
@@ -88,10 +88,10 @@ public:
     float latitude = 0;
     float longitude = 0;
 
-    uint8_t j1 = 0;
-    uint8_t j2 = 0;
-    uint8_t j3 = 0;
-    uint8_t j4 = 0;
+    int8_t j1 = 0;
+    int8_t j2 = 0;
+    int8_t j3 = 0;
+    int8_t j4 = 0;
 };
 
 #endif // IMAGEMETADATAHOLDER_H
