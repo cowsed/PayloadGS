@@ -61,8 +61,8 @@ Item {
             map.tilt: 0
 
             Component.onCompleted: {
-                mapView.map.addMapItemGroup(mapItems)
-                mapView.map.fitViewportToVisibleMapItems()
+                mapView.map.addMapItemGroup(mapItems);
+                mapView.map.fitViewportToVisibleMapItems();
             }
             MapItemGroup {
                 id: mapItems
@@ -72,14 +72,14 @@ Item {
                     path: "qrc:/assets/images/groundstation_icon.png"
                 }
                 MapIcon {
-                    id: payload
-                    coordinates: mapComp.payloadCoordinate
-                    path: "qrc:/assets/images/payload_icon.png"
-                }
-                MapIcon {
                     id: rocket
                     coordinates: mapComp.rocketCoordinate
                     path: "qrc:/assets/images/rocket_icon.png"
+                }
+                MapIcon {
+                    id: payload
+                    coordinates: mapComp.payloadCoordinate
+                    path: "qrc:/assets/images/payload_icon.png"
                 }
             }
         }

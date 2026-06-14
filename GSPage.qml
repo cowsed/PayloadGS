@@ -7,7 +7,9 @@ import QtQuick.Dialogs
 
 RowLayout {
     id: root
+    required property string flightDir
     required property variant fullscreenToggle
+    required property variant setFlightDirAndRestart
 
     RowLayout {
         ColumnLayout {
@@ -60,9 +62,19 @@ RowLayout {
                 onAccepted: Qt.callLater(Qt.quit)
                 onRejected: console.log("aborted")
             }
-            Label {
+
+            TextField {
+                id: dirEntry
                 Layout.maximumWidth: 500
-                text: "Dir: " + flight_dir
+                Layout.fillWidth: true
+
+                Component.onCompleted: {
+                    dirEntry.text = root.flightDir;
+                }
+            }
+            Button {
+                text: "Set And Stop"
+                onClicked: root.setFlightDirAndRestart(dirEntry.text)
             }
         }
 

@@ -103,6 +103,9 @@ QML_FILES ArmSequencePage.qml
 QML_FILES LibrarianTimerControl.qml
 SOURCES radioclient.h radioclient.cpp
 SOURCES logprovider.h logprovider.cpp
+SOURCES outlawparser.h outlawparser.cpp
+QML_FILES MapExtras.qml
+QML_FILES MoreControls.qml
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

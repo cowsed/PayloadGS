@@ -30,18 +30,20 @@ bool compute_ldro(LoraSettings::SpreadingFactor spreading_factor, LoraSettings::
 
 PayloadFlags PayloadFlags::fromBits(uint16_t bits)
 {
-    return {
-        .Active = (bits & (1 << StatusBit_Active)) != 0,
-        .Autonomous = (bits & (1 << StatusBit_Autonomous)) != 0,
-        .LastArmMovedStalled = (bits & (1 << StatusBit_LastArmMoveStalled)) != 0,
-        .LastServoMoveStalled = (bits & (1 << StatusBit_LastServoMoveStalled)) != 0,
-        .ArmMoving = (bits & (1 << StatusBit_ArmMoving)) != 0,
-        .ServoMoving = (bits & (1 << StatusBit_ServoMoving)) != 0,
-        .InIdlePosition = (bits & (1 << StatusBit_InIdlePosition)) != 0,
-        .MotorsOverTemp = (bits & (1 << StatusBit_MotorsOverTemp)) != 0,
-        .RadioOverTemp = (bits & (1 << StatusBit_RadioOverTemp)) != 0,
-        .GPSHasFix = (bits & (1 << StatusBit_GPSHasFix)) != 0,
-    };
+    PayloadFlags pflags;
+    pflags.Active = (bits & (1 << StatusBit_Active)) != 0;
+    pflags.Autonomous = (bits & (1 << StatusBit_Autonomous)) != 0;
+    pflags.LastArmMovedStalled = (bits & (1 << StatusBit_LastArmMoveStalled)) != 0;
+    pflags.LastServoMoveStalled = (bits & (1 << StatusBit_LastServoMoveStalled)) != 0;
+    pflags.ArmMoving = (bits & (1 << StatusBit_ArmMoving)) != 0;
+    pflags.ServoMoving = (bits & (1 << StatusBit_ServoMoving)) != 0;
+    pflags.InIdlePosition = (bits & (1 << StatusBit_InIdlePosition)) != 0;
+    pflags.MotorsOverTemp = (bits & (1 << StatusBit_MotorsOverTemp)) != 0;
+    pflags.RadioOverTemp = (bits & (1 << StatusBit_RadioOverTemp)) != 0;
+    pflags.GPSHasFix = (bits & (1 << StatusBit_GPSHasFix)) != 0;
+    pflags.RuncamOn = (bits & (1 << StatusBit_RuncamOn)) != 0;
+    pflags.StmBooted = (bits & (1 << StatusBit_StmBooted)) != 0;
+    return pflags;
 }
 
 RadioPacketParser::RadioPacketParser(QObject *parent)
@@ -54,7 +56,7 @@ RadioPacketParser::RadioPacketParser(QObject *parent)
     linkTestExpiredTimer->callOnTimeout([this]() { this->linkTestFailed(); });
 
     keepAliveTimer = new QTimer(this);
-    keepAliveTimerr->callOnTimeout([this]() { this->needKeepAlive = true; });
+    keepAliveTimer->callOnTimeout([this]() { this->need_keep_alive = true; });
     keepAliveTimer->start(2 * 60 * 1000);
 
     QObject::connect(payload_client,
@@ -146,7 +148,6 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
             qDebug("Failed to unpack command response: %d", (int) res);
             break;
         }
-        qDebug("Got command response for cm type %d", (int) cmd_resp.cmd);
         emitCommandResponse(time, &cmd_resp);
         break;
     case P2GPacketType::P2GPacketType_ImageResponse:
@@ -173,7 +174,7 @@ void RadioPacketParser::packetReceived(QDateTime time, int snr, int rssi, const 
     emit radioRSSIChanged();
     emit packetReceivedFromRadio(time, snr, rssi, packet);
     if (need_keep_alive && header.packet_type != P2GPacketType::P2GPacketType_LinkControl
-        && header.packet_type != P2GPacketType::P2GPacketType_LinkTest
+        && header.packet_type != P2GPacketType::P2GPacketType_LinkTestResponse
         && header.expected_packets_before_response == 0) {
         askForFlightHeartbeat();
         need_keep_alive = false;
@@ -436,9 +437,9 @@ void RadioPacketParser::negotiateLoraParams(uint32_t freq_hz,
     qDebug("%s",
            qPrintable(QString{"Negotiating to %1 %2 %3 %4 %5"}
                           .arg(freq_hz)
-                          .arg(LoraSettings::spreadingFactorString(sf))
-                          .arg(LoraSettings::bandwidthString(bw))
-                          .arg(LoraSettings::codingRateString(cr))
+                          .arg(LoraSettings::spreadingFactorString(sf),
+                               LoraSettings::bandwidthString(bw),
+                               LoraSettings::codingRateString(cr))
                           .arg(remoteDbm)));
 
     LoraLinkChange settings{1, remoteDbm, freq_hz, sf_to_lsf(sf), bw_to_lbw(bw), cr_to_lcr(cr)};
@@ -627,6 +628,36 @@ void RadioPacketParser::askForTelemetry(TelemetryType typ)
     sendCommand(&cmd);
 }
 
+void RadioPacketParser::askToJogMotor(uint8_t motor_id, int16_t millivolts, uint8_t duration_ticks)
+{
+    CommandAndData cmd;
+
+    cmd.command = Command_JogMotor;
+    cmd.motor_jog.motor_id = motor_id;
+    cmd.motor_jog.millivolts = millivolts;
+    cmd.motor_jog.duration_ticks = duration_ticks;
+
+    sendCommand(&cmd);
+}
+
+void RadioPacketParser::askToMoveServo(uint8_t openness,
+                                       uint8_t open_travel_time,
+                                       uint8_t open_time,
+                                       uint8_t close_travel_time,
+                                       uint8_t closeness)
+{
+    CommandAndData cmd;
+
+    cmd.command = Command_MoveServo;
+    cmd.servo_motion.openness = openness;
+    cmd.servo_motion.open_travel_time = open_travel_time;
+    cmd.servo_motion.open_time = open_time;
+    cmd.servo_motion.close_travel_time = close_travel_time;
+    cmd.servo_motion.closeness = closeness;
+
+    sendCommand(&cmd);
+}
+
 void RadioPacketParser::askToGoToPosition(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch)
 {
     qDebug("Asking to go to arm target");
@@ -636,6 +667,18 @@ void RadioPacketParser::askToGoToPosition(int8_t syaw, int8_t spitch, int8_t epi
     cmd.send_arm_to_target.shoulder_pitch = spitch;
     cmd.send_arm_to_target.elbow_pitch = epitch;
     cmd.send_arm_to_target.wrist_pitch = wpitch;
+    sendCommand(&cmd);
+}
+
+void RadioPacketParser::askToZeroArm(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch)
+{
+    qDebug("Asking to go to zero arm");
+    CommandAndData cmd;
+    cmd.command = Command_SetShoulder;
+    cmd.set_shoulder_position.shoulder_yaw = syaw;
+    cmd.set_shoulder_position.shoulder_pitch = spitch;
+    cmd.set_shoulder_position.elbow_pitch = epitch;
+    cmd.set_shoulder_position.wrist_pitch = wpitch;
     sendCommand(&cmd);
 }
 
@@ -656,11 +699,11 @@ void RadioPacketParser::askToGoToPositionAndComeBack(int8_t syaw,
 
 void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
-    qDebug("Got Telem %d", telem->telem_type);
     switch (telem->telem_type) {
     case TelemetryType_FlightHeartbeat:
         printf("Emitting telem: PHASE   %d\n", (int) (telem->flight_heartbeat_stats.state.phase));
         setStatusLine("Got FHB");
+        last_s_since_boost = telem->flight_heartbeat_stats.s_since_boost;
         emit flightHeartbeat(time,
                              telem->flight_heartbeat_stats.state,
                              telem->flight_heartbeat_stats.latitude,
@@ -671,7 +714,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                              telem->flight_heartbeat_stats.radio_temp);
         emit flightStateUpdated(time,
                                 telem->flight_heartbeat_stats.state.phase,
-                                telem->flight_heartbeat_stats.state.status_bits);
+                                telem->flight_heartbeat_stats.state.status_bits,
+                                telem->flight_heartbeat_stats.s_since_boost);
         emit payloadGPSUpdated(time,
                                QGeoCoordinate(telem->flight_heartbeat_stats.latitude,
                                               telem->flight_heartbeat_stats.longitude,
@@ -694,7 +738,8 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                              telem->landed_heartbeat_stats.radio_temp);
         emit flightStateUpdated(time,
                                 telem->landed_heartbeat_stats.state.phase,
-                                telem->landed_heartbeat_stats.state.status_bits);
+                                telem->landed_heartbeat_stats.state.status_bits,
+                                last_s_since_boost);
         emit motorTempUpdated(time, telem->landed_heartbeat_stats.motor_temp);
         emit radioTempUpdated(time, telem->landed_heartbeat_stats.radio_temp);
         if (telem->landed_heartbeat_stats.next_image_id > last_image_id) {
@@ -750,18 +795,11 @@ void RadioPacketParser::emitCommandResponse(QDateTime time, const CommandRespons
     case Command_SendArmTargetForPhotoAndComeBack:
     case Command_SendIdlePosition:
     case Command_SetShoulder:
-    case Command_ShellExec:
     case Command_NewFlightDanger:
     case Command_Callsign:
     case Command_SendArmTarget:
     case Command_MaxCommand:
         qDebug("COMMAND RESPONSERECEIVED WITH NO EMIT HANDLER");
-        break;
-    case Command_ShellExecInfo:
-        break;
-    case Command_ShellReadStdout:
-        break;
-    case Command_ShellReadStderr:
         break;
     case Command_ImageMetadata:
         qDebug("Radio packet parser got metadata for id %d", resp->image_metadata.image_id);
@@ -787,6 +825,13 @@ void RadioPacketParser::b64PacketReceived(QDateTime time, int snr, int rssi, con
     qDebug("From %s", qPrintable(packet));
     qDebug("B64 dec from %lld to %lld", packet.size(), res.decoded.size());
     packetReceived(time, snr, rssi, res.decoded);
+}
+
+void RadioPacketParser::askForNewFlight()
+{
+    CommandAndData cmd;
+    cmd.command = Command_NewFlightDanger;
+    sendCommand(&cmd);
 }
 
 QString RadioPacketParser::statusLine()
@@ -831,4 +876,11 @@ QString RadioPacketParser::phaseToShortString(FlightPhaseQML phase)
 PayloadFlags RadioPacketParser::statusBitsToFlags(uint16_t bits)
 {
     return PayloadFlags::fromBits(bits);
+}
+
+void RadioPacketParser::askForRuncamOn(bool on)
+{
+    CommandAndData cmd;
+    cmd.command = on ? Command_StartVideo : Command_StopVideo;
+    sendCommand(&cmd);
 }

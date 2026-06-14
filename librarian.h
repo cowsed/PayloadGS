@@ -73,7 +73,7 @@ public:
     /**
      * @brief SubmitRequestToRadio grabs the highest priority request from its queue and sends it to the radio
      */
-    Q_INVOKABLE void SubmitRequestToRadio(RadioPacketParser *radio);
+    Q_INVOKABLE void SubmitRequestToRadio(RadioPacketParser *radio, size_t max_blocks);
 
     /**
      * @brief AddRequests to the list of pondered requests that the librarian will choose from
@@ -92,7 +92,9 @@ public:
 
     size_t NumRequests();
     std::optional<Librarian::Request> Pop();
-    std::vector<uint16_t> gatherImageBlocksToRequest(uint8_t image_id, uint16_t first_block);
+    std::vector<uint16_t> gatherImageBlocksToRequest(uint8_t image_id,
+                                                     uint16_t first_block,
+                                                     size_t allowed_blocks);
 
     // removes requests for this image from what we're looking for
     Q_INVOKABLE void StopImageDownload(uint8_t image_id);

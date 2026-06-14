@@ -1,4 +1,5 @@
 #include "telemetrylogholder.h"
+#include <qdir.h>
 
 TelemetryLogHolder::TelemetryLogHolder(QObject *parent)
     : QObject(parent)
@@ -26,14 +27,18 @@ void TelemetryLogHolder::newPayloadPosition(QDateTime ts, QGeoCoordinate coord)
 {
     last_payload_pos = coord;
     last_payload_pos_update = ts;
+
     emit payloadPositionChanged();
+    emit payloadPositionUpdateTimeChanged();
 }
 
 void TelemetryLogHolder::newStationPosition(QDateTime ts, QGeoCoordinate coord)
 {
     last_station_pos_update = ts;
     last_station_pos = coord;
-    emit payloadPositionChanged();
+
+    emit stationPositionChanged();
+    emit stationPositionUpdateTimeChanged();
 }
 
 void TelemetryLogHolder::newRocketPosition(QDateTime ts, QGeoCoordinate coord)
@@ -41,6 +46,7 @@ void TelemetryLogHolder::newRocketPosition(QDateTime ts, QGeoCoordinate coord)
     last_rocket_pos_update = ts;
     last_rocket_pos = coord;
     emit rocketPositionChanged();
+    emit rocketPositionUpdateTimeChanged();
 }
 
 void TelemetryLogHolder::newBatteryInformation(QDateTime ts, double volts, double amps)
@@ -103,4 +109,21 @@ FrontBackDataHolder *TelemetryLogHolder::getBatteryCurrent()
 FrontBackDataHolder *TelemetryLogHolder::getBatteryVoltage()
 {
     return &battery_voltage;
+}
+
+bool TelemetryLogHolder::newDirectory(QString new_dir)
+{
+    QDir dir{new_dir};
+    if (!dir.cdUp()) {
+        return false;
+    }
+
+    if (!dir.mkpath(new_dir)) {
+        return false;
+    }
+
+    dir.mkpath(new_dir + "/Images");
+    dir.mkpath(new_dir + "/Packets");
+
+    return true;
 }

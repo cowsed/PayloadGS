@@ -18,8 +18,11 @@
 #include "imagedataholder.h"
 #include "librarian.h"
 #include "logprovider.h"
+#include "outlawparser.h"
 #include "radiopacketparser.h"
 #include "telemetrylogholder.h"
+
+#include <QSettings>
 
 LogProvider *qt_logger{nullptr};
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -38,6 +41,10 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     QApplication::setDesktopFileName("PayloadGS");
+    app.setOrganizationName("RIT Launch Initiative");
+    app.setOrganizationDomain("launchinitiative@rit.edu");
+    app.setApplicationName("PayloadGS");
+    QSettings settings;
 
     QIcon icon{":/assets/images/window_icon.png"};
     if (icon.isNull()) {
@@ -48,10 +55,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.addImportPath(":/");
 
-    QString working_dir = "/home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir";
-    size_t flight_id = 1;
-
-    QString flight_dir = QString("%1/%2").arg(working_dir).arg(flight_id);
+    QString default_flight_dir = "/home/unknown/Clubs/Launch/Misc/PayloadGS/PayloadGS/WorkingDir/1";
+    QString flight_dir = settings.value("flight_dir", default_flight_dir).toString();
     engine.rootContext()->setContextProperty("flight_dir", flight_dir);
 
     QQuickView viewer;
@@ -61,6 +66,9 @@ int main(int argc, char *argv[])
 
     LogProvider *logger = engine.singletonInstance<LogProvider *>("PayloadGS", "LogProvider");
     qt_logger = logger;
+
+    OutlawParser *outlaw_parser = engine.singletonInstance<OutlawParser *>("PayloadGS",
+                                                                           "OutlawParser");
 
     RadioPacketParser *radio_parser
         = engine.singletonInstance<RadioPacketParser *>("PayloadGS", "RadioPacketParser");
@@ -143,6 +151,12 @@ int main(int argc, char *argv[])
                      &RadioPacketParser::payloadGPSUpdated,
                      holder,
                      &TelemetryLogHolder::newPayloadPosition,
+                     Qt::QueuedConnection);
+
+    QObject::connect(outlaw_parser,
+                     &OutlawParser::gpsReceived,
+                     holder,
+                     &TelemetryLogHolder::newRocketPosition,
                      Qt::QueuedConnection);
 
     QObject::connect(radio_parser,

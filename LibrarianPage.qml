@@ -34,12 +34,12 @@ Item {
                     telem_id: 1
                 }
                 LibrarianTimerControl {
-                    id: sysInfoSeconds
+                    id: orientationSeconds
                     from: 0
                     to: 30 * 60
                     value: 10 * 60
-                    label: "SysInfo"
-                    telem_id: 4
+                    label: "IMUs"
+                    telem_id: 5
                 }
                 LibrarianTimerControl {
                     id: gnssSeconds
@@ -53,20 +53,20 @@ Item {
         }
 
         ColumnLayout {
-            SpinBox{
+            SpinBox {
                 id: blocksPerRequest
                 from: 1
                 to: 60
                 value: 60
             }
-            Label{
+            Label {
                 text: "Blocks/req"
             }
 
             Button {
                 text: "Perform Request"
                 // on click, pop off the stack and send it to radio
-                onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser)
+                onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser, blocksPerRequest.value)
             }
 
             Button {

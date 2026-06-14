@@ -8,16 +8,15 @@ Item {
     Material.theme: Material.Light
 
     required property variant window
-    required property int flightNumber
     required property string stateString
+    required property payloadFlags pflags
 
     property bool forceBoostMenu: false
     ColumnLayout {
         anchors.fill: parent
 
-        RowLayout {
+        ColumnLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: true
             Rectangle {
                 color: Material.primary
                 Layout.margins: 4
@@ -53,11 +52,43 @@ Item {
                     padding: 4
                 }
                 Label {
-                    text: "GPS Has Fix: ?"
+                    text: "GPS Has Fix: " + control.pflags.GPSHasFix
                 }
                 Label {
-                    text: "GPS Has Fix: ?"
+                    text: "LastArmMoveStalled: " + control.pflags.LastArmMovedStalled
                 }
+                Label {
+                    text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
+                }
+                Label {
+                    text: "Runcam: " + control.pflags.RuncamOn
+                }
+                Label {
+                    text: "ArmMoving: " + control.pflags.ArmMoving
+                }
+                Label {
+                    text: "ServoMoving: " + control.pflags.ServoMoving
+                }
+                Label {
+                    text: "StmOn: " + control.pflags.StmBooted
+                }
+            }
+        }
+        RowLayout {
+            Button {
+                font.pointSize: 20
+                text: "Camera On"
+                onClicked: RadioPacketParser.askForRuncamOn(true)
+            }
+            Button {
+                font.pointSize: 20
+                text: "Camera Off"
+                onClicked: RadioPacketParser.askForRuncamOn(false)
+            }
+            Button {
+                font.pointSize: 20
+                text: "Reboot STM"
+                // onClicked: RadioPacketParser.askForSTMReboot()
             }
         }
 
@@ -113,7 +144,10 @@ Item {
                 text: "Really Force"
                 Material.background: Material.Red
                 visible: control.forceBoostMenu
-                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Flight)
+                onClicked: function () {
+                    RadioPacketParser.sendToPhase(RadioPacketParser.Flight);
+                    control.forceBoostMenu = false;
+                }
             }
         }
     }

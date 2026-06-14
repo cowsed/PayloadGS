@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import QtCore
+import QtPositioning
 
 ApplicationWindow {
     id: mainwindow
@@ -27,11 +29,19 @@ ApplicationWindow {
         // toggleFullscreen()
     }
 
-    property int flightNumber: 0
-
     property var phase: RadioPacketParser.Starting
     property payloadFlags pflags
     property bool flagsValid: false
+    property string flightDir: flight_dir
+
+    Settings {
+        id: settings
+        property alias x: mainwindow.x
+        property alias y: mainwindow.y
+        property alias width: mainwindow.width
+        property alias height: mainwindow.height
+        property alias flight_dir: mainwindow.flightDir
+    }
 
     function qsIfNanOrNum(num, numPlaces) {
         if (isNaN(num)) {
@@ -47,7 +57,7 @@ ApplicationWindow {
     }
     Connections {
         target: RadioPacketParser
-        function onFlightStateUpdated(time, phase, flags) {
+        function onFlightStateUpdated(time, phase, flags, s_since_boost) {
             mainwindow.phase = phase;
             mainwindow.pflags = RadioPacketParser.statusBitsToFlags(flags);
             mainwindow.flagsValid = true;
@@ -106,11 +116,6 @@ ApplicationWindow {
             id: radioTabButton
             text: "Radio"
             onClicked: metaview.currentIndex = 1
-        }
-        TabButton {
-            id: status
-            text: "Status"
-            enabled: false
         }
 
         Shortcut {
@@ -209,19 +214,15 @@ ApplicationWindow {
                 tabbar.currentIndex = currentIndex;
             }
 
-            GSPage {
+            MapExtras {
                 // over map
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
-            GSPage {
+            MoreControls {
                 // over controls
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                fullscreenToggle: mainwindow.toggleFullscreen
             }
             MoreTelemetryPage {
                 // over telem
@@ -272,8 +273,8 @@ ApplicationWindow {
                 Layout.fillHeight: true
 
                 window: mainwindow
-                flightNumber: mainwindow.flightNumber
                 stateString: RadioPacketParser.phaseToShortString(mainwindow.phase)
+                pflags: mainwindow.pflags
             }
 
             TelemetryPage {
@@ -305,7 +306,14 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            flightDir: mainwindow.flightDir
             fullscreenToggle: mainwindow.toggleFullscreen
+            setFlightDirAndRestart: function (newDir) {
+                if (TelemetryLogHolder.newDirectory(newDir)) {
+                    mainwindow.flightDir = newDir;
+                    console.log("Should restart");
+                }
+            }
         }
     }
 

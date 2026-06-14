@@ -14,7 +14,6 @@ Item {
     Connections {
         target: page
         function onActiveImageIDChanged() {
-            console.log("OAIIC");
             const activeImageMetadata = ImageDataHolder.metadataForImageId(page.activeImageID);
             controlColumn.reconsiderControlColumn(activeImageMetadata);
             imageId.text = "Image #" + page.activeImageID;
@@ -38,26 +37,46 @@ Item {
     Material.theme: Material.Light
     RowLayout {
         anchors.fill: parent
-        Image {
-            id: activeImage
-            Layout.fillWidth: true
-            Layout.horizontalStretchFactor: 3
+        ColumnLayout {
+            Layout.fillHeight: true
+            Layout.preferredWidth: 612
+            Image {
+                id: activeImage
+                Layout.fillWidth: true
+                Layout.horizontalStretchFactor: 3
 
-            cache: false
-            Layout.preferredWidth: 512 - 60
-            Layout.preferredHeight: 512 - 60
-            fillMode: Image.PreserveAspectFit
+                cache: false
+                Layout.preferredHeight: 512 - 60
+                fillMode: Image.PreserveAspectFit
 
-            source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
+                mirrorVertically: flipImage.checked
 
-            function reload(metadata) {
-                const oldSource = activeImage.source;
-                activeImage.source = "";
-                activeImage.source = oldSource;
-                activeImage.mirrorVertically = metadata.j4 < 0;
+                source: "file:" + ImageDataHolder.pathForImage(page.activeImageID)
+
+                function reload(metadata) {
+                    const oldSource = activeImage.source;
+                    activeImage.source = "";
+                    activeImage.source = oldSource;
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                CheckBox {
+                    id: flipImage
+                }
+                Label {
+                    text: "Flip Vertically"
+                }
+
+                Button {
+                    text: "Goto End"
+                    onClicked: function () {
+                        page.activeImageID = ImageDataHolder.numImages - 1;
+                        selector.scrollToEnd();
+                    }
+                }
             }
         }
-
         RowLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -75,11 +94,15 @@ Item {
                 }
 
                 ScrollView {
+                    id: selector
                     Layout.fillHeight: true
                     // Layout.fillWidth: true
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     ScrollBar.vertical.interactive: false
                     padding: 5
+                    function scrollToEnd() {
+                        ScrollBar.vertical.position = 1.0 - ScrollBar.vertical.size;
+                    }
 
                     ColumnLayout {
                         spacing: 0
@@ -200,10 +223,20 @@ Item {
                     color: "#D3D3D3" // Light gray color line
                 }
 
-                Button {
-                    text: "Request"
-                    // on click, pop off the stack and send it to radio
-                    onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser)
+                RowLayout {
+                    SpinBox {
+                        id: blocksPerRequest
+                        from: 1
+                        to: 60
+                        value: 60
+                        editable: true
+                    }
+
+                    Button {
+                        text: "Request"
+                        // on click, pop off the stack and send it to radio
+                        onClicked: Librarian.SubmitRequestToRadio(RadioPacketParser, blocksPerRequest.value)
+                    }
                 }
             }
         }

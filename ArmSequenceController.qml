@@ -87,27 +87,64 @@ RowLayout {
             from: -127
             to: 127
             value: 0
+            editable: true
         }
         SpinBox {
             id: sPitchZero
             from: -127
             to: 127
             value: 0
+            editable: true
         }
         SpinBox {
             id: ePitchZero
             from: -127
             to: 127
             value: 0
+            editable: true
         }
         SpinBox {
             id: wPitchZero
             from: -127
             to: 127
             value: 0
+            editable: true
         }
         Button {
             text: "Zero"
+            onClicked: RadioPacketParser.askToZeroArm(yawZero.value, sPitchZero.value, ePitchZero.value, wPitchZero.value)
+        }
+    }
+
+    ColumnLayout {
+        id: jogArmColumn
+        Label {
+            text: "Jog Arm"
+        }
+        SpinBox {
+            id: jogMotorId
+            from: 0
+            to: 2
+            value: 0
+            editable: true
+        }
+        SpinBox {
+            id: jogMillivolts
+            from: -12000
+            to: 12000
+            value: 0
+            editable: true
+        }
+        SpinBox {
+            id: jogDurationMs
+            from: 0
+            to: 5000
+            value: 0
+            editable: true
+        }
+        Button {
+            text: "Jog"
+            onClicked: RadioPacketParser.askToJogArm(jogMotorId.valiue, jogMillivolts.value, jogDurationMs.value / 10)
         }
     }
 }

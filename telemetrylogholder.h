@@ -76,10 +76,12 @@ public slots:
     void newFsUsage(QDateTime ts, uint64_t);
 
     void newPayloadPosition(QDateTime ts, QGeoCoordinate coord);
-    void newStationPosition(QDateTime ts, QGeoCoordinate coord);
+    void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
+    Q_INVOKABLE void newStationPosition(QDateTime ts, QGeoCoordinate coord);
 
     void newBatteryInformation(QDateTime ts, double volts, double amps);
-    Q_INVOKABLE void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
+
+    Q_INVOKABLE bool newDirectory(QString new_dir);
 
 signals:
     void payloadPositionChanged();

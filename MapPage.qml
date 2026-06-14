@@ -91,23 +91,23 @@ Item {
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
 
-            PositionSource {
-                id: src
-                name: "nmea"
-                active: true
-                PluginParameter {
-                    name: "nmea.source"
-                    value: "serial:/dev/pts/8"
-                }
-                PluginParameter {
-                    name: "nmea.baudrate"
-                    value: 9600
-                }
-                onPositionChanged: {
-                    var coord = src.position.coordinate;
-                    TelemetryLogHolder.newRocketPosition(new Date(), coord);
-                }
-            }
+            // PositionSource {
+            //     id: src
+            //     name: "nmea"
+            //     active: true
+            //     PluginParameter {
+            //         name: "nmea.source"
+            //         value: "serial:/dev/pts/8"
+            //     }
+            //     PluginParameter {
+            //         name: "nmea.baudrate"
+            //         value: 9600
+            //     }
+            //     onPositionChanged: {
+            //         var coord = src.position.coordinate;
+            //         TelemetryLogHolder.newStationPosition(new Date(), coord);
+            //     }
+            // }
 
             CompassUI {
                 Layout.fillWidth: true

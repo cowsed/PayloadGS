@@ -122,10 +122,12 @@ void Librarian::DumpInfo() const
     }
 }
 
-std::vector<uint16_t> Librarian::gatherImageBlocksToRequest(uint8_t image_id, uint16_t first_block)
+std::vector<uint16_t> Librarian::gatherImageBlocksToRequest(uint8_t image_id,
+                                                            uint16_t first_block,
+                                                            size_t allowed_blocks)
 {
     std::vector<uint16_t> blocks{};
-    blocks.reserve(MAX_BLOCKS_PER_REQUEST);
+    blocks.reserve(allowed_blocks);
     blocks.push_back(first_block);
 
     for (auto req : queue) { // traverse in order
@@ -137,7 +139,7 @@ std::vector<uint16_t> Librarian::gatherImageBlocksToRequest(uint8_t image_id, ui
             // not this one anymore
             break;
         }
-        if (blocks.size() >= MAX_BLOCKS_PER_REQUEST) {
+        if (blocks.size() >= allowed_blocks) {
             // full up
             break;
         }
@@ -146,8 +148,11 @@ std::vector<uint16_t> Librarian::gatherImageBlocksToRequest(uint8_t image_id, ui
     return blocks;
 }
 
-void Librarian::SubmitRequestToRadio(RadioPacketParser *radio)
+void Librarian::SubmitRequestToRadio(RadioPacketParser *radio, size_t max_blocks)
 {
+    if (max_blocks > MAX_BLOCKS_PER_REQUEST) {
+        max_blocks = MAX_BLOCKS_PER_REQUEST;
+    }
     std::optional<Librarian::Request> maybe_req = Pop();
     if (!maybe_req) {
         qDebug("Nothing for librarian to do right now");
@@ -160,7 +165,8 @@ void Librarian::SubmitRequestToRadio(RadioPacketParser *radio)
         break;
     case RequestType::ImageBlockData: {
         std::vector<uint16_t> ids = gatherImageBlocksToRequest(maybe_req->image_data.image_id,
-                                                               maybe_req->image_data.block_index);
+                                                               maybe_req->image_data.block_index,
+                                                               max_blocks);
         radio->askForBlocks(maybe_req->image_data.image_id, ids);
     } break;
     default:

@@ -26,21 +26,26 @@ class PayloadFlags
     Q_PROPERTY(bool InIdlePosition MEMBER InIdlePosition)
     Q_PROPERTY(bool RadioOverTemp MEMBER RadioOverTemp)
     Q_PROPERTY(bool GPSHasFix MEMBER GPSHasFix)
+    Q_PROPERTY(bool RuncamOn MEMBER RuncamOn)
+    Q_PROPERTY(bool StmBooted MEMBER StmBooted)
 
     QML_VALUE_TYPE(payloadFlags)
 
 public:
+    PayloadFlags() {}
     static PayloadFlags fromBits(uint16_t bits);
-    bool Active;
-    bool Autonomous;
-    bool LastArmMovedStalled;
-    bool LastServoMoveStalled;
-    bool ArmMoving;
-    bool ServoMoving;
-    bool InIdlePosition;
-    bool MotorsOverTemp;
-    bool RadioOverTemp;
-    bool GPSHasFix;
+    bool Active = false;
+    bool Autonomous = false;
+    bool LastArmMovedStalled = false;
+    bool LastServoMoveStalled = false;
+    bool ArmMoving = false;
+    bool ServoMoving = false;
+    bool InIdlePosition = false;
+    bool MotorsOverTemp = false;
+    bool RadioOverTemp = false;
+    bool GPSHasFix = false;
+    bool RuncamOn = false;
+    bool StmBooted = false;
 };
 
 /**
@@ -94,12 +99,24 @@ public:
     Q_INVOKABLE QDateTime latestRxDateTime();
     Q_INVOKABLE QString statusLine();
 
+    Q_INVOKABLE void askForNewFlight();
     Q_INVOKABLE void askForMetadata(uint8_t image_id);
     Q_INVOKABLE void askForBlocks(uint8_t image_id, const std::vector<uint16_t> &block_ids);
     Q_INVOKABLE void askForFlightHeartbeat();
     Q_INVOKABLE void askForLandedHeartbeat();
     Q_INVOKABLE void askForTelemetryInt(uint8_t typ);
     Q_INVOKABLE void askForTelemetry(TelemetryType typ);
+
+    Q_INVOKABLE void askForRuncamOn(bool on);
+
+    Q_INVOKABLE void askToZeroArm(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch);
+    Q_INVOKABLE void askToJogMotor(uint8_t motor_id, int16_t millivolts, uint8_t duration_ticks);
+
+    Q_INVOKABLE void askToMoveServo(uint8_t openness,
+                                    uint8_t open_travel_time,
+                                    uint8_t open_time,
+                                    uint8_t close_travel_time,
+                                    uint8_t closeness);
 
     Q_INVOKABLE void askToGoToPosition(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch);
     Q_INVOKABLE void askToGoToPositionAndComeBack(int8_t syaw,
@@ -138,7 +155,10 @@ public:
 
     Q_INVOKABLE const LoraSettings &defaultLoraSettings() const;
 signals:
-    void flightStateUpdated(QDateTime time, enum FlightPhase phase, uint16_t bitflags);
+    void flightStateUpdated(QDateTime time,
+                            enum FlightPhase phase,
+                            uint16_t bitflags,
+                            uint16_t s_since_boost);
     void flightHeartbeat(QDateTime time,
                          struct FlightState state,
                          float lat,
@@ -247,6 +267,7 @@ private:
     int numLeftBeforeResponse = 0;
 
     uint8_t last_image_id = 0;
+    uint16_t last_s_since_boost = 0;
 };
 
 #endif // RADIOPACKETPARSER_H

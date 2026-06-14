@@ -218,15 +218,6 @@ Item {
                 }
 
                 SpinBox {
-                    id: localDbm
-                    from: 2
-                    value: 14
-                    to: 17
-                    editable: true
-                    onValueChanged: RadioPacketParser.setTxPower(value)
-                }
-
-                SpinBox {
                     id: freqBox
                     from: page.freqMin
                     value: RadioPacketParser.loraSettings.frequency
@@ -270,6 +261,14 @@ Item {
                 text: "Set Self"
                 Material.background: Material.Red
                 onClicked: confSelfConfirmation.visible = true
+            }
+            SpinBox {
+                id: localDbm
+                from: 2
+                value: 14
+                to: 17
+                editable: true
+                onValueChanged: RadioPacketParser.setTxPower(value)
             }
         }
     }
