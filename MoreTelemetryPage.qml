@@ -11,10 +11,10 @@ Item {
             text: "moarrrr telemetryyy"
         }
         RowLayout {
-            TextEdit {
-                text: TelemetryLogHolder.baseImu.x
-                enabled: false
-            }
+            // TextEdit {
+            // text: TelemetryLogHolder.baseImu.x
+            // enabled: false
+            // }
         }
     }
 }

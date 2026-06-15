@@ -51,8 +51,13 @@ Item {
                     text: "Status: "
                     padding: 4
                 }
-                RowLayout {
+                GridLayout {
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                    // spacing: 10
+                    rowSpacing: 20
+                    columnSpacing: 10
+                    columns: 3
                     Label {
                         text: "GPS Has Fix: " + control.pflags.GPSHasFix
                     }
@@ -62,18 +67,18 @@ Item {
                     Label {
                         text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
                     }
-                }
-                Label {
-                    text: "Runcam: " + control.pflags.RuncamOn
-                }
-                Label {
-                    text: "ArmMoving: " + control.pflags.ArmMoving
-                }
-                Label {
-                    text: "ServoMoving: " + control.pflags.ServoMoving
-                }
-                Label {
-                    text: "StmOn: " + control.pflags.StmBooted
+                    Label {
+                        text: "Runcam: " + control.pflags.RuncamOn
+                    }
+                    Label {
+                        text: "ArmMoving: " + control.pflags.ArmMoving
+                    }
+                    Label {
+                        text: "ServoMoving: " + control.pflags.ServoMoving
+                    }
+                    Label {
+                        text: "StmOn: " + control.pflags.StmBooted
+                    }
                 }
             }
         }

@@ -82,10 +82,11 @@ QString parseLoraFrame(const LoraFrame &frame,
                        const int16_t rssi,
                        const int8_t snr)
 {
+    return "";
     QString dump = "";
-    dump += QString("Outlaw Node %1: (%2 bytes | %3 dBm | %4 dB):")
-                .arg((int) frame.node_id)
-                .arg((int) size, (int) rssi, (int) snr);
+    dump += QString("Outlaw Node %1: (%2 bytes | %3 dBm | %4 dB):");
+    // .arg((int) frame.node_id)
+    // .arg((int) size, (int) rssi, (int) snr);
 
 #ifdef CONFIG_LICENSED_FREQUENCY
     QString callsign = QString::fromUtf8(frame.callsign, CALLSIGN_CHAR_COUNT);
@@ -180,10 +181,10 @@ void OutlawParser::packetReceived(QDateTime time, int snr, int rssi, const QByte
         QString str = parseLoraFrame(*frame, size, rssi, snr);
         bool hasFix = frame->gnssInfo.fix_status != GNSS_FIX_STATUS_NO_FIX;
         QString callsign = QString::fromUtf8(frame->callsign, 6);
-        str += QString("%1-%2: (%3 bytes | %4 dBm | %5 dB):\n")
-                   .arg(callsign)
-                   .arg((int) frame->node_id)
-                   .arg((int) size, (int) rssi, (int) snr);
+        // str += QString("%1-%2: (%3 bytes | %4 dBm | %5 dB):\n")
+        //            .arg(callsign)
+        //            .arg((int) frame->node_id)
+        //            .arg((int) size, (int) rssi, (int) snr);
 
         QGeoCoordinate coord{(double) microToDeg(frame->gnssInfo.latitude),
                              (double) microToDeg(frame->gnssInfo.longitude),
@@ -197,10 +198,10 @@ void OutlawParser::packetReceived(QDateTime time, int snr, int rssi, const QByte
         QString str = "";
 #ifdef CONFIG_LICENSED_FREQUENCY
         QString callsign = QString::fromUtf8(frame->callsign, 6);
-        str += QString("%1-%2: (%3 bytes | %4 dBm | %5 dB):\n")
-                   .arg(callsign)
-                   .arg((int) frame->node_id)
-                   .arg((int) size, (int) rssi, (int) snr);
+        // str += QString("%1-%2: (%3 bytes | %4 dBm | %5 dB):\n")
+        //            .arg(callsign)
+        //            .arg((int) frame->node_id)
+        //            .arg((int) size, (int) rssi, (int) snr);
 #else
         qInfo("Node %d: (%d bytes | %d dBm | %d dB):", frame->node_id, size, rssi, snr);
 #endif
