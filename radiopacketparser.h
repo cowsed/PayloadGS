@@ -2,6 +2,7 @@
 #define RADIOPACKETPARSER_H
 #include <QLocalSocket>
 #include <QQmlEngine>
+#include <QVector3D>
 #include "QObject"
 #include "cubesat_comms/packets_g2p.h"
 #include "cubesat_comms/packets_p2g.h"
@@ -112,7 +113,8 @@ public:
     Q_INVOKABLE void askToZeroArm(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch);
     Q_INVOKABLE void askToJogMotor(uint8_t motor_id, int16_t millivolts, uint8_t duration_ticks);
 
-    Q_INVOKABLE void askToMoveServo(uint8_t openness,
+    Q_INVOKABLE void askToMoveServo(uint8_t servo_id,
+                                    uint8_t openness,
                                     uint8_t open_travel_time,
                                     uint8_t open_time,
                                     uint8_t close_travel_time,
@@ -192,6 +194,8 @@ signals:
     void numImagesIncreased(QDateTime time, uint8_t next_image);
     void imageDataReceived(QDateTime time, const ImageData &ssdv_packet);
     void ImageMetadataReceived(QDateTime time, const ImageMetadata &meta);
+
+    void IMUDataReceived(QDateTime time, QVector3D base, QVector3D link2);
 
     void loraSettingsChanged();
 

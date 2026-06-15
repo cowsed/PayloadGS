@@ -51,14 +51,17 @@ Item {
                     text: "Status: "
                     padding: 4
                 }
-                Label {
-                    text: "GPS Has Fix: " + control.pflags.GPSHasFix
-                }
-                Label {
-                    text: "LastArmMoveStalled: " + control.pflags.LastArmMovedStalled
-                }
-                Label {
-                    text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label {
+                        text: "GPS Has Fix: " + control.pflags.GPSHasFix
+                    }
+                    Label {
+                        text: "LastArmMoveStalled: " + control.pflags.LastArmMovedStalled
+                    }
+                    Label {
+                        text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
+                    }
                 }
                 Label {
                     text: "Runcam: " + control.pflags.RuncamOn

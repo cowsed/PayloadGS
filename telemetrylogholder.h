@@ -2,6 +2,7 @@
 #define TELEMETRYLOGHOLDER_H
 
 #include <QDateTime>
+#include <QVector3D>
 #include <QXYSeries>
 #include "QObject"
 #include "frontbackdataholder.h"
@@ -31,6 +32,12 @@ class TelemetryLogHolder : public QObject
     Q_PROPERTY(QDateTime latestRocketPositionUpdateTime READ latestRocketPositionUpdateTime NOTIFY
                    rocketPositionUpdateTimeChanged FINAL)
 
+    Q_PROPERTY(
+        QDateTime latestImuUpdateTime READ latestImuUpdateTime NOTIFY imuUpdateTimeChanged FINAL)
+
+    // Q_PROPERTY(QVector3D baseImu READ baseImu NOTIFY baseImuChanged)
+    // Q_PROPERTY(QVector3D link2Imu READ link2Imu NOTIFY link2ImuChanged)
+
     Q_PROPERTY(uint64_t latestRamUsage READ latestRamUsage NOTIFY ramUsageChanged FINAL)
     Q_PROPERTY(uint64_t latestFsUsage READ latestFsUsage NOTIFY fsUsageChanged FINAL)
 
@@ -58,7 +65,7 @@ public:
     Q_INVOKABLE QDateTime latestPayloadPositionUpdateTime();
     Q_INVOKABLE QDateTime latestStationPositionUpdateTime();
     Q_INVOKABLE QDateTime latestRocketPositionUpdateTime();
-
+    Q_INVOKABLE QDateTime latestImuUpdateTime();
 
     Q_INVOKABLE uint64_t latestRamUsage();
     Q_INVOKABLE uint64_t latestFsUsage();
@@ -79,6 +86,8 @@ public slots:
     void newRocketPosition(QDateTime ts, QGeoCoordinate coord);
     Q_INVOKABLE void newStationPosition(QDateTime ts, QGeoCoordinate coord);
 
+    void newImuData(QDateTime ts, QVector3D base, QVector3D link2);
+
     void newBatteryInformation(QDateTime ts, double volts, double amps);
 
     Q_INVOKABLE bool newDirectory(QString new_dir);
@@ -91,6 +100,10 @@ signals:
     void payloadPositionUpdateTimeChanged();
     void stationPositionUpdateTimeChanged();
     void rocketPositionUpdateTimeChanged();
+
+    void imuUpdateTimeChanged();
+    void baseImuChanged();
+    void link2ImuChanged();
 
     void ramUsageChanged();
     void fsUsageChanged();
@@ -107,6 +120,10 @@ private:
     QGeoCoordinate last_rocket_pos{0, 0, 120};
     QDateTime last_payload_pos_update;
     QGeoCoordinate last_payload_pos{31.0443, -103.53507, 120};
+
+    QVector3D last_base_imu;
+    QVector3D last_link2_imu;
+    QDateTime latest_imu_update_time;
 
     FrontBackDataHolder battery_voltage;
     FrontBackDataHolder battery_current;

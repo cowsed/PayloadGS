@@ -640,7 +640,8 @@ void RadioPacketParser::askToJogMotor(uint8_t motor_id, int16_t millivolts, uint
     sendCommand(&cmd);
 }
 
-void RadioPacketParser::askToMoveServo(uint8_t openness,
+void RadioPacketParser::askToMoveServo(uint8_t servo_id,
+                                       uint8_t openness,
                                        uint8_t open_travel_time,
                                        uint8_t open_time,
                                        uint8_t close_travel_time,
@@ -649,6 +650,7 @@ void RadioPacketParser::askToMoveServo(uint8_t openness,
     CommandAndData cmd;
 
     cmd.command = Command_MoveServo;
+    cmd.servo_motion.which_servo = servo_id;
     cmd.servo_motion.openness = openness;
     cmd.servo_motion.open_travel_time = open_travel_time;
     cmd.servo_motion.open_time = open_time;
@@ -769,7 +771,9 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
         break;
     case TelemetryType_GNSS:
     case TelemetryType_System:
-    case TelemetryType_Orientations:
+    case TelemetryType_Orientations: {
+        // emit IMUDataReceived(time, telem->orientations.base, telem->orientations.link2);
+    } break;
     case TelemetryType_Temps:
     case TelemetryType_Power:
 

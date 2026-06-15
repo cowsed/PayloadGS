@@ -91,6 +91,11 @@ QDateTime TelemetryLogHolder::latestRocketPositionUpdateTime()
     return last_rocket_pos_update;
 }
 
+QDateTime TelemetryLogHolder::latestImuUpdateTime()
+{
+    return latest_imu_update_time;
+}
+
 FrontBackDataHolder *TelemetryLogHolder::getCpuTemp()
 {
     return &motor_temp;
@@ -109,6 +114,16 @@ FrontBackDataHolder *TelemetryLogHolder::getBatteryCurrent()
 FrontBackDataHolder *TelemetryLogHolder::getBatteryVoltage()
 {
     return &battery_voltage;
+}
+
+void TelemetryLogHolder::newImuData(QDateTime ts, QVector3D base, QVector3D link2)
+{
+    latest_imu_update_time = ts;
+    last_base_imu = base;
+    last_link2_imu = link2;
+    // emit baseImuChanged();
+    // emit link2ImuChanged();
+    // emit imuUpdateTimeChanged();
 }
 
 bool TelemetryLogHolder::newDirectory(QString new_dir)

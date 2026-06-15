@@ -16,7 +16,7 @@ RowLayout {
                 id: servoId
                 from: 1
                 to: 3
-                value: 0
+                value: 1
             }
             Label {
                 text: "Servo ID"
@@ -25,9 +25,10 @@ RowLayout {
         RowLayout {
             SpinBox {
                 id: openTo
-                from: 1
+                from: 0
                 to: 255
                 value: 0
+                editable: true
             }
             Label {
                 text: "Open To"
@@ -36,9 +37,11 @@ RowLayout {
         RowLayout {
             SpinBox {
                 id: openDuration
-                from: 1
+                from: 0
                 to: 2550
-                value: 0
+                value: 1
+                editable: true
+                stepSize: 10
             }
             Label {
                 text: "Open Time (ms)"
@@ -47,10 +50,25 @@ RowLayout {
 
         RowLayout {
             SpinBox {
+                id: holdDuration
+                from: 0
+                to: 2550
+                value: 1000
+                editable: true
+                stepSize: 10
+            }
+            Label {
+                text: "Hold Time (ms)"
+            }
+        }
+
+        RowLayout {
+            SpinBox {
                 id: closeTo
-                from: 1
+                from: 0
                 to: 255
                 value: 0
+                editable: true
             }
             Label {
                 text: "Close To"
@@ -59,61 +77,88 @@ RowLayout {
         RowLayout {
             SpinBox {
                 id: closeDuration
-                from: 1
+                from: 0
                 to: 2550
-                value: 0
+                value: 1000
+                editable: true
+                stepSize: 10
             }
             Label {
                 text: "Close Time (ms)"
             }
         }
-
-        CheckBox {
-            id: comeBack
-            text: "Come Back"
-        }
-        CheckBox {
-            id: stayPowered
-            text: "Stay On"
+        Button {
+            text: "Move Servo"
+            onClicked: RadioPacketParser.askToMoveServo(servoId.value - 1, openTo.value, openDuration.value / 10, holdDuration.value / 10, closeDuration.value / 10, closeTo.value)
         }
     }
+
+    ToolSeparator {
+        Layout.fillHeight: true
+    }
+
     ColumnLayout {
         id: zeroArmColumn
         Label {
             text: "Zero Arm"
         }
-        SpinBox {
-            id: yawZero
-            from: -127
-            to: 127
-            value: 0
-            editable: true
+        RowLayout {
+            SpinBox {
+                id: yawZero
+                from: -127
+                to: 127
+                value: 0
+                editable: true
+            }
+            Label {
+                text: "S Yaw"
+            }
         }
-        SpinBox {
-            id: sPitchZero
-            from: -127
-            to: 127
-            value: 0
-            editable: true
+        RowLayout {
+            SpinBox {
+                id: sPitchZero
+                from: -127
+                to: 127
+                value: 0
+                editable: true
+            }
+            Label {
+                text: "S Pitch"
+            }
         }
-        SpinBox {
-            id: ePitchZero
-            from: -127
-            to: 127
-            value: 0
-            editable: true
+        RowLayout {
+            SpinBox {
+                id: ePitchZero
+                from: -127
+                to: 127
+                value: 0
+                editable: true
+            }
+            Label {
+                text: "E Pitch"
+            }
         }
-        SpinBox {
-            id: wPitchZero
-            from: -127
-            to: 127
-            value: 0
-            editable: true
+
+        RowLayout {
+            SpinBox {
+                id: wPitchZero
+                from: -127
+                to: 127
+                value: 0
+                editable: true
+            }
+            Label {
+                text: "W Pitch"
+            }
         }
         Button {
             text: "Zero"
             onClicked: RadioPacketParser.askToZeroArm(yawZero.value, sPitchZero.value, ePitchZero.value, wPitchZero.value)
         }
+    }
+
+    ToolSeparator {
+        Layout.fillHeight: true
     }
 
     ColumnLayout {
@@ -123,8 +168,8 @@ RowLayout {
         }
         SpinBox {
             id: jogMotorId
-            from: 0
-            to: 2
+            from: 1
+            to: 3
             value: 0
             editable: true
         }
@@ -132,19 +177,21 @@ RowLayout {
             id: jogMillivolts
             from: -12000
             to: 12000
+            stepSize: 100
             value: 0
             editable: true
         }
         SpinBox {
             id: jogDurationMs
             from: 0
-            to: 5000
+            to: 2550
             value: 0
+            stepSize: 10
             editable: true
         }
         Button {
             text: "Jog"
-            onClicked: RadioPacketParser.askToJogArm(jogMotorId.valiue, jogMillivolts.value, jogDurationMs.value / 10)
+            onClicked: RadioPacketParser.askToJogMotor(jogMotorId.value - 1, jogMillivolts.value, jogDurationMs.value / 10)
         }
     }
 }
