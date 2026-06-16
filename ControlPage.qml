@@ -69,8 +69,8 @@ Item {
                 font.pointSize: 20
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
-                text: "Reboot STM"
-                // onClicked: RadioPacketParser.askForSTMReboot()
+                text: "Restart"
+                onClicked: RadioPacketParser.askForRestart()
             }
         }
 

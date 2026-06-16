@@ -109,6 +109,7 @@ public:
     Q_INVOKABLE void askForTelemetry(TelemetryType typ);
 
     Q_INVOKABLE void askForRuncamOn(bool on);
+    Q_INVOKABLE void askForRestart();
 
     Q_INVOKABLE void askToZeroArm(int8_t syaw, int8_t spitch, int8_t epitch, int8_t wpitch);
     Q_INVOKABLE void askToJogMotor(uint8_t motor_id, int16_t millivolts, uint8_t duration_ticks);

@@ -708,6 +708,11 @@ void RadioPacketParser::askToGoToPositionAndComeBack(int8_t syaw,
     sendCommand(&cmd);
 }
 
+QVector3D v316_to_v3(const struct v3int16 &v)
+{
+    return QVector3D{(float) v.x, (float) v.y, (float) v.z}.normalized();
+}
+
 void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
 {
     switch (telem->telem_type) {
@@ -762,6 +767,9 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
                               telem->landed_heartbeat_stats.arm_position.shoulder_pitch,
                               telem->landed_heartbeat_stats.arm_position.elbow_pitch,
                               telem->landed_heartbeat_stats.arm_position.wrist_pitch);
+        emit IMUDataReceived(time,
+                             v316_to_v3(telem->landed_heartbeat_stats.base_accel),
+                             v316_to_v3(telem->landed_heartbeat_stats.link2_accel));
         break;
 
     case TelemetryType_Actuators:
@@ -781,7 +789,9 @@ void RadioPacketParser::emitTelemetry(QDateTime time, const Telemetry *telem)
     case TelemetryType_GNSS:
     case TelemetryType_System:
     case TelemetryType_Orientations: {
-        // emit IMUDataReceived(time, telem->orientations.base, telem->orientations.link2);
+        emit IMUDataReceived(time,
+                             v316_to_v3(telem->orientations.base),
+                             v316_to_v3(telem->orientations.link2));
     } break;
     case TelemetryType_Temps:
     case TelemetryType_Power:
@@ -895,5 +905,12 @@ void RadioPacketParser::askForRuncamOn(bool on)
 {
     CommandAndData cmd;
     cmd.command = on ? Command_StartVideo : Command_StopVideo;
+    sendCommand(&cmd);
+}
+
+void RadioPacketParser::askForRestart()
+{
+    CommandAndData cmd;
+    cmd.command = Command_Restart;
     sendCommand(&cmd);
 }

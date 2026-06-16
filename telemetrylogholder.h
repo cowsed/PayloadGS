@@ -35,8 +35,8 @@ class TelemetryLogHolder : public QObject
     Q_PROPERTY(
         QDateTime latestImuUpdateTime READ latestImuUpdateTime NOTIFY imuUpdateTimeChanged FINAL)
 
-    // Q_PROPERTY(QVector3D baseImu READ baseImu NOTIFY baseImuChanged)
-    // Q_PROPERTY(QVector3D link2Imu READ link2Imu NOTIFY link2ImuChanged)
+    Q_PROPERTY(QVector3D baseImu READ baseImu NOTIFY baseImuChanged)
+    Q_PROPERTY(QVector3D link2Imu READ link2Imu NOTIFY link2ImuChanged)
 
     Q_PROPERTY(uint64_t latestRamUsage READ latestRamUsage NOTIFY ramUsageChanged FINAL)
     Q_PROPERTY(uint64_t latestFsUsage READ latestFsUsage NOTIFY fsUsageChanged FINAL)
@@ -92,6 +92,9 @@ public slots:
 
     Q_INVOKABLE bool newDirectory(QString new_dir);
 
+    QVector3D baseImu();
+    QVector3D link2Imu();
+
 signals:
     void payloadPositionChanged();
     void stationPositionChanged();
@@ -121,8 +124,8 @@ private:
     QDateTime last_payload_pos_update;
     QGeoCoordinate last_payload_pos{31.0443, -103.53507, 120};
 
-    QVector3D last_base_imu;
-    QVector3D last_link2_imu;
+    QVector3D last_base_imu{0, 0, 1};
+    QVector3D last_link2_imu{0, 0, 1};
     QDateTime latest_imu_update_time;
 
     FrontBackDataHolder battery_voltage;

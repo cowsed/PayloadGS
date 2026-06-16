@@ -116,14 +116,24 @@ FrontBackDataHolder *TelemetryLogHolder::getBatteryVoltage()
     return &battery_voltage;
 }
 
+QVector3D TelemetryLogHolder::baseImu()
+{
+    return last_base_imu;
+}
+
+QVector3D TelemetryLogHolder::link2Imu()
+{
+    return last_link2_imu;
+}
+
 void TelemetryLogHolder::newImuData(QDateTime ts, QVector3D base, QVector3D link2)
 {
     latest_imu_update_time = ts;
     last_base_imu = base;
     last_link2_imu = link2;
-    // emit baseImuChanged();
-    // emit link2ImuChanged();
-    // emit imuUpdateTimeChanged();
+    emit baseImuChanged();
+    emit link2ImuChanged();
+    emit imuUpdateTimeChanged();
 }
 
 bool TelemetryLogHolder::newDirectory(QString new_dir)

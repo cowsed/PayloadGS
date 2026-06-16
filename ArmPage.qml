@@ -24,6 +24,10 @@ Item {
             page.wristPitch = wrist_pitch;
             console.log("ArmAnglesUpdated", time, shoulder_yaw, shoulder_pitch, elbow_pitch, wrist_pitch);
         }
+
+        function onImuDataReceived(time, base, link2) {
+            timeSinceAccels.event_time = time;
+        }
     }
 
     property bool showWalls: true
@@ -257,6 +261,13 @@ Item {
                     Material.background: Material.Red
                 }
             }
+            Button {
+                text: "Move & Back"
+                onClicked: function () {
+                    page.comeBack = true;
+                    confMovement.visible = true;
+                }
+            }
             // Button {
             //     text: "Move and Back"
             //     onClicked: function () {
@@ -270,8 +281,10 @@ Item {
                 desc: "Angles: "
             }
             TimeSinceThing {
+                id: timeSinceAccels
                 desc: "Accels: "
-                event_time: new Date()
+                event_time: TelemetryLogHolder.latestImuUpdateTime
+                ifNan: "NVR"
             }
         }
     }

@@ -10,11 +10,17 @@ Item {
         Label {
             text: "moarrrr telemetryyy"
         }
-        RowLayout {
-            // TextEdit {
-            // text: TelemetryLogHolder.baseImu.x
-            // enabled: false
-            // }
+        TimeSinceThing {
+            desc: "Last Updated: "
+            event_time: TelemetryLogHolder.latestImuUpdateTime
+            ifNan: "NVR"
+        }
+
+        Label {
+            text: `Base: ${TelemetryLogHolder.baseImu.x}, ${TelemetryLogHolder.baseImu.y} ${TelemetryLogHolder.baseImu.z}`
+        }
+        Label {
+            text: `Link2: ${TelemetryLogHolder.link2Imu.x}, ${TelemetryLogHolder.link2Imu.y} ${TelemetryLogHolder.link2Imu.z}`
         }
     }
 }

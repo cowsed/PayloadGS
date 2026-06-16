@@ -31,7 +31,7 @@ Label {
         repeat: true
         onTriggered: {
             parent.seconds_since = Math.round((new Date().getTime() - parent.event_time.getTime()) / 1000);
-            label.text = (!isNaN(parent.seconds_since) || label.ifNan == undefined) ? (parent.desc + parent.seconds_since + "s" + parent.suffix) : label.ifNan;
+            label.text = (!isNaN(parent.seconds_since) || label.ifNan == undefined) ? (parent.desc + parent.seconds_since + "s" + parent.suffix) : (parent.desc + label.ifNan);
         }
     }
 }
