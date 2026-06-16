@@ -505,6 +505,15 @@ void RadioPacketParser::sendToPhase(FlightPhaseQML phase)
     case FlightPhaseQML::Flight:
         cmd.command = Command_ForceFlight;
         break;
+    case FlightPhaseQML::LandedFlipping:
+        cmd.command = Command_StartAutoFlipping;
+        break;
+    case FlightPhaseQML::LandedUnfolding:
+        cmd.command = Command_UnfoldArm;
+        break;
+    case FlightPhaseQML::LandedAutomaticCamera:
+        cmd.command = Command_Panorama;
+        break;
     case FlightPhaseQML::LandedManual:
         cmd.command = Command_ForceManual;
         break;

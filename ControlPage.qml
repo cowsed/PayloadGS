@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 Item {
     id: control
@@ -11,7 +12,13 @@ Item {
     required property string stateString
     required property payloadFlags pflags
 
-    property bool forceBoostMenu: false
+    property variant goingTo: RadioPacketParser.Starting
+    function startPhaseShift(toPhase) {
+        goingTo = toPhase;
+
+        shiftConfirmation.visible = true;
+    }
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -42,121 +49,155 @@ Item {
                     verticalAlignment: Qt.AlignVCenter
                 }
             }
-
-            ColumnLayout {
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Label {
-                    text: "Status: "
-                    padding: 4
-                }
-                GridLayout {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    // spacing: 10
-                    rowSpacing: 20
-                    columnSpacing: 10
-                    columns: 3
-                    Label {
-                        text: "GPS Has Fix: " + control.pflags.GPSHasFix
-                    }
-                    Label {
-                        text: "LastArmMoveStalled: " + control.pflags.LastArmMovedStalled
-                    }
-                    Label {
-                        text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
-                    }
-                    Label {
-                        text: "Runcam: " + control.pflags.RuncamOn
-                    }
-                    Label {
-                        text: "ArmMoving: " + control.pflags.ArmMoving
-                    }
-                    Label {
-                        text: "ServoMoving: " + control.pflags.ServoMoving
-                    }
-                    Label {
-                        text: "StmOn: " + control.pflags.StmBooted
-                    }
-                }
-            }
         }
         RowLayout {
             Button {
                 font.pointSize: 20
-                text: "Camera On"
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Runcam On"
                 onClicked: RadioPacketParser.askForRuncamOn(true)
             }
             Button {
                 font.pointSize: 20
-                text: "Camera Off"
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Runcam Off"
                 onClicked: RadioPacketParser.askForRuncamOn(false)
             }
             Button {
                 font.pointSize: 20
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
                 text: "Reboot STM"
                 // onClicked: RadioPacketParser.askForSTMReboot()
+            }
+        }
+
+        ColumnLayout {
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Label {
+                text: "Status: "
+                padding: 4
+            }
+            GridLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter
+                // spacing: 10
+                rowSpacing: 20
+                columnSpacing: 10
+                columns: 3
+                Label {
+                    Layout.fillWidth: true
+                    text: "GPS Has Fix: " + control.pflags.GPSHasFix
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "LastArmMoveStalled: " + control.pflags.LastArmMovedStalled
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "LastServoMoveStalled: " + control.pflags.LastServoMoveStalled
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "Runcam: " + control.pflags.RuncamOn
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "ArmMoving: " + control.pflags.ArmMoving
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "ServoMoving: " + control.pflags.ServoMoving
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: "StmOn: " + control.pflags.StmBooted
+                }
             }
         }
 
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            // Layout.verticalStretchFactor: 1
+            Button {
+                font.pointSize: 20
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Start Flipping"
+                onClicked: control.startPhaseShift(RadioPacketParser.LandedFlipping)
+                Material.background: Material.Red
+            }
+            Button {
+                font.pointSize: 20
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Unfold"
+                onClicked: control.startPhaseShift(RadioPacketParser.LandedUnfolding)
+                Material.background: Material.Red
+            }
+            Button {
+                font.pointSize: 20
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Panorama"
+                onClicked: control.startPhaseShift(RadioPacketParser.LandedAutomaticCamera)
+            }
+            Button {
+                font.pointSize: 20
+                Layout.horizontalStretchFactor: 1
+                Layout.fillWidth: true
+                text: "Manual"
+                onClicked: control.startPhaseShift(RadioPacketParser.LandedManual)
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             Button {
                 font.pointSize: 20
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
                 text: "Expect Launch"
-                visible: !control.forceBoostMenu
-                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Expecting)
+                onClicked: control.startPhaseShift(RadioPacketParser.Expecting)
             }
             Button {
                 font.pointSize: 20
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
                 text: "Force Boost"
-                visible: !control.forceBoostMenu
-                onClicked: control.forceBoostMenu = true
+                onClicked: control.startPhaseShift(RadioPacketParser.Flight)
                 Material.background: Material.Red
             }
             Button {
                 font.pointSize: 20
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
-                text: "Cancel Boost"
-                visible: !control.forceBoostMenu
-                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.Pad)
+                text: "Pad"
+                onClicked: control.startPhaseShift(RadioPacketParser.Pad)
             }
             Button {
                 font.pointSize: 20
                 Layout.horizontalStretchFactor: 1
                 Layout.fillWidth: true
-                text: "Force Manual"
-                visible: !control.forceBoostMenu
-                onClicked: RadioPacketParser.sendToPhase(RadioPacketParser.LandedManual)
-            }
-            Button {
-                font.pointSize: 20
-                Layout.horizontalStretchFactor: 1
-                Layout.fillWidth: true
-                text: "Back"
-                visible: control.forceBoostMenu
-                onClicked: control.forceBoostMenu = false
-            }
-            Button {
-                font.pointSize: 20
-                Layout.horizontalStretchFactor: 1
-                Layout.fillWidth: true
-                text: "Really Force"
-                Material.background: Material.Red
-                visible: control.forceBoostMenu
-                onClicked: function () {
-                    RadioPacketParser.sendToPhase(RadioPacketParser.Flight);
-                    control.forceBoostMenu = false;
-                }
+                text: "Manual"
+                onClicked: control.startPhaseShift(RadioPacketParser.LandedManual)
             }
         }
+    }
+
+    MessageDialog {
+        id: shiftConfirmation
+        title: "Send to Phase"
+        text: " Proceed to send to phase? think carefully!.Going to \n  " + RadioPacketParser.phaseToShortString(control.goingTo)
+        visible: false
+        buttons: Dialog.Yes | Dialog.No
+
+        onAccepted: RadioPacketParser.sendToPhase(control.goingTo)
+        onRejected: console.log("aborted")
     }
 }
